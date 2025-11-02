@@ -3,6 +3,16 @@ import { useRouter } from 'next/router';
 import { authApi } from '../../lib/api';
 import Link from 'next/link';
 import styles from './signup.module.css';
+import LoadingDots from '../../components/LoadingDots';
+import { getDashboardUrl } from '../../utils/routing';
+
+// Role mapping object
+const ROLE_MAPPING = {
+  admin: 1,
+  teacher: 2,
+  student: 3,
+  parent: 4
+};
 
 export default function SignupPage() {
   const router = useRouter();
@@ -34,16 +44,20 @@ export default function SignupPage() {
 
     try {
       const response = await authApi.register({
-        name: formData.name,
+        firstName: formData.name,
         email: formData.email,
         password: formData.password,
-        role: userType,
+        role: ROLE_MAPPING[userType],
       });
 
       if (response.success) {
-        // Redirect to login
-        const routerInstance = router as any;
-        routerInstance?.push('/login');
+        // Store the token
+        localStorage.setItem('token', response.data.token);
+
+        // Redirect to the appropriate dashboard using UUID
+        const { role, uuid } = response.data.user;
+        const dashboardUrl = getDashboardUrl(role, uuid);
+        await router.push(dashboardUrl);
       } else {
         setError(response.error || 'Registration failed. Please try again.');
       }
@@ -69,9 +83,17 @@ export default function SignupPage() {
         )}
 
         <form className={styles["signup-form"]} onSubmit={handleSubmit}>
+          {loading && <LoadingDots />}
           <div className={styles["form-group"]}>
             <label className={styles["form-label"]}>I am a</label>
             <div className={styles["user-type-toggle"]}>
+               <button
+                type="button"
+                className={`${styles["toggle-btn"]} ${userType === 'admin' ? styles["active"] : ''}`}
+                onClick={() => setUserType('admin')}
+              >
+                Admin
+              </button>
               <button
                 type="button"
                 className={`${styles["toggle-btn"]} ${userType === 'teacher' ? styles["active"] : ''}`}
@@ -147,7 +169,7 @@ export default function SignupPage() {
           </div>
 
           <button type="submit" className={styles["btn-signup"]} disabled={loading}>
-            {loading ? 'Creating Account...' : 'Sign Up'}
+            {loading ? <LoadingDots /> : 'Sign Up'}
           </button>
 
           <div className={styles["signup-footer"]}>

@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { ApiResponse, LoginCredentials } from './types';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -40,16 +41,19 @@ api.interceptors.response.use(
 // Auth Methods
 export const authApi = {
   register: async (data: {
-    name: string;
+    firstName: string;
     email: string;
     password: string;
-    role: 'admin' | 'teacher' | 'student' | 'parent';
+    role: number;
   }): Promise<ApiResponse<{ token: string; user: any }>> => {
+    console.log('Register API called with data:', data);
     const response = await api.post('/auth/register', data);
     return response.data;
   },
 
-  login: async (credentials: LoginCredentials): Promise<ApiResponse<{ token: string; user: any }>> => {
+  login: async (
+    credentials: LoginCredentials
+  ): Promise<ApiResponse<{ token: string; user: any }>> => {
     const response = await api.post('/auth/login', credentials);
     return response.data;
   },
@@ -69,8 +73,11 @@ export const authApi = {
     return response.data;
   },
 
-  changePassword: async (data: { currentPassword: string; newPassword: string }): Promise<ApiResponse> => {
-    const response = await api.put('/auth/change-password', data);
+  changePassword: async (data: {
+    currentPassword: string;
+    newPassword: string;
+  }): Promise<ApiResponse> => {
+    const response = await api.put('/change-password', data);
     return response.data;
   },
 };

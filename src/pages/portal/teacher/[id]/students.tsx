@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Sidebar from '../../../../components/Sidebar';
+import LoadingDots from '../../../../components/LoadingDots';
 import { teacherService } from '../../../../services/teacher.service';
 import { Users, Mail, Phone, Search } from 'lucide-react';
 import styles from './teacher.module.css';
@@ -48,7 +49,7 @@ const TeacherStudents = () => {
             <div className={styles.container}>
                 <Sidebar name="Teacher" role="teacher" />
                 <main className={styles.main}>
-                    <div className={styles.loading}>Loading students...</div>
+                    <div className={styles.loading}><LoadingDots /></div>
                 </main>
             </div>
         );

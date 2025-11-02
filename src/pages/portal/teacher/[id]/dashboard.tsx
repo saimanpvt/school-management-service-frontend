@@ -1,4 +1,4 @@
-Īimport React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import styles from "./teacher.module.css";
 import Sidebar from "../../../../components/Sidebar";

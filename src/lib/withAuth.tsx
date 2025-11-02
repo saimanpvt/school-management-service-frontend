@@ -2,6 +2,7 @@ import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { useAuth } from './auth';
 import { UserRole } from './types';
+import LoadingDots from '../components/LoadingDots';
 import { getDashboardUrl } from '../utils/routing';
 
 export function withAuth<P extends object>(
@@ -27,15 +28,15 @@ export function withAuth<P extends object>(
 
         if (isLoading) {
             return (
-                <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'center', 
-                    alignItems: 'center', 
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
                     height: '100vh',
                     background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)'
                 }}>
                     <div style={{ textAlign: 'center', color: '#64748b' }}>
-                        <div style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Loading...</div>
+                        <div style={{ fontSize: '1.5rem', marginBottom: '1rem' }}><LoadingDots /></div>
                         <div style={{ fontSize: '0.875rem' }}>Please wait while we load your data.</div>
                     </div>
                 </div>

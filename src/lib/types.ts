@@ -2,10 +2,12 @@ export type UserRole = 'admin' | 'teacher' | 'student' | 'parent';
 
 export interface User {
   id: string;
+  uuid: string;
   email: string;
-  name: string;
+  firstName: string;
   role: UserRole;
   avatar?: string;
+  roleName?: string;
 }
 
 export interface AuthState {
