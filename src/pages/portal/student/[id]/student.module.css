@@ -1,44 +1,33 @@
 .container {
   display: flex;
   min-height: 100vh;
-  background-color: #f8f9fa;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
 }
 
 .main {
   flex: 1;
   padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-.main h1 {
-  font-size: 1.875rem;
-  font-weight: 600;
+.pageHeader {
+  margin-bottom: 2rem;
+}
+
+.pageHeader h1 {
+  font-size: 2rem;
+  font-weight: 700;
   color: #111827;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(120deg, #2563eb, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.coursesGrid,
-.assignmentsGrid,
-.gradesContainer,
-.feesContainer,
-.messagesContainer {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-  padding: 1rem 0;
-}
-
-/* Add more specific styles as needed */
-
-/* attendance section */
-.container {
-  display: flex;
-  min-height: 100vh;
-  background-color: #f8f9fa;
-}
-
-.main {
-  flex: 1;
-  padding: 2rem;
+.pageHeader p {
+  color: #64748b;
+  font-size: 1rem;
 }
 
 .loading {
@@ -47,7 +36,7 @@
   align-items: center;
   height: 50vh;
   font-size: 1.2rem;
-  color: #666;
+  color: #64748b;
 }
 
 .error {
@@ -55,119 +44,575 @@
   margin: 1rem 0;
   background-color: #fee2e2;
   border: 1px solid #ef4444;
-  border-radius: 0.375rem;
+  border-radius: 0.5rem;
   color: #dc2626;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.header h1 {
-  font-size: 1.875rem;
-  color: #111827;
-  font-weight: 600;
-}
-
-.classSelect {
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  border: 1px solid #d1d5db;
-  background-color: white;
-  font-size: 1rem;
-  min-width: 200px;
-}
-
-.attendanceGrid {
+/* Courses Styles */
+.coursesGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
 }
 
-.studentCard {
-  background-color: white;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+.courseCard {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
-.studentName {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #111827;
+.courseCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.15);
 }
 
-.attendanceButtons {
+.courseHeader {
   display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.courseIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.courseTitleSection {
+  flex: 1;
+}
+
+.courseTitleSection h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.courseMeta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.teacherInfo,
+.scheduleInfo {
+  display: flex;
+  align-items: center;
   gap: 0.5rem;
 }
 
-.button {
-  flex: 1;
-  padding: 0.5rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  background-color: white;
+.progressSection {
+  margin-top: 0.5rem;
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.progressPercent {
+  font-weight: 600;
+  color: #6366f1;
+}
+
+.progressBar {
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  transition: width 0.3s ease;
+}
+
+.gradeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #f0fdf4;
+  color: #16a34a;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.courseFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.nextLesson {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.nextLesson span:first-child {
+  color: #64748b;
+}
+
+.lessonDate {
+  font-weight: 600;
+  color: #111827;
+}
+
+.viewCourseBtn {
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.button.selected {
-  background-color: #6366f1;
+.viewCourseBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.materialsPreview {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.emptyState {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: #64748b;
+}
+
+.emptyState h3 {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: #111827;
+}
+
+/* Assignments Styles */
+.assignmentsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.assignmentCard {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border-left: 4px solid #6366f1;
+}
+
+.assignmentCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.15);
+}
+
+.assignmentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.assignmentTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.subjectBadge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: #eef2ff;
+  color: #6366f1;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.assignmentMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.dueDate {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.statusBadge.pending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.statusBadge.submitted {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.statusBadge.graded {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.assignmentActions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.actionBtn {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: white;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.actionBtn:hover {
+  background: #f3f4f6;
+}
+
+.actionBtn.primary {
+  background: #6366f1;
   color: white;
   border-color: #6366f1;
 }
 
-.actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  margin-top: 2rem;
+.actionBtn.primary:hover {
+  background: #4f46e5;
 }
 
-.submitButton {
+/* Grades Styles */
+.gradesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.gradeCard {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.courseName {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.gradeTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gradeTable th {
+  text-align: left;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.gradeTable td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.gradeValue {
+  font-weight: 600;
+  color: #6366f1;
+}
+
+.finalGrade {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 2px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.finalGradeLabel {
+  font-weight: 600;
+  color: #111827;
+}
+
+.finalGradeValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #6366f1;
+}
+
+/* Attendance Styles */
+.attendanceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.attendanceCard {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.attendanceHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.attendanceDate {
+  font-weight: 600;
+  color: #111827;
+}
+
+.attendanceStatus {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.attendanceStatus.present {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.attendanceStatus.absent {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.attendanceStatus.late {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+/* Exams Styles */
+.examsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.examCard {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.examCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.15);
+}
+
+.examTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.examMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 1rem;
+}
+
+.examDate,
+.examTime,
+.examLocation {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Fees Styles */
+.feesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.feeCard {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.feeInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.feeTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.feeAmount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #6366f1;
+}
+
+.feeDueDate {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.payBtn {
   padding: 0.75rem 1.5rem;
-  background-color: #6366f1;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: white;
   border: none;
-  border-radius: 0.375rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.submitButton:hover {
-  background-color: #4f46e5;
-}
-
-.submitButton:disabled {
-  background-color: #c7d2fe;
-  cursor: not-allowed;
-}
-
-.cancelButton {
-  padding: 0.75rem 1.5rem;
-  background-color: white;
-  color: #4b5563;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
+  border-radius: 0.5rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.cancelButton:hover {
-  background-color: #f3f4f6;
+.payBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
 }
 
-.cancelButton:disabled {
-  background-color: #f3f4f6;
-  cursor: not-allowed;
+/* Messages Styles */
+.messagesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.messageCard {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 1rem;
+  transition: all 0.2s;
+}
+
+.messageCard:hover {
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1);
+}
+
+.messageAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.messageContent {
+  flex: 1;
+}
+
+.messageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.messageSender {
+  font-weight: 600;
+  color: #111827;
+}
+
+.messageDate {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.messageText {
+  color: #64748b;
+  line-height: 1.6;
 }

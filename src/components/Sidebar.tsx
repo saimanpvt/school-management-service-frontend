@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import styles from "./Sidebar.module.css";
 import {
   Home,
@@ -21,34 +22,51 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ name, role }) => {
-  const menuItems = {
-    student: [
-      { icon: <Home size={18} />, label: "Dashboard", href: "/dashboard" },
-      { icon: <BookOpen size={18} />, label: "Courses", href: "/dashboard/student/[id]/courses" },
-      { icon: <FileText size={18} />, label: "Assignments", href: "/dashboard/student/[id]/assignments" },
-      { icon: <BarChart2 size={18} />, label: "Grades", href: "/dashboard/student/[id]/grades" },
-      { icon: <CalendarDays size={18} />, label: "Attendance", href: "/dashboard/student/[id]/attendance" },
-      { icon: <FileText size={18} />, label: "Exams", href: "/dashboard/student/[id]/exams" },
-      { icon: <DollarSign size={18} />, label: "Fees", href: "/dashboard/student/[id]/fees" },
-      { icon: <MessageSquare size={18} />, label: "Messages", href: "/dashboard/student/[id]/messages" },
-    ],
-    teacher: [
-      { icon: <Home size={18} />, label: "Dashboard", href: "/dashboard" },
-      { icon: <Users size={18} />, label: "Class", href: "/dashboard/teacher/[id]/class" },
-      { icon: <BookOpen size={18} />, label: "Students", href: "/dashboard/teacher/[id]/students" },
-      { icon: <ClipboardList size={18} />, label: "Assignments", href: "/dashboard/teacher/[id]/assignments" },
-      { icon: <CalendarDays size={18} />, label: "Attendance", href: "/dashboard/teacher/[id]/attendance" },
-      { icon: <FileText size={18} />, label: "Exams", href: "/dashboard/teacher/[id]/exams" },
-      { icon: <MessageSquare size={18} />, label: "Messages", href: "/dashboard/teacher/[id]/messages" },
-    ],
-    parent: [
-      { icon: <Home size={18} />, label: "Dashboard", href: "/dashboard" },
-      { icon: <CalendarDays size={18} />, label: "Attendance", href: "/dashboard/parent/[id]/attendance" },
-      { icon: <BarChart2 size={18} />, label: "Progress", href: "/dashboard/parent/[id]/progress" },
-      { icon: <DollarSign size={18} />, label: "Fees", href: "/dashboard/parent/[id]/fees" },
-      { icon: <FileText size={18} />, label: "Exams", href: "/dashboard/parent/[id]/exams" },
-      { icon: <MessageSquare size={18} />, label: "Messages", href: "/dashboard/parent/[id]/messages" },
-    ],
+  const router = useRouter();
+  const { id } = router.query;
+  const currentPath = (router as any).pathname || window?.location?.pathname || '';
+
+  const getMenuItems = () => {
+    const basePath = `/portal/${role}/${id || '[id]'}`;
+    
+    if (role === "student") {
+      return [
+        { icon: <Home size={18} />, label: "Dashboard", href: `${basePath}/dashboard` },
+        { icon: <BookOpen size={18} />, label: "Courses", href: `${basePath}/courses` },
+        { icon: <FileText size={18} />, label: "Assignments", href: `${basePath}/assignments` },
+        { icon: <BarChart2 size={18} />, label: "Grades", href: `${basePath}/grades` },
+        { icon: <CalendarDays size={18} />, label: "Attendance", href: `${basePath}/attendance` },
+        { icon: <FileText size={18} />, label: "Exams", href: `${basePath}/exams` },
+        { icon: <DollarSign size={18} />, label: "Fees", href: `${basePath}/fees` },
+        { icon: <MessageSquare size={18} />, label: "Messages", href: `${basePath}/messages` },
+      ];
+    } else if (role === "teacher") {
+      return [
+        { icon: <Home size={18} />, label: "Dashboard", href: `${basePath}/dashboard` },
+        { icon: <Users size={18} />, label: "Class", href: `${basePath}/class` },
+        { icon: <BookOpen size={18} />, label: "Students", href: `${basePath}/students` },
+        { icon: <ClipboardList size={18} />, label: "Assignments", href: `${basePath}/assignments` },
+        { icon: <CalendarDays size={18} />, label: "Attendance", href: `${basePath}/attendance` },
+        { icon: <FileText size={18} />, label: "Exams", href: `${basePath}/exams` },
+        { icon: <MessageSquare size={18} />, label: "Messages", href: `${basePath}/messages` },
+      ];
+    } else {
+      return [
+        { icon: <Home size={18} />, label: "Dashboard", href: `${basePath}/dashboard` },
+        { icon: <CalendarDays size={18} />, label: "Attendance", href: `${basePath}/attendance` },
+        { icon: <BarChart2 size={18} />, label: "Progress", href: `${basePath}/progress` },
+        { icon: <DollarSign size={18} />, label: "Fees", href: `${basePath}/fees` },
+        { icon: <FileText size={18} />, label: "Exams", href: `${basePath}/exams` },
+        { icon: <MessageSquare size={18} />, label: "Messages", href: `${basePath}/messages` },
+      ];
+    }
+  };
+
+  const menuItems = getMenuItems();
+  
+  const isActive = (href: string) => {
+    return currentPath === href.replace(/\[id\]/g, id as string) || 
+           currentPath.replace(/\/\d+\//g, '/[id]/') === href.replace(/\[id\]/g, '[id]');
   };
 
   return (
@@ -61,17 +79,19 @@ const Sidebar: React.FC<SidebarProps> = ({ name, role }) => {
         </div>
       </div>
       <ul className={styles.menu}>
-        {menuItems[role].map((item, index) => (
-          <li
-            key={index}
-            className={`${styles.menuItem} ${index === 0 ? styles.active : ""}`}
-          >
-            <Link href={item.href} className={styles.link}>
-              <span className={styles.icon}>{item.icon}  {item.label}</span>
-
-            </Link>
-          </li>
-        ))}
+        {menuItems.map((item, index) => {
+          const active = isActive(item.href) || (index === 0 && currentPath.includes('/dashboard'));
+          return (
+            <li
+              key={index}
+              className={`${styles.menuItem} ${active ? styles.active : ""}`}
+            >
+              <Link href={item.href} className={styles.link}>
+                <span className={styles.icon}>{item.icon}  {item.label}</span>
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </aside>
   );

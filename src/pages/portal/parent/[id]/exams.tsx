@@ -1,28 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Sidebar from '../../../../components/Sidebar';
-import { FileText, Plus, Calendar, Clock, MapPin, Users } from 'lucide-react';
-import styles from './teacher.module.css';
+import { FileText, Calendar, Clock, MapPin, TrendingUp } from 'lucide-react';
+import styles from './parent.module.css';
 
 interface Exam {
     id: string;
     title: string;
     subject: string;
-    classId: string;
-    className: string;
+    childId: string;
+    childName: string;
     date: string;
     time: string;
     duration: string;
     location: string;
-    totalStudents: number;
-    status: 'upcoming' | 'completed' | 'ongoing';
+    status: 'upcoming' | 'completed';
+    grade?: string;
 }
 
-const TeacherExams = () => {
+const ParentExams = () => {
     const router = useRouter();
     const { id } = router.query;
     const [exams, setExams] = useState<Exam[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedChild, setSelectedChild] = useState<string>('all');
 
     useEffect(() => {
         if (id) {
@@ -33,27 +34,26 @@ const TeacherExams = () => {
                         id: '1',
                         title: 'Mathematics Midterm',
                         subject: 'Mathematics',
-                        classId: 'c1',
-                        className: 'Grade 10A',
+                        childId: 'c1',
+                        childName: 'John Doe',
                         date: '2024-02-15',
                         time: '09:00 AM',
                         duration: '2 hours',
                         location: 'Hall A',
-                        totalStudents: 30,
                         status: 'upcoming'
                     },
                     {
                         id: '2',
-                        title: 'Science Quiz',
+                        title: 'Science Final',
                         subject: 'Science',
-                        classId: 'c2',
-                        className: 'Grade 9B',
+                        childId: 'c1',
+                        childName: 'John Doe',
                         date: '2024-01-20',
-                        time: '11:00 AM',
-                        duration: '1 hour',
-                        location: 'Room 201',
-                        totalStudents: 25,
-                        status: 'completed'
+                        time: '10:00 AM',
+                        duration: '3 hours',
+                        location: 'Hall B',
+                        status: 'completed',
+                        grade: 'A'
                     }
                 ];
                 setExams(mockData);
@@ -70,10 +70,15 @@ const TeacherExams = () => {
         });
     };
 
+    const children = Array.from(new Set(exams.map(e => ({ id: e.childId, name: e.childName }))));
+    const filteredExams = selectedChild === 'all' 
+        ? exams 
+        : exams.filter(e => e.childId === selectedChild);
+
     if (loading) {
         return (
             <div className={styles.container}>
-                <Sidebar name="Teacher" role="teacher" />
+                <Sidebar name="Parent" role="parent" />
                 <main className={styles.main}>
                     <div className={styles.loading}>Loading exams...</div>
                 </main>
@@ -83,25 +88,30 @@ const TeacherExams = () => {
 
     return (
         <div className={styles.container}>
-            <Sidebar name="Teacher" role="teacher" />
+            <Sidebar name="Parent" role="parent" />
             <main className={styles.main}>
                 <header className={styles.header}>
                     <div>
-                        <h1>Manage Exams</h1>
-                        <p>Schedule and manage exams for your classes</p>
+                        <h1>Children&apos;s Exams</h1>
+                        <p>View exam schedules and results for your children</p>
                     </div>
-                    <button
-                        className={styles.createBtn}
-                        onClick={() => router.push(`/portal/teacher/${id}/exams/create`)}
-                    >
-                        <Plus size={18} />
-                        Create Exam
-                    </button>
+                    {children.length > 1 && (
+                        <select
+                            value={selectedChild}
+                            onChange={(e) => setSelectedChild(e.target.value)}
+                            className={styles.childSelect}
+                        >
+                            <option value="all">All Children</option>
+                            {children.map(child => (
+                                <option key={child.id} value={child.id}>{child.name}</option>
+                            ))}
+                        </select>
+                    )}
                 </header>
 
                 <div className={styles.examsContainer}>
-                    {exams.length > 0 ? (
-                        exams.map(exam => (
+                    {filteredExams.length > 0 ? (
+                        filteredExams.map(exam => (
                             <div key={exam.id} className={styles.examCard}>
                                 <div className={styles.examHeader}>
                                     <div className={styles.examIcon}>
@@ -110,12 +120,9 @@ const TeacherExams = () => {
                                     <div className={styles.examTitleSection}>
                                         <h3>{exam.title}</h3>
                                         <div className={styles.examMeta}>
-                                            <span className={styles.classBadge}>
-                                                <Users size={14} />
-                                                {exam.className}
-                                            </span>
+                                            <span className={styles.childName}>{exam.childName}</span>
                                             <span className={styles.subjectBadge}>{exam.subject}</span>
-                                            <span className={styles.statusBadge} data-status={exam.status}>
+                                            <span className={`${styles.statusBadge} ${styles[exam.status]}`}>
                                                 {exam.status.charAt(0).toUpperCase() + exam.status.slice(1)}
                                             </span>
                                         </div>
@@ -134,41 +141,20 @@ const TeacherExams = () => {
                                         <MapPin size={16} />
                                         <span>{exam.location}</span>
                                     </div>
-                                    <div className={styles.examDetailItem}>
-                                        <Users size={16} />
-                                        <span>{exam.totalStudents} Students</span>
+                                </div>
+                                {exam.grade && (
+                                    <div className={styles.gradeSection}>
+                                        <TrendingUp size={16} />
+                                        <span>Grade: <strong>{exam.grade}</strong></span>
                                     </div>
-                                </div>
-                                <div className={styles.examActions}>
-                                    <button
-                                        className={styles.primaryBtn}
-                                        onClick={() => router.push(`/portal/teacher/${id}/exams/${exam.id}`)}
-                                    >
-                                        View Details
-                                    </button>
-                                    {exam.status === 'upcoming' && (
-                                        <button
-                                            className={styles.secondaryBtn}
-                                            onClick={() => router.push(`/portal/teacher/${id}/exams/${exam.id}/edit`)}
-                                        >
-                                            Edit Exam
-                                        </button>
-                                    )}
-                                </div>
+                                )}
                             </div>
                         ))
                     ) : (
                         <div className={styles.emptyState}>
                             <FileText size={48} />
-                            <h3>No exams scheduled</h3>
-                            <p>Create your first exam to get started</p>
-                            <button
-                                className={styles.createBtn}
-                                onClick={() => router.push(`/portal/teacher/${id}/exams/create`)}
-                            >
-                                <Plus size={18} />
-                                Create Exam
-                            </button>
+                            <h3>No exams found</h3>
+                            <p>{selectedChild !== 'all' ? 'No exams for this child' : 'No exams scheduled'}</p>
                         </div>
                     )}
                 </div>
@@ -177,4 +163,5 @@ const TeacherExams = () => {
     );
 };
 
-export default TeacherExams;
+export default ParentExams;
+
