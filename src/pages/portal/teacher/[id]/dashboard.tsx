@@ -1,0 +1,190 @@
+Īimport React, { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/router";
+import styles from "./teacher.module.css";
+import Sidebar from "../../../../components/Sidebar";
+import { teacherService, TeacherDashboardStats } from "../../../../services/teacher.service";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+
+const TeacherDashboard = () => {
+    const router = useRouter();
+    const { id } = router.query;
+    const [stats, setStats] = useState<TeacherDashboardStats | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    const loadDashboardStats = useCallback(async () => {
+        if (!id) return;
+
+        try {
+            setLoading(true);
+            const data = await teacherService.getDashboardStats(id as string);
+            setStats(data);
+        } catch (err) {
+            console.error('Error loading dashboard stats:', err);
+            setError("Failed to load dashboard data");
+        } finally {
+            setLoading(false);
+        }
+    }, [id]);
+
+    useEffect(() => {
+        loadDashboardStats();
+    }, [loadDashboardStats]);
+
+    const renderStatsGrid = () => (
+        <div className={styles.statsGrid}>
+            <div className={styles.statsCard}>
+                <h3>Active Classes</h3>
+                <p className={styles.statNumber}>{stats?.activeClasses || 0}</p>
+            </div>
+            <div className={styles.statsCard}>
+                <h3>Total Students</h3>
+                <p className={styles.statNumber}>{stats?.totalStudents || 0}</p>
+            </div>
+            <div className={styles.statsCard}>
+                <h3>Assignments to Grade</h3>
+                <p className={styles.statNumber}>{stats?.quickStats?.assignmentsToGrade || 0}</p>
+            </div>
+            <div className={styles.statsCard}>
+                <h3>Today&apos;s Attendance</h3>
+                <p className={styles.statNumber}>{stats?.quickStats?.todayAttendance || 0}%</p>
+            </div>
+        </div>
+    );
+
+    const renderSchedule = () => (
+        <section className={styles.scheduleSection}>
+            <h2 className={styles.sectionTitle}>Today&apos;s Schedule</h2>
+            <div className={styles.scheduleGrid}>
+                {stats?.upcomingSchedule?.length ? (
+                    stats.upcomingSchedule.map((schedule) => (
+                        <div key={schedule.id} className={styles.scheduleCard}>
+                            <p className={styles.scheduleTime}>
+                                {schedule.startTime} - {schedule.endTime}
+                            </p>
+                            <h4 className={styles.className}>{schedule.className}</h4>
+                            <span className={`${styles.scheduleType} ${styles[schedule.type]}`}>
+                                {schedule.type}
+                            </span>
+                        </div>
+                    ))
+                ) : (
+                    <p>No scheduled classes for today</p>
+                )}
+            </div>
+        </section>
+    );
+
+    const renderPerformanceChart = () => (
+        <section className={styles.performanceSection}>
+            <h2 className={styles.sectionTitle}>Class Performance Overview</h2>
+            <div className={styles.chartContainer}>
+                <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={stats?.classPerformance || []}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="className" />
+                        <YAxis />
+                        <Tooltip />
+                        <Line
+                            type="monotone"
+                            dataKey="averageScore"
+                            stroke="#6366f1"
+                            strokeWidth={2}
+                        />
+                    </LineChart>
+                </ResponsiveContainer>
+            </div>
+        </section>
+    );
+
+    const renderActivities = () => (
+        <section className={styles.activitySection}>
+            <h2 className={styles.sectionTitle}>Recent Activities</h2>
+            <div className={styles.activityList}>
+                {stats?.recentActivities?.length ? (
+                    stats.recentActivities.map((activity) => (
+                        <div key={activity.id} className={styles.activityItem}>
+                            <div className={`${styles.activityIcon} ${styles[activity.type]}`}>
+                                {activity.type === 'grade' && '📝'}
+                                {activity.type === 'attendance' && '📊'}
+                                {activity.type === 'assignment' && '📚'}
+                                {activity.type === 'message' && '💬'}
+                            </div>
+                            <div className={styles.activityContent}>
+                                <p className={styles.activityTitle}>{activity.description}</p>
+                                <p className={styles.activityMeta}>
+                                    {activity.date} {activity.className && `• ${activity.className}`}
+                                </p>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <p>No recent activities</p>
+                )}
+            </div>
+        </section>
+    );
+
+    const renderQuickActions = () => {
+        const actions = [
+            { icon: '📊', label: 'Take Attendance', path: '/attendance' },
+            { icon: '📝', label: 'Enter Grades', path: '/grades' },
+            { icon: '📚', label: 'Create Assignment', path: '/assignments' },
+            { icon: '💬', label: 'Send Messages', path: '/messages' }
+        ];
+
+        const handleActionClick = (path: string) => {
+            router.push(`/teacher/${id}${path}`);
+        };
+
+        return (
+            <section className={styles.quickActions}>
+                <h2 className={styles.sectionTitle}>Quick Actions</h2>
+                <div className={styles.actionGrid}>
+                    {actions.map(action => (
+                        <button
+                            key={action.path}
+                            className={styles.actionButton}
+                            onClick={() => handleActionClick(action.path)}
+                        >
+                            <span className={styles.actionIcon}>{action.icon}</span>
+                            <span className={styles.actionLabel}>{action.label}</span>
+                        </button>
+                    ))}
+                </div>
+            </section>
+        );
+    };
+
+    return (
+        <div className={styles.container}>
+            <Sidebar name={stats?.teacherName || "Teacher"} role="teacher" />
+            <main className={styles.main}>
+                {loading ? (
+                    <div className={styles.loading}>Loading...</div>
+                ) : error ? (
+                    <div className={styles.error}>{error}</div>
+                ) : (
+                    <>
+                        <header className={styles.header}>
+                            <h2>Welcome back, {stats?.teacherName || "Teacher"}! 👋</h2>
+                            <p>Manage your classes and students efficiently</p>
+                        </header>
+
+                        {renderStatsGrid()}
+
+                        <div className={styles.gridLayout}>
+                            {renderSchedule()}
+                            {renderPerformanceChart()}
+                        </div>
+
+                        {renderActivities()}
+                        {renderQuickActions()}
+                    </>
+                )}
+            </main>
+        </div>
+    );
+};
+
+export default TeacherDashboard;

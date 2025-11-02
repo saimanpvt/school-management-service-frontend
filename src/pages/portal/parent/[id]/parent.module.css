@@ -1,0 +1,196 @@
+.container {
+  @apply flex min-h-screen bg-gray-50;
+}
+
+.main {
+  @apply flex-1 p-8;
+}
+
+.header {
+  @apply mb-8;
+}
+
+.header h2 {
+  @apply text-3xl font-bold text-gray-800;
+}
+
+.header p {
+  @apply text-gray-600 mt-2;
+}
+
+.childrenSelector {
+  @apply flex gap-4 mb-8 overflow-x-auto pb-2;
+}
+
+.childButton {
+  @apply px-6 py-3 rounded-lg text-gray-700 font-medium transition-colors;
+}
+
+.childButton.active {
+  @apply bg-indigo-500 text-white;
+}
+
+.statsGrid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8;
+}
+
+.statsCard {
+  @apply bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow;
+}
+
+.statsCard h3 {
+  @apply text-gray-600 text-sm font-medium mb-2;
+}
+
+.statNumber {
+  @apply text-2xl font-bold text-indigo-600;
+}
+
+.gridLayout {
+  @apply grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8;
+}
+
+.sectionTitle {
+  @apply text-xl font-semibold text-gray-800 mb-4;
+}
+
+.financialSection,
+.calendarSection {
+  @apply bg-white rounded-xl p-6 shadow-sm;
+}
+
+.financeCard {
+  @apply flex justify-between items-center;
+}
+
+.paymentInfo h3 {
+  @apply text-gray-600 text-sm font-medium mb-1;
+}
+
+.amount {
+  @apply text-3xl font-bold text-gray-900;
+}
+
+.dueDate {
+  @apply text-sm text-gray-500 mt-1;
+}
+
+.status {
+  @apply inline-flex px-3 py-1 rounded-full text-sm font-medium mt-2;
+}
+
+.status.paid {
+  @apply bg-green-100 text-green-800;
+}
+
+.status.pending {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.status.overdue {
+  @apply bg-red-100 text-red-800;
+}
+
+.payButton {
+  @apply bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors;
+}
+
+.eventsList {
+  @apply space-y-4;
+}
+
+.eventCard {
+  @apply flex items-center justify-between p-4 rounded-lg border border-gray-200;
+}
+
+.eventCard.holiday {
+  @apply bg-green-50 border-green-200;
+}
+
+.eventCard.exam {
+  @apply bg-yellow-50 border-yellow-200;
+}
+
+.eventCard.activity {
+  @apply bg-blue-50 border-blue-200;
+}
+
+.eventDate {
+  @apply text-sm text-gray-500;
+}
+
+.eventTitle {
+  @apply text-gray-800 font-medium;
+}
+
+.eventType {
+  @apply text-xs px-2 py-1 rounded-full capitalize;
+}
+
+.activitySection {
+  @apply bg-white rounded-xl p-6 shadow-sm mb-8;
+}
+
+.activityList {
+  @apply space-y-4;
+}
+
+.activityItem {
+  @apply flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors;
+}
+
+.activityIcon {
+  @apply w-10 h-10 rounded-full flex items-center justify-center text-white text-xl;
+}
+
+.activityIcon.grade {
+  @apply bg-blue-500;
+}
+
+.activityIcon.attendance {
+  @apply bg-green-500;
+}
+
+.activityIcon.behavior {
+  @apply bg-purple-500;
+}
+
+.activityIcon.message {
+  @apply bg-yellow-500;
+}
+
+.activityContent {
+  @apply flex-1;
+}
+
+.activityTitle {
+  @apply text-gray-800 font-medium;
+}
+
+.activityMeta {
+  @apply text-sm text-gray-500 mt-1;
+}
+
+.quickActions {
+  @apply bg-white rounded-xl p-6 shadow-sm;
+}
+
+.quickActionGrid {
+  @apply grid grid-cols-2 md:grid-cols-4 gap-4;
+}
+
+.actionButton {
+  @apply flex flex-col items-center p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors;
+}
+
+.actionIcon {
+  @apply text-2xl mb-2;
+}
+
+.actionLabel {
+  @apply text-sm font-medium text-gray-700;
+}
+
+.loading {
+  @apply flex justify-center items-center h-full text-gray-600;
+}
