@@ -1,8 +1,58 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/router';
+import { authApi } from '../../lib/api';
+import Link from 'next/link';
 import styles from './signup.module.css';
 
 export default function SignupPage() {
-  const [userType, setUserType] = useState('student');
+  const router = useRouter();
+  const [userType, setUserType] = useState<'student' | 'teacher' | 'parent'>('student');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await authApi.register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: userType,
+      });
+
+      if (response.success) {
+        // Redirect to login
+        const routerInstance = router as any;
+        routerInstance?.push('/login');
+      } else {
+        setError(response.error || 'Registration failed. Please try again.');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={styles["signup-container"]}>
@@ -12,7 +62,13 @@ export default function SignupPage() {
           <p className={styles["signup-subtitle"]}>Join EduConnect community</p>
         </div>
 
-        <form className={styles["signup-form"]}>
+        {error && (
+          <div className={styles["error-message"]}>
+            {error}
+          </div>
+        )}
+
+        <form className={styles["signup-form"]} onSubmit={handleSubmit}>
           <div className={styles["form-group"]}>
             <label className={styles["form-label"]}>I am a</label>
             <div className={styles["user-type-toggle"]}>
@@ -30,16 +86,14 @@ export default function SignupPage() {
               >
                 Student
               </button>
+              <button
+                type="button"
+                className={`${styles["toggle-btn"]} ${userType === 'parent' ? styles["active"] : ''}`}
+                onClick={() => setUserType('parent')}
+              >
+                Parent
+              </button>
             </div>
-          </div>
-
-          <div className={styles["form-group"]}>
-            <label className={styles["form-label"]}>Parent</label>
-            <input
-              type="text"
-              className={styles["form-input"]}
-              placeholder="***"
-            />
           </div>
 
           <div className={styles["form-group"]}>
@@ -47,7 +101,10 @@ export default function SignupPage() {
             <input
               type="text"
               className={styles["form-input"]}
-              placeholder=""
+              placeholder="Enter your full name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
             />
           </div>
 
@@ -56,7 +113,10 @@ export default function SignupPage() {
             <input
               type="email"
               className={styles["form-input"]}
-              placeholder=""
+              placeholder="Enter your email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
             />
           </div>
 
@@ -65,17 +125,34 @@ export default function SignupPage() {
             <input
               type="password"
               className={styles["form-input"]}
-              placeholder=""
+              placeholder="Create a password"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              required
+              minLength={6}
             />
           </div>
 
-          <button type="submit" className={styles["btn-signup"]}>
-            Sign Up
+          <div className={styles["form-group"]}>
+            <label className={styles["form-label"]}>Confirm Password</label>
+            <input
+              type="password"
+              className={styles["form-input"]}
+              placeholder="Confirm your password"
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+              required
+              minLength={6}
+            />
+          </div>
+
+          <button type="submit" className={styles["btn-signup"]} disabled={loading}>
+            {loading ? 'Creating Account...' : 'Sign Up'}
           </button>
 
           <div className={styles["signup-footer"]}>
             <span className={styles["footer-text"]}>Already have an account? </span>
-            <a href="#" className={styles["footer-link"]}>Login</a>
+            <Link href="/login" className={styles["footer-link"]}>Login</Link>
           </div>
         </form>
       </div>

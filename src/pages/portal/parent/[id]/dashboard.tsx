@@ -95,7 +95,10 @@ const ParentDashboard = () => {
                 </div>
                 <button
                     className={styles.payButton}
-                    onClick={() => router.push(`/dashboard/parent/${id}/payments`)}
+                    onClick={() => {
+                        const routerInstance = router as any;
+                        routerInstance?.push(`/portal/parent/${id}/fees`);
+                    }}
                 >
                     Make Payment
                 </button>
@@ -134,13 +137,16 @@ const ParentDashboard = () => {
                 {[
                     { icon: '💬', label: 'Message Teachers', path: 'messages' },
                     { icon: '📊', label: 'View Attendance', path: 'attendance' },
-                    { icon: '📝', label: 'View Grades', path: 'grades' },
-                    { icon: '📅', label: 'View Schedule', path: 'schedule' }
+                    { icon: '📈', label: 'View Progress', path: 'progress' },
+                    { icon: '📅', label: 'View Exams', path: 'exams' }
                 ].map(action => (
                     <button
                         key={action.path}
                         className={styles.actionButton}
-                        onClick={() => router.push(`/dashboard/parent/${id}/${action.path}`)}
+                        onClick={() => {
+                            const routerInstance = router as any;
+                            routerInstance?.push(`/portal/parent/${id}/${action.path}`);
+                        }}
                     >
                         <span className={styles.actionIcon}>{action.icon}</span>
                         <span className={styles.actionLabel}>{action.label}</span>
@@ -189,87 +195,6 @@ const ParentDashboard = () => {
                 )}
             </main>
         </div>
-    );
-};
-
-export default ParentDashboard;
-
-<div className={styles.childrenSelector}>
-    {stats?.childrenStats.map(child => (
-        <button
-            key={child.id}
-            className={`${styles.childButton} ${selectedChild === child.id ? styles.active : ''}`}
-            onClick={() => setSelectedChild(child.id)}
-        >
-            {child.name}
-        </button>
-    ))}
-</div>
-
-{
-    getSelectedChildStats() && (
-        <div className={styles.statsGrid}>
-            <div className={styles.statsCard}>
-                <h3>Current Average</h3>
-                <p className={styles.statNumber}>{getSelectedChildStats()?.currentAverage}%</p>
-            </div>
-            <div className={styles.statsCard}>
-                <h3>Attendance</h3>
-                <p className={styles.statNumber}>{getSelectedChildStats()?.attendance}%</p>
-            </div>
-            <div className={styles.statsCard}>
-                <h3>Upcoming Tests</h3>
-                <p className={styles.statNumber}>{getSelectedChildStats()?.upcomingTests}</p>
-            </div>
-            <div className={styles.statsCard}>
-                <h3>Pending Assignments</h3>
-                <p className={styles.statNumber}>{getSelectedChildStats()?.pendingAssignments}</p>
-            </div>
-        </div>
-    )
-}
-
-                <section className={styles.quickLinks}>
-                    <h3>Quick Links</h3>
-                    <div className={styles.linkGrid}>
-                        <Link href={`/dashboard/parent/${id}/children`}>
-                            <div className={styles.linkCard}>
-                                <h4>My Children</h4>
-                                <p>View academic progress</p>
-                            </div>
-                        </Link>
-                        <Link href={`/dashboard/parent/${id}/attendance`}>
-                            <div className={styles.linkCard}>
-                                <h4>Attendance</h4>
-                                <p>Check attendance records</p>
-                            </div>
-                        </Link>
-                        <Link href={`/dashboard/parent/${id}/fees`}>
-                            <div className={styles.linkCard}>
-                                <h4>Fees</h4>
-                                <p>Manage fee payments</p>
-                            </div>
-                        </Link>
-                        <Link href={`/dashboard/parent/${id}/messages`}>
-                            <div className={styles.linkCard}>
-                                <h4>Messages</h4>
-                                <p>Communicate with teachers</p>
-                            </div>
-                        </Link>
-                    </div>
-                </section>
-
-                <section className={styles.activity}>
-                    <h3>Recent Updates</h3>
-                    <ul>
-                        <li>📊 John&apos;s Math test results available</li>
-                        <li>📅 Parent-Teacher meeting next week</li>
-                        <li>💬 New message from Class Teacher</li>
-                        <li>📝 Sarah&apos;s Science project due soon</li>
-                    </ul>
-                </section>
-            </main >
-        </div >
     );
 };
 

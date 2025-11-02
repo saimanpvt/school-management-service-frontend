@@ -159,7 +159,10 @@ const StudentMessages = () => {
                             cursor: 'pointer',
                             transition: 'all 0.2s'
                         }}
-                        onClick={() => router.push(`/portal/student/${id}/messages/compose`)}
+                        onClick={() => {
+                            const routerInstance = router as any;
+                            routerInstance?.push(`/portal/student/${id}/messages/compose`);
+                        }}
                     >
                         <Send size={18} />
                         Compose Message

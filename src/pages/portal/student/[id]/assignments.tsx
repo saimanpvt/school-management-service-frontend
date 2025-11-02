@@ -111,14 +111,20 @@ const StudentAssignments = () => {
                                         {assignment.status === 'pending' && (
                                             <button 
                                                 className={`${styles.actionBtn} ${styles.primary}`}
-                                                onClick={() => router.push(`/portal/student/${id}/assignments/${assignment.id}`)}
+                                                onClick={() => {
+                                                    const routerInstance = router as any;
+                                                    routerInstance?.push(`/portal/student/${id}/assignments/${assignment.id}`);
+                                                }}
                                             >
                                                 Submit Assignment
                                             </button>
                                         )}
                                         <button 
                                             className={styles.actionBtn}
-                                            onClick={() => router.push(`/portal/student/${id}/assignments/${assignment.id}`)}
+                                            onClick={() => {
+                                                const routerInstance = router as any;
+                                                routerInstance?.push(`/portal/student/${id}/assignments/${assignment.id}`);
+                                            }}
                                         >
                                             View Details
                                         </button>

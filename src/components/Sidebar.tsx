@@ -12,9 +12,10 @@ import {
   ClipboardList,
   DollarSign,
   CalendarDays,
+  Settings,
 } from "lucide-react";
 
-type Role = "student" | "teacher" | "parent";
+type Role = "student" | "teacher" | "parent" | "admin";
 
 interface SidebarProps {
   name: string;
@@ -48,6 +49,16 @@ const Sidebar: React.FC<SidebarProps> = ({ name, role }) => {
         { icon: <ClipboardList size={18} />, label: "Assignments", href: `${basePath}/assignments` },
         { icon: <CalendarDays size={18} />, label: "Attendance", href: `${basePath}/attendance` },
         { icon: <FileText size={18} />, label: "Exams", href: `${basePath}/exams` },
+        { icon: <MessageSquare size={18} />, label: "Messages", href: `${basePath}/messages` },
+      ];
+    } else if (role === "admin") {
+      return [
+        { icon: <Home size={18} />, label: "Dashboard", href: `${basePath}/dashboard` },
+        { icon: <Users size={18} />, label: "Students", href: `${basePath}/students` },
+        { icon: <BookOpen size={18} />, label: "Teachers", href: `${basePath}/teachers` },
+        { icon: <FileText size={18} />, label: "Courses", href: `${basePath}/courses` },
+        { icon: <ClipboardList size={18} />, label: "Exams", href: `${basePath}/exams` },
+        { icon: <DollarSign size={18} />, label: "Fees", href: `${basePath}/fees` },
         { icon: <MessageSquare size={18} />, label: "Messages", href: `${basePath}/messages` },
       ];
     } else {

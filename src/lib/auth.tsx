@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { api } from './api';
+import { authApi, setToken, clearToken } from './api';
 import { AuthState, User } from './types';
 
 interface AuthContextType extends AuthState {
@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
-            api.setToken(token);
+            setToken(token);
             loadUser();
         } else {
             setState(prev => ({ ...prev, isLoading: false }));
@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const loadUser = async () => {
         try {
-            const response = await api.getProfile();
+            const response = await authApi.getProfile();
             if (response.success && response.data) {
                 setState({
                     user: response.data,
@@ -52,30 +52,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const login = async (email: string, password: string) => {
         try {
-            const response = await api.login({ email, password });
+            const response = await authApi.login({ email, password });
             if (response.success && response.data) {
                 const { token, user } = response.data;
-                localStorage.setItem('token', token);
-                api.setToken(token);
+                setToken(token);
                 setState({
                     user,
                     token,
                     isAuthenticated: true,
                     isLoading: false,
                 });
+                // Store user in window for immediate access
+                if (typeof window !== 'undefined') {
+                    (window as any).__authUser = user;
+                }
                 return true;
             }
             return false;
-        } catch {
-            return false;
+        } catch (error: any) {
+            console.error('Login error:', error);
+            throw error;
         }
     };
 
     const handleLogout = async () => {
-        localStorage.removeItem('token');
-        api.clearToken();
-        setState(initialState);
-        await router.push('/login');
+        try {
+            await authApi.logout();
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
+            clearToken();
+            setState(initialState);
+            const routerInstance = router as any;
+            routerInstance?.push('/login');
+        }
     };
 
     const updateUser = (user: User) => {

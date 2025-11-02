@@ -95,7 +95,10 @@ const StudentCourses = () => {
                                     </div>
                                     <button 
                                         className={styles.viewCourseBtn}
-                                        onClick={() => router.push(`/portal/student/${id}/courses/${course.id}`)}
+                                        onClick={() => {
+                                            const routerInstance = router as any;
+                                            routerInstance?.push(`/portal/student/${id}/courses/${course.id}`);
+                                        }}
                                     >
                                         View Details
                                     </button>
