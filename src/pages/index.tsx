@@ -120,7 +120,6 @@ export default function EduConnectLanding() {
           </div>
           <div className={styles["navbar-actions"]}>
             <a href="/login" className={styles["btn-primary"]}>Login</a>
-            <a href="/signup" className={styles["btn-primary"]}>Sign Up</a>
           </div>
           <button className={styles["mobile-menu-btn"]} onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             {mobileMenuOpen ? <X /> : <Menu />}
@@ -130,7 +129,6 @@ export default function EduConnectLanding() {
           <div className={styles["mobile-menu"]}>
             <div className={styles["mobile-menu-content"]}>
               <a href="/login" className={styles["btn-primary"]}>Login</a>
-              <a href="/signup" className={styles["btn-primary"]}>Sign Up</a>
             </div>
           </div>
         )}

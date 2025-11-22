@@ -1,9 +1,12 @@
+
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Sidebar from '../../../../components/Sidebar';
 import { apiServices } from '../../../../lib/api';
 import { GraduationCap, Plus, Search, Edit, Trash2 } from 'lucide-react';
+import UserForm, { UserFormData } from '../../../../components/UserForm';
 import styles from './admin.module.css';
+
 
 const AdminTeachers = () => {
     const router = useRouter();
@@ -11,6 +14,35 @@ const AdminTeachers = () => {
     const [teachers, setTeachers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [showAddForm, setShowAddForm] = useState(false);
+    const [generatedPassword, setGeneratedPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [formData, setFormData] = useState<UserFormData>({
+        email: '',
+        firstName: '',
+        lastName: '',
+        role: '2', // Teacher
+        phone: '',
+        userID: '',
+        address: {
+            street: '',
+            city: '',
+            state: '',
+            zipCode: '',
+            country: ''
+        },
+        dob: '',
+        gender: '',
+        bloodGroup: '',
+        subject: '',
+        qualification: '',
+        experience: ''
+    });
+    const roleOptions = [
+        { value: '2', label: 'Teacher', color: '#3b82f6' }
+    ];
+    const genderOptions = ['Male', 'Female', 'Other'];
+    const bloodGroupOptions = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
     useEffect(() => {
         if (id) {
@@ -29,15 +61,17 @@ const AdminTeachers = () => {
     }, [id]);
 
     const filteredTeachers = teachers.filter(teacher =>
-        teacher.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        teacher.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    (teacher.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        teacher.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        teacher.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        teacher.userID?.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     const handleDelete = async (teacherId: string) => {
         if (confirm('Are you sure you want to delete this teacher?')) {
             try {
                 await apiServices.teachers.delete(teacherId);
-                setTeachers(teachers.filter(t => t.id !== teacherId));
+                setTeachers(teachers.filter(t => t._id !== teacherId));
             } catch (error) {
                 console.error('Error deleting teacher:', error);
                 alert('Failed to delete teacher');
@@ -45,21 +79,68 @@ const AdminTeachers = () => {
         }
     };
 
-    if (loading) {
-        return (
-            <div className={styles.container}>
-                <Sidebar name="Admin" role="admin" />
-                <main className={styles.main}>
-                    <div className={styles.loading}>Loading teachers...</div>
-                </main>
-            </div>
-        );
-    }
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!generatedPassword) {
+            alert('Please generate a password first');
+            return;
+        }
+        try {
+            const userData = {
+                ...formData,
+                password: generatedPassword,
+                role: 2 // Teacher
+            };
+            const response = await apiServices.teachers.create(userData);
+            if (response.success) {
+                // Optionally send credentials email if needed (implement if required)
+                alert('Teacher created successfully!');
+                setTeachers([...teachers, response.data]);
+                setShowAddForm(false);
+                setFormData({
+                    email: '',
+                    firstName: '',
+                    lastName: '',
+                    role: '2',
+                    phone: '',
+                    userID: '',
+                    address: { street: '', city: '', state: '', zipCode: '', country: '' },
+                    dob: '',
+                    gender: '',
+                    bloodGroup: '',
+                    subject: '',
+                    qualification: '',
+                    experience: ''
+                });
+                setGeneratedPassword('');
+                setShowPassword(false);
+            }
+        } catch (error) {
+            console.error('Error creating teacher:', error);
+            alert('Failed to create teacher');
+        }
+    };
+
 
     return (
         <div className={styles.container}>
             <Sidebar name="Admin" role="admin" />
             <main className={styles.main}>
+                {showAddForm && (
+                    <UserForm
+                        formData={formData}
+                        setFormData={setFormData}
+                        onSubmit={handleSubmit}
+                        onClose={() => setShowAddForm(false)}
+                        generatedPassword={generatedPassword}
+                        setGeneratedPassword={setGeneratedPassword}
+                        showPassword={showPassword}
+                        setShowPassword={setShowPassword}
+                        roleOptions={roleOptions}
+                        genderOptions={genderOptions}
+                        bloodGroupOptions={bloodGroupOptions}
+                    />
+                )}
                 <header className={styles.pageHeader}>
                     <div>
                         <h1>Manage Teachers</h1>
@@ -76,7 +157,10 @@ const AdminTeachers = () => {
                                 className={styles.searchInput}
                             />
                         </div>
-                        <button className={styles.createBtn}>
+                        <button
+                            className={styles.createBtn}
+                            onClick={() => setShowAddForm(true)}
+                        >
                             <Plus size={18} />
                             Add Teacher
                         </button>
@@ -87,9 +171,10 @@ const AdminTeachers = () => {
                     <table className={styles.dataTable}>
                         <thead>
                             <tr>
+                                <th>User ID</th>
                                 <th>Name</th>
                                 <th>Email</th>
-                                <th>Department</th>
+                                <th>Subject</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -97,23 +182,20 @@ const AdminTeachers = () => {
                         <tbody>
                             {filteredTeachers.length > 0 ? (
                                 filteredTeachers.map(teacher => (
-                                    <tr key={teacher.id}>
-                                        <td>{teacher.name || 'N/A'}</td>
+                                    <tr key={teacher._id}>
+                                        <td>{teacher.userID || 'N/A'}</td>
+                                        <td>{teacher.firstName} {teacher.lastName}</td>
                                         <td>{teacher.email || 'N/A'}</td>
-                                        <td>{teacher.department || 'N/A'}</td>
-                                        <td>
-                                            <span className={styles.statusBadge}>
-                                                {teacher.status || 'Active'}
-                                            </span>
-                                        </td>
+                                        <td>{teacher.subject || 'N/A'}</td>
+                                        <td>{teacher.isActive ? 'Active' : 'Inactive'}</td>
                                         <td>
                                             <div className={styles.actionButtons}>
                                                 <button className={styles.editBtn}>
                                                     <Edit size={16} />
                                                 </button>
-                                                <button 
+                                                <button
                                                     className={styles.deleteBtn}
-                                                    onClick={() => handleDelete(teacher.id)}
+                                                    onClick={() => handleDelete(teacher._id)}
                                                 >
                                                     <Trash2 size={16} />
                                                 </button>
@@ -123,7 +205,7 @@ const AdminTeachers = () => {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={5} className={styles.emptyState}>
+                                    <td colSpan={6} className={styles.emptyState}>
                                         <GraduationCap size={48} />
                                         <h3>No teachers found</h3>
                                         <p>{searchTerm ? 'Try a different search term' : 'No teachers in the system'}</p>

@@ -1,13 +1,26 @@
 export type UserRole = 'admin' | 'teacher' | 'student' | 'parent';
 
 export interface User {
-  id: string;
   uuid: string;
+  id: string;
   email: string;
+  userID: string;
   firstName: string;
+  lastName: string;
+  phone?: string;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+  };
+  dob?: string;
+  gender?: string;
+  bloodGroup?: string;
   role: UserRole;
-  avatar?: string;
-  roleName?: string;
+  profileImage?: string;
+  accessToken: string;
 }
 
 export interface AuthState {

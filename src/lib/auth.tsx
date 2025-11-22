@@ -1,7 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { authApi, setToken, clearToken } from './api';
-import { AuthState, User } from './types';
+import { AuthState, User, UserRole } from './types';
 
 interface AuthContextType extends AuthState {
     login: (email: string, password: string) => Promise<boolean>;
@@ -20,19 +19,34 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [state, setState] = useState<AuthState>(initialState);
-    const router = useRouter();
 
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            setToken(token);
-            loadUser();
-        } else {
-            setState(prev => ({ ...prev, isLoading: false }));
+    const handleLogout = useCallback(async () => {
+        try {
+            // Only call API logout if we have a token
+            const hasToken = localStorage.getItem('token');
+            if (hasToken) {
+                await authApi.logout();
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
+            clearToken();
+            localStorage.removeItem('user');
+            setState({
+                user: null,
+                token: null,
+                isAuthenticated: false,
+                isLoading: false,
+            });
+
+            // Only redirect if not already on login page
+            if (window.location.pathname !== '/login') {
+                window.location.href = '/login';
+            }
         }
     }, []);
 
-    const loadUser = async () => {
+    const loadUser = useCallback(async () => {
         try {
             const response = await authApi.getProfile();
             if (response.success && response.data) {
@@ -43,18 +57,96 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     isLoading: false,
                 });
             } else {
+                // Only logout if we get a clear failure from server
+                console.log('Profile fetch failed, user might be logged out');
                 handleLogout();
             }
-        } catch {
-            handleLogout();
+        } catch (error: any) {
+            // Check if it's a network error vs authentication error
+            if (error.response?.status === 401) {
+                // Clear authentication - token is invalid
+                console.log('Authentication failed, logging out');
+                handleLogout();
+            } else {
+                // Network error or server issue - keep user logged in but mark as not loading
+                console.log('Network error while fetching profile, keeping user logged in');
+                setState(prev => ({ ...prev, isLoading: false }));
+            }
         }
-    };
+    }, [handleLogout]);
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const storedUser = localStorage.getItem('user');
+
+        if (token) {
+            setToken(token);
+
+            // If we have stored user data, use it immediately while verifying with server
+            if (storedUser) {
+                try {
+                    const user = JSON.parse(storedUser);
+                    setState({
+                        user,
+                        token,
+                        isAuthenticated: true,
+                        isLoading: false,
+                    });
+                    console.log('Loaded user from localStorage:', user);
+
+                    // Verify with server in background - but don't fail immediately
+                    loadUser().catch((error) => {
+                        console.log('Background verification failed:', error);
+                        // Don't logout immediately on background verification failure
+                        // The loadUser function will handle authentication errors appropriately
+                    });
+                } catch (error) {
+                    console.error('Error parsing stored user:', error);
+                    // Clear invalid stored data and load fresh
+                    localStorage.removeItem('user');
+                    loadUser();
+                }
+            } else {
+                // Have token but no user data - fetch from server
+                loadUser();
+            }
+        } else {
+            // No token - user is not logged in
+            setState(prev => ({ ...prev, isLoading: false }));
+        }
+    }, [loadUser]);
 
     const login = async (email: string, password: string) => {
         try {
             const response = await authApi.login({ email, password });
+            console.log('Login response:', response);
+
             if (response.success && response.data) {
-                const { token, user } = response.data;
+                // Extract user data from the response
+                const userData = response.data;
+
+                const user: User = {
+                    uuid: userData.uuid,
+                    id: userData.id,
+                    userID: userData.userID,
+                    email: userData.email,
+                    firstName: userData.firstName,
+                    lastName: userData.lastName,
+                    phone: userData.phone,
+                    address: userData.address,
+                    dob: userData.dob,
+                    gender: userData.gender,
+                    bloodGroup: userData.bloodGroup,
+                    role: userData.role as UserRole,
+                    profileImage: userData.profileImage,
+                    accessToken: userData.accessToken
+                };
+
+                console.log('User data processed:', user);
+
+                // Use accessToken as the token
+                const token = userData.accessToken;
+
                 setToken(token);
                 setState({
                     user,
@@ -62,29 +154,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     isAuthenticated: true,
                     isLoading: false,
                 });
-                // Store user in window for immediate access
+
+                // Store user in localStorage for persistence
                 if (typeof window !== 'undefined') {
-                    (window as any).__authUser = user;
+                    localStorage.setItem('user', JSON.stringify(user));
+                    (window as unknown as { __authUser: User }).__authUser = user;
                 }
                 return true;
             }
             return false;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Login error:', error);
-            throw error;
-        }
-    };
-
-    const handleLogout = async () => {
-        try {
-            await authApi.logout();
-        } catch (error) {
-            console.error('Logout error:', error);
-        } finally {
-            clearToken();
-            setState(initialState);
-            const routerInstance = router as any;
-            routerInstance?.push('/login');
+            const errorMessage = error instanceof Error ? error.message : 'Login failed';
+            throw new Error(errorMessage);
         }
     };
 

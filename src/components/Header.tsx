@@ -35,12 +35,7 @@ export default function Header({ user }: Props) {
                 >
                   Login
                 </Link>
-                <Link
-                  href="/auth/signup"
-                  className="px-3 py-1 text-sm rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
-                >
-                  Sign up
-                </Link>
+
               </>
             )}
 
@@ -86,7 +81,7 @@ export default function Header({ user }: Props) {
             {!user && (
               <>
                 <Link href="/auth/login" className="block">Login</Link>
-                <Link href="/auth/signup" className="block">Sign up</Link>
+                
               </>
             )}
           </div>

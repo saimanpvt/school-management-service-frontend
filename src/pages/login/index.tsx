@@ -14,18 +14,14 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    console.log("entered redirect-0", isAuthenticated, user);
     if (isAuthenticated && user) {
-      const routerInstance = router as any;
-      const dashboardUrl = getDashboardUrl(user.role, user.id);
-      routerInstance?.push(dashboardUrl);
+      console.log("entered redirect", user);
+      const dashboardUrl = getDashboardUrl(user.role, user.uuid);
+      console.log("Redirecting to:", dashboardUrl);
+      router.push(dashboardUrl);
     }
   }, [isAuthenticated, user, router]);
-
-  const redirectBasedOnRole = (userRole: string, userId: string) => {
-    const routerInstance = router as any;
-    const dashboardUrl = getDashboardUrl(userRole as any, userId);
-    routerInstance?.push(dashboardUrl);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,19 +31,15 @@ const Login = () => {
     try {
       const success = await login(email, password);
       if (success) {
-        // User will be set by auth context, useEffect will handle redirect
-        // Wait a bit for auth state to update
-        setTimeout(() => {
-          const authUser = (window as any).__authUser || user;
-          if (authUser) {
-            redirectBasedOnRole(authUser.role, authUser.id);
-          }
-        }, 100);
+        // The useEffect will handle the redirect automatically
+        // when user state is updated in auth context
+        console.log("Login successful, waiting for user data...");
       } else {
         setError("Invalid email or password. Please try again.");
       }
-    } catch (err: any) {
-      setError(err.message || "An error occurred. Please try again.");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "An error occurred. Please try again.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -94,8 +86,8 @@ const Login = () => {
             </a>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className={styles["login-button"]}
             disabled={loading}
           >
@@ -104,7 +96,7 @@ const Login = () => {
         </form>
 
         <p className={styles["signup-text"]}>
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/signup" className={styles["signup-link"]}>
             Start a free trial
           </Link>

@@ -1,8 +1,7 @@
 import axios from 'axios';
 import { ApiResponse, LoginCredentials } from './types';
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -30,9 +29,21 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+      // Only redirect to login if we're not already on the login page
+      // and if the token exists (meaning it's expired, not missing)
+      const currentPath = window.location.pathname;
+      const hasToken = localStorage.getItem('token');
+
+      if (currentPath !== '/login' && hasToken) {
+        console.log('Token expired, redirecting to login');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      } else if (!hasToken && currentPath !== '/login') {
+        // No token and not on login page - redirect
+        window.location.href = '/login';
+      }
+      // If already on login page, don't redirect (prevents loop)
     }
     return Promise.reject(error);
   }
@@ -53,23 +64,46 @@ export const authApi = {
 
   login: async (
     credentials: LoginCredentials
-  ): Promise<ApiResponse<{ token: string; user: any }>> => {
-    const response = await api.post('/auth/login', credentials);
+  ): Promise<
+    ApiResponse<{
+      uuid: string;
+      id: string;
+      email: string;
+      userID: string;
+      firstName: string;
+      lastName: string;
+      phone?: string;
+      address?: {
+        street?: string;
+        city?: string;
+        state?: string;
+        zipCode?: string;
+        country?: string;
+      };
+      dob?: string;
+      gender?: string;
+      bloodGroup?: string;
+      role: string;
+      profileImage?: string;
+      accessToken: string;
+    }>
+  > => {
+    const response = await api.post('/login', credentials);
     return response.data;
   },
 
   logout: async (): Promise<ApiResponse> => {
-    const response = await api.post('/auth/logout');
+    const response = await api.post('/logout');
     return response.data;
   },
 
   getProfile: async (): Promise<ApiResponse<any>> => {
-    const response = await api.get('/auth/profile');
+    const response = await api.get('/profile');
     return response.data;
   },
 
   updateProfile: async (data: Partial<any>): Promise<ApiResponse<any>> => {
-    const response = await api.put('/auth/profile', data);
+    const response = await api.put('/profile', data);
     return response.data;
   },
 
@@ -85,27 +119,27 @@ export const authApi = {
 // Students API
 export const studentsApi = {
   getAll: async (): Promise<ApiResponse<any[]>> => {
-    const response = await api.get('/students');
+    const response = await api.get('/student');
     return response.data;
   },
 
   getById: async (id: string): Promise<ApiResponse<any>> => {
-    const response = await api.get(`/students/${id}`);
+    const response = await api.get(`/student/${id}`);
     return response.data;
   },
 
   create: async (data: any): Promise<ApiResponse<any>> => {
-    const response = await api.post('/students', data);
+    const response = await api.post('/student', data);
     return response.data;
   },
 
   update: async (id: string, data: any): Promise<ApiResponse<any>> => {
-    const response = await api.put(`/students/${id}`, data);
+    const response = await api.put(`/student/${id}`, data);
     return response.data;
   },
 
   delete: async (id: string): Promise<ApiResponse> => {
-    const response = await api.delete(`/students/${id}`);
+    const response = await api.delete(`/student/${id}`);
     return response.data;
   },
 };
@@ -113,27 +147,27 @@ export const studentsApi = {
 // Teachers API
 export const teachersApi = {
   getAll: async (): Promise<ApiResponse<any[]>> => {
-    const response = await api.get('/teachers');
+    const response = await api.get('/teacher');
     return response.data;
   },
 
   getById: async (id: string): Promise<ApiResponse<any>> => {
-    const response = await api.get(`/teachers/${id}`);
+    const response = await api.get(`/teacher/${id}`);
     return response.data;
   },
 
   create: async (data: any): Promise<ApiResponse<any>> => {
-    const response = await api.post('/teachers', data);
+    const response = await api.post('/teacher', data);
     return response.data;
   },
 
   update: async (id: string, data: any): Promise<ApiResponse<any>> => {
-    const response = await api.put(`/teachers/${id}`, data);
+    const response = await api.put(`/teacher/${id}`, data);
     return response.data;
   },
 
   delete: async (id: string): Promise<ApiResponse> => {
-    const response = await api.delete(`/teachers/${id}`);
+    const response = await api.delete(`/teacher/${id}`);
     return response.data;
   },
 };
@@ -162,6 +196,34 @@ export const coursesApi = {
 
   delete: async (id: string): Promise<ApiResponse> => {
     const response = await api.delete(`/courses/${id}`);
+    return response.data;
+  },
+};
+
+// Classes API
+export const classesApi = {
+  getAll: async (): Promise<ApiResponse<any[]>> => {
+    const response = await api.get('/classes');
+    return response.data;
+  },
+
+  getById: async (id: string): Promise<ApiResponse<any>> => {
+    const response = await api.get(`/classes/${id}`);
+    return response.data;
+  },
+
+  create: async (data: any): Promise<ApiResponse<any>> => {
+    const response = await api.post('/classes', data);
+    return response.data;
+  },
+
+  update: async (id: string, data: any): Promise<ApiResponse<any>> => {
+    const response = await api.put(`/classes/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: string): Promise<ApiResponse> => {
+    const response = await api.delete(`/classes/${id}`);
     return response.data;
   },
 };
@@ -268,6 +330,110 @@ export const feesApi = {
   },
 };
 
+// Admin API
+export const adminApi = {
+  // User Management
+  getAllUsers: async (): Promise<ApiResponse<any[]>> => {
+    const response = await api.get('/users');
+    return response.data;
+  },
+
+  createUser: async (data: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: number;
+    password: string;
+    phone?: string;
+    userID: string;
+    address?: {
+      street?: string;
+      city?: string;
+      state?: string;
+      zipCode?: string;
+      country?: string;
+    };
+    dob?: string;
+    gender?: string;
+    bloodGroup?: string;
+  }): Promise<ApiResponse<any>> => {
+    const response = await api.post('/register', data);
+    return response.data;
+  },
+
+  updateUser: async (id: string, data: any): Promise<ApiResponse<any>> => {
+    const response = await api.put(`/users/${id}`, data);
+    return response.data;
+  },
+
+  deleteUser: async (id: string): Promise<ApiResponse> => {
+    const response = await api.delete(`/admin/users/${id}`);
+    return response.data;
+  },
+
+  toggleUserStatus: async (id: string): Promise<ApiResponse<any>> => {
+    const response = await api.patch(`/admin/users/${id}/toggle-status`);
+    return response.data;
+  },
+
+  resetUserPassword: async (
+    id: string
+  ): Promise<ApiResponse<{ password: string }>> => {
+    const response = await api.post(`/admin/users/${id}/reset-password`);
+    return response.data;
+  },
+
+  sendCredentialsEmail: async (data: {
+    email: string;
+    password: string;
+    userID: string;
+    firstName: string;
+  }): Promise<ApiResponse> => {
+    const response = await api.post('/admin/send-credentials', data);
+    return response.data;
+  },
+
+  // Dashboard Statistics
+  getDashboardStats: async (): Promise<
+    ApiResponse<{
+      totalUsers: number;
+      totalStudents: number;
+      totalTeachers: number;
+      totalParents: number;
+      totalAdmins: number;
+      activeUsers: number;
+      recentLogins: any[];
+      userGrowth: any[];
+    }>
+  > => {
+    const response = await api.get('/admin/dashboard-stats');
+    return response.data;
+  },
+
+  // Bulk Operations
+  bulkCreateUsers: async (users: any[]): Promise<ApiResponse<any[]>> => {
+    const response = await api.post('/admin/bulk-create-users', { users });
+    return response.data;
+  },
+
+  exportUsers: async (role?: number): Promise<ApiResponse<any>> => {
+    const params = role ? `?role=${role}` : '';
+    const response = await api.get(`/admin/export-users${params}`);
+    return response.data;
+  },
+
+  // System Settings
+  getSystemSettings: async (): Promise<ApiResponse<any>> => {
+    const response = await api.get('/admin/system-settings');
+    return response.data;
+  },
+
+  updateSystemSettings: async (settings: any): Promise<ApiResponse<any>> => {
+    const response = await api.put('/admin/system-settings', settings);
+    return response.data;
+  },
+};
+
 // Utility functions
 export const setToken = (token: string) => {
   localStorage.setItem('token', token);
@@ -288,8 +454,10 @@ export const apiServices = {
   students: studentsApi,
   teachers: teachersApi,
   courses: coursesApi,
+  classes: classesApi,
   marks: marksApi,
   exams: examsApi,
   references: referencesApi,
   fees: feesApi,
+  admin: adminApi,
 };

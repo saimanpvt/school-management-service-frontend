@@ -29,7 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({ name, role }) => {
 
   const getMenuItems = () => {
     const basePath = `/portal/${role}/${id || '[id]'}`;
-    
+
     if (role === "student") {
       return [
         { icon: <Home size={18} />, label: "Dashboard", href: `${basePath}/dashboard` },
@@ -54,12 +54,14 @@ const Sidebar: React.FC<SidebarProps> = ({ name, role }) => {
     } else if (role === "admin") {
       return [
         { icon: <Home size={18} />, label: "Dashboard", href: `${basePath}/dashboard` },
+        { icon: <Users size={18} />, label: "User Management", href: `${basePath}/users` },
         { icon: <Users size={18} />, label: "Students", href: `${basePath}/students` },
         { icon: <BookOpen size={18} />, label: "Teachers", href: `${basePath}/teachers` },
         { icon: <FileText size={18} />, label: "Courses", href: `${basePath}/courses` },
         { icon: <ClipboardList size={18} />, label: "Exams", href: `${basePath}/exams` },
         { icon: <DollarSign size={18} />, label: "Fees", href: `${basePath}/fees` },
         { icon: <MessageSquare size={18} />, label: "Messages", href: `${basePath}/messages` },
+        { icon: <Settings size={18} />, label: "Settings", href: `${basePath}/settings` },
       ];
     } else {
       return [
@@ -74,10 +76,10 @@ const Sidebar: React.FC<SidebarProps> = ({ name, role }) => {
   };
 
   const menuItems = getMenuItems();
-  
+
   const isActive = (href: string) => {
-    return currentPath === href.replace(/\[id\]/g, id as string) || 
-           currentPath.replace(/\/\d+\//g, '/[id]/') === href.replace(/\[id\]/g, '[id]');
+    return currentPath === href.replace(/\[id\]/g, id as string) ||
+      currentPath.replace(/\/\d+\//g, '/[id]/') === href.replace(/\[id\]/g, '[id]');
   };
 
   return (

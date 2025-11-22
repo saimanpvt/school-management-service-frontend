@@ -11,7 +11,7 @@ export default function Dashboard() {
         if (!isLoading) {
             const routerInstance = router as any;
             if (user) {
-                const dashboardUrl = getDashboardUrl(user.role, user.id);
+                const dashboardUrl = getDashboardUrl(user.role, user.uuid);
                 routerInstance?.push(dashboardUrl);
             } else {
                 routerInstance?.push('/login');
@@ -20,10 +20,10 @@ export default function Dashboard() {
     }, [user, isLoading, router]);
 
     return (
-        <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
+        <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
             height: '100vh',
             background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)'
         }}>

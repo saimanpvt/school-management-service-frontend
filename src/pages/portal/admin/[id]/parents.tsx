@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Sidebar from '../../../../components/Sidebar';
@@ -7,11 +6,10 @@ import { Users, Plus, Search, Edit, Trash2 } from 'lucide-react';
 import UserForm, { UserFormData } from '../../../../components/UserForm';
 import styles from './admin.module.css';
 
-
-const AdminStudents = () => {
+const AdminParents = () => {
     const router = useRouter();
     const { id } = router.query;
-    const [students, setStudents] = useState<any[]>([]);
+    const [parents, setParents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [showAddForm, setShowAddForm] = useState(false);
@@ -21,9 +19,9 @@ const AdminStudents = () => {
         email: '',
         firstName: '',
         lastName: '',
-        role: '3', // Student
+        role: '4', // Parent
         phone: '',
-        userId: '',
+        userID: '',
         address: {
             street: '',
             city: '',
@@ -33,55 +31,46 @@ const AdminStudents = () => {
         },
         dob: '',
         gender: '',
-        bloodGroup: '',
-        parentId: '',
-        studentId: '',
-        classId: '',
-        admissionDate: '',
-        leavingDate: '',
-        emergencyContact: ''
+        bloodGroup: ''
     });
     const roleOptions = [
-        { value: '3', label: 'Student', color: '#10b981' }
+        { value: '4', label: 'Parent', color: '#f59e0b' }
     ];
     const genderOptions = ['Male', 'Female', 'Other'];
     const bloodGroupOptions = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-    // parentOptions removed (no longer needed)
 
     useEffect(() => {
         if (id) {
-            apiServices.students.getAll()
+            apiServices.admin.getAllUsers()
                 .then(response => {
                     if (response.success) {
-                        setStudents(response.data || []);
+                        const parents = (response.data || []).filter((u: any) => u.role === 4);
+                        setParents(parents);
                     }
                     setLoading(false);
                 })
                 .catch(error => {
-                    console.error('Error fetching students:', error);
+                    console.error('Error fetching parents:', error);
                     setLoading(false);
                 });
-            // Removed parent fetch for dropdown (now text input)
         }
-        console.log("students",students);
     }, [id]);
 
-
-    const filteredStudents = students.filter(student =>
-    (student.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.userID?.toLowerCase().includes(searchTerm.toLowerCase()))
+    const filteredParents = parents.filter(parent =>
+    (parent.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        parent.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        parent.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        parent.userID?.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
-    const handleDelete = async (studentId: string) => {
-        if (confirm('Are you sure you want to delete this student?')) {
+    const handleDelete = async (parentId: string) => {
+        if (confirm('Are you sure you want to delete this parent?')) {
             try {
-                await apiServices.students.delete(studentId);
-                setStudents(students.filter(s => s._id !== studentId));
+                await apiServices.admin.deleteUser(parentId);
+                setParents(parents.filter(p => p._id !== parentId));
             } catch (error) {
-                console.error('Error deleting student:', error);
-                alert('Failed to delete student');
+                console.error('Error deleting parent:', error);
+                alert('Failed to delete parent');
             }
         }
     };
@@ -92,88 +81,54 @@ const AdminStudents = () => {
             alert('Please generate a password first');
             return;
         }
-        // Validate required student fields
-        const missingFields = [];
-        if (!formData.userId) missingFields.push('User ID');
-        if (!formData.parentId) missingFields.push('Parent');
-        if (!formData.classTeacher) missingFields.push('Class Teacher');
-        if (!formData.course) missingFields.push('Course');
-        if (!formData.dob) missingFields.push('Date of Birth');
-        if (!formData.classId) missingFields.push('Class ID');
-        if (!formData.studentId) missingFields.push('Student ID');
-        if (missingFields.length > 0) {
-            alert('Please fill all required fields: ' + missingFields.join(', '));
-            return;
-        }
         try {
-            // Prepare student data for backend with correct field names
-            const studentData = {
-                user: formData.userId, // Backend expects 'user' or 'userID'
-                parent: formData.parentId, // Backend expects 'parent'
-                classTeacher: formData.classTeacher,
-                course: formData.course,
-                dateOfBirth: formData.dob, // Backend expects 'dateOfBirth'
-                classId: formData.classId,
-                studentId: formData.studentId,
-                admissionDate: formData.admissionDate,
-                leavingDate: formData.leavingDate,
-                emergencyContact: formData.emergencyContact,
-                email: formData.email,
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                phone: formData.phone,
-                gender: formData.gender,
-                bloodGroup: formData.bloodGroup,
-                address: formData.address,
+            const userData = {
+                ...formData,
                 password: generatedPassword,
-                role: 3 // Student
+                role: 4 // Parent
             };
-            const response = await apiServices.students.create(studentData);
+            const response = await apiServices.admin.createUser(userData);
             if (response.success) {
-                alert('Student created successfully!');
-                setStudents([...students, response.data]);
+                await apiServices.admin.sendCredentialsEmail({
+                    email: formData.email,
+                    password: generatedPassword,
+                    userID: formData.userID,
+                    firstName: formData.firstName
+                });
+                alert('Parent created successfully and credentials sent via email!');
+                setParents([...parents, response.data]);
                 setShowAddForm(false);
                 setFormData({
                     email: '',
                     firstName: '',
                     lastName: '',
-                    role: '3',
+                    role: '4',
                     phone: '',
-                    userId: '',
+                    userID: '',
                     address: { street: '', city: '', state: '', zipCode: '', country: '' },
                     dob: '',
                     gender: '',
-                    bloodGroup: '',
-                    parentId: '',
-                    studentId: '',
-                    classId: '',
-                    admissionDate: '',
-                    leavingDate: '',
-                    emergencyContact: '',
-                    classTeacher: '',
-                    course: ''
+                    bloodGroup: ''
                 });
                 setGeneratedPassword('');
                 setShowPassword(false);
             }
         } catch (error) {
-            console.error('Error creating student:', error);
-            alert('Failed to create student');
+            console.error('Error creating parent:', error);
+            alert('Failed to create parent');
         }
     };
-
 
     if (loading) {
         return (
             <div className={styles.container}>
                 <Sidebar name="Admin" role="admin" />
                 <main className={styles.main}>
-                    <div className={styles.loading}>Loading students...</div>
+                    <div className={styles.loading}>Loading parents...</div>
                 </main>
             </div>
         );
     }
-
 
     return (
         <div className={styles.container}>
@@ -196,15 +151,15 @@ const AdminStudents = () => {
                 )}
                 <header className={styles.pageHeader}>
                     <div>
-                        <h1>Manage Students</h1>
-                        <p>View and manage all students in the system</p>
+                        <h1>Manage Parents</h1>
+                        <p>View and manage all parents in the system</p>
                     </div>
                     <div className={styles.headerActions}>
                         <div className={styles.searchBox}>
                             <Search size={18} />
                             <input
                                 type="text"
-                                placeholder="Search students..."
+                                placeholder="Search parents..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className={styles.searchInput}
@@ -215,7 +170,7 @@ const AdminStudents = () => {
                             onClick={() => setShowAddForm(true)}
                         >
                             <Plus size={18} />
-                            Add Student
+                            Add Parent
                         </button>
                     </div>
                 </header>
@@ -227,20 +182,18 @@ const AdminStudents = () => {
                                 <th>User ID</th>
                                 <th>Name</th>
                                 <th>Email</th>
-                                <th>Parent</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredStudents.length > 0 ? (
-                                filteredStudents.map(student => (
-                                    <tr key={student._id}>
-                                        <td>{student.userId || student.userID || 'N/A'}</td>
-                                        <td>{student.firstName || ''} {student.lastName || ''}</td>
-                                        <td>{student.email || 'N/A'}</td>
-                                        <td>{student.parentId || student.parentName || 'N/A'}</td>
-                                        <td>{student.isActive === false ? 'Inactive' : 'Active'}</td>
+                            {filteredParents.length > 0 ? (
+                                filteredParents.map(parent => (
+                                    <tr key={parent._id}>
+                                        <td>{parent.userID || 'N/A'}</td>
+                                        <td>{parent.firstName} {parent.lastName}</td>
+                                        <td>{parent.email || 'N/A'}</td>
+                                        <td>{parent.isActive ? 'Active' : 'Inactive'}</td>
                                         <td>
                                             <div className={styles.actionButtons}>
                                                 <button className={styles.editBtn}>
@@ -248,7 +201,7 @@ const AdminStudents = () => {
                                                 </button>
                                                 <button
                                                     className={styles.deleteBtn}
-                                                    onClick={() => handleDelete(student._id)}
+                                                    onClick={() => handleDelete(parent._id)}
                                                 >
                                                     <Trash2 size={16} />
                                                 </button>
@@ -258,10 +211,10 @@ const AdminStudents = () => {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={6} className={styles.emptyState}>
+                                    <td colSpan={5} className={styles.emptyState}>
                                         <Users size={48} />
-                                        <h3>No students found</h3>
-                                        <p>{searchTerm ? 'Try a different search term' : 'No students in the system'}</p>
+                                        <h3>No parents found</h3>
+                                        <p>{searchTerm ? 'Try a different search term' : 'No parents in the system'}</p>
                                     </td>
                                 </tr>
                             )}
@@ -273,5 +226,4 @@ const AdminStudents = () => {
     );
 };
 
-export default AdminStudents;
-
+export default AdminParents;
