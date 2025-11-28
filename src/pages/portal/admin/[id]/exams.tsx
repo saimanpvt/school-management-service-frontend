@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Sidebar from '../../../../components/Sidebar';
+import { withAuth } from '../../../../lib/withAuth';
 import { apiServices } from '../../../../lib/api';
 import { FileText, Plus, Search, Calendar } from 'lucide-react';
 import styles from './admin.module.css';

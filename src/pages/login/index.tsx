@@ -17,7 +17,7 @@ const Login = () => {
     console.log("entered redirect-0", isAuthenticated, user);
     if (isAuthenticated && user) {
       console.log("entered redirect", user);
-      const dashboardUrl = getDashboardUrl(user.role, user.uuid);
+      const dashboardUrl = getDashboardUrl(user.role, user.userID);
       console.log("Redirecting to:", dashboardUrl);
       router.push(dashboardUrl);
     }

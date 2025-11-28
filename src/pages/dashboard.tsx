@@ -11,10 +11,10 @@ export default function Dashboard() {
         if (!isLoading) {
             const routerInstance = router as any;
             if (user) {
-                const dashboardUrl = getDashboardUrl(user.role, user.uuid);
+                const dashboardUrl = getDashboardUrl(user.role, user.userID);
                 routerInstance?.push(dashboardUrl);
             } else {
-                routerInstance?.push('/login');
+                routerInstance?.push('/');
             }
         }
     }, [user, isLoading, router]);

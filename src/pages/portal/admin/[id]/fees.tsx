@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Sidebar from '../../../../components/Sidebar';
+import { withAuth } from '../../../../lib/withAuth';
 import { apiServices } from '../../../../lib/api';
 import { DollarSign, Plus, Search, Edit, Trash2 } from 'lucide-react';
 import styles from './admin.module.css';
@@ -118,7 +119,7 @@ const AdminFees = () => {
                                                 <button className={styles.editBtn}>
                                                     <Edit size={16} />
                                                 </button>
-                                                <button 
+                                                <button
                                                     className={styles.deleteBtn}
                                                     onClick={() => handleDelete(fee.id)}
                                                 >

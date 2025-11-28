@@ -1,4 +1,12 @@
-export type UserRole = 'admin' | 'teacher' | 'student' | 'parent';
+export type UserRole =
+  | 'Admin'
+  | 'Teacher'
+  | 'Student'
+  | 'Parent'
+  | 'admin'
+  | 'teacher'
+  | 'student'
+  | 'parent';
 
 export interface User {
   uuid: string;

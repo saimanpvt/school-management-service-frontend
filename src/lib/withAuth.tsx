@@ -17,10 +17,10 @@ export function withAuth<P extends object>(
             if (!isLoading) {
                 const routerInstance = router as any;
                 if (!user) {
-                    routerInstance?.replace('/login');
+                    routerInstance?.replace('/');
                 } else if (allowedRoles && !allowedRoles.includes(user.role)) {
                     // Redirect to user's appropriate dashboard
-                    const dashboardUrl = getDashboardUrl(user.role, user.uuid);
+                    const dashboardUrl = getDashboardUrl(user.role, user.userID);
                     routerInstance?.replace(dashboardUrl);
                 }
             }

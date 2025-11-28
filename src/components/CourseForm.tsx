@@ -38,11 +38,6 @@ const CourseForm: React.FC<CourseFormProps> = ({
         if (!formData.teacherId) missing.push('Teacher ID');
         if (!formData.classId) missing.push('Class ID');
         if (!formData.academicYear) missing.push('Academic Year');
-        if (!formData.department) missing.push('Department');
-        if (!formData.credits && formData.credits !== 0) missing.push('Credits');
-        if (!formData.startDate) missing.push('Start Date');
-        if (!formData.endDate) missing.push('End Date');
-        if (!formData.semester) missing.push('Semester');
         if (missing.length > 0) {
             setFormError('Please fill all required fields: ' + missing.join(', '));
             return;
@@ -72,30 +67,6 @@ const CourseForm: React.FC<CourseFormProps> = ({
                     <div className={styles.formGroup}>
                         <label>Description</label>
                         <textarea name="description" value={formData.description || ''} onChange={handleInputChange} maxLength={500} />
-                    </div>
-                    <div className={styles.formRow}>
-                        <div className={styles.formGroup}>
-                            <label>Department *</label>
-                            <input type="text" name="department" value={formData.department || ''} onChange={handleInputChange} required />
-                        </div>
-                        <div className={styles.formGroup}>
-                            <label>Credits *</label>
-                            <input type="number" name="credits" value={formData.credits ?? ''} onChange={handleInputChange} min={0} required />
-                        </div>
-                    </div>
-                    <div className={styles.formRow}>
-                        <div className={styles.formGroup}>
-                            <label>Start Date *</label>
-                            <input type="date" name="startDate" value={formData.startDate || ''} onChange={handleInputChange} required />
-                        </div>
-                        <div className={styles.formGroup}>
-                            <label>End Date *</label>
-                            <input type="date" name="endDate" value={formData.endDate || ''} onChange={handleInputChange} required />
-                        </div>
-                        <div className={styles.formGroup}>
-                            <label>Semester *</label>
-                            <input type="text" name="semester" value={formData.semester || ''} onChange={handleInputChange} required />
-                        </div>
                     </div>
                     <div className={styles.formRow}>
                         <div className={styles.formGroup}>

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { ApiResponse, LoginCredentials } from './types';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -29,21 +29,28 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      // Only redirect to login if we're not already on the login page
-      // and if the token exists (meaning it's expired, not missing)
       const currentPath = window.location.pathname;
-      const hasToken = localStorage.getItem('token');
+      const requestUrl = error.config?.url || '';
 
-      if (currentPath !== '/login' && hasToken) {
-        console.log('Token expired, redirecting to login');
+      // Only logout for auth-related endpoints, not all 401 errors
+      const isAuthEndpoint =
+        requestUrl.includes('/auth/') || requestUrl.includes('/profile');
+
+      if (isAuthEndpoint) {
+        console.log('Authentication endpoint returned 401, logging out');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        window.location.href = '/login';
-      } else if (!hasToken && currentPath !== '/login') {
-        // No token and not on login page - redirect
-        window.location.href = '/login';
+        if (currentPath !== '/login' && currentPath !== '/') {
+          window.location.href = '/';
+        }
+      } else {
+        // For non-auth endpoints, just log the error but don't logout
+        console.log(
+          'API endpoint returned 401:',
+          requestUrl,
+          'but keeping user logged in'
+        );
       }
-      // If already on login page, don't redirect (prevents loop)
     }
     return Promise.reject(error);
   }
@@ -66,29 +73,17 @@ export const authApi = {
     credentials: LoginCredentials
   ): Promise<
     ApiResponse<{
-      uuid: string;
-      id: string;
+      _id: string;
       email: string;
       userID: string;
       firstName: string;
       lastName: string;
-      phone?: string;
-      address?: {
-        street?: string;
-        city?: string;
-        state?: string;
-        zipCode?: string;
-        country?: string;
-      };
-      dob?: string;
-      gender?: string;
-      bloodGroup?: string;
+      address: Record<string, unknown>;
       role: string;
-      profileImage?: string;
-      accessToken: string;
+      token: string;
     }>
   > => {
-    const response = await api.post('/login', credentials);
+    const response = await api.post('/auth/login', credentials);
     return response.data;
   },
 
@@ -357,7 +352,7 @@ export const adminApi = {
     gender?: string;
     bloodGroup?: string;
   }): Promise<ApiResponse<any>> => {
-    const response = await api.post('/register', data);
+    const response = await api.post('/auth/register', data);
     return response.data;
   },
 

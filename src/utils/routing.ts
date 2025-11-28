@@ -2,13 +2,13 @@ import { UserRole } from '../lib/types';
 
 export const getDashboardUrl = (role: UserRole, id: string): string => {
   switch (role) {
-    case 'admin':
+    case 'Admin':
       return `/portal/admin/${id}/dashboard`;
-    case 'teacher':
+    case 'Teacher':
       return `/portal/teacher/${id}/dashboard`;
-    case 'student':
+    case 'Student':
       return `/portal/student/${id}/dashboard`;
-    case 'parent':
+    case 'Parent':
       return `/portal/parent/${id}/dashboard`;
     default:
       return '/login';

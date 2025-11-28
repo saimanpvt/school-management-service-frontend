@@ -5,6 +5,7 @@ import { apiServices } from '../../../../lib/api';
 import { BookOpen, Plus, Search, Edit, Trash2 } from 'lucide-react';
 import CourseForm from '../../../../components/CourseForm';
 import { CourseFormData } from '../../../../types/course';
+import { withAuth } from '../../../../lib/withAuth';
 import styles from './admin.module.css';
 
 const AdminCourses = () => {
@@ -201,5 +202,5 @@ const AdminCourses = () => {
     );
 };
 
-export default AdminCourses;
+export default withAuth(AdminCourses, ['Admin']);
 

@@ -94,12 +94,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     });
                     console.log('Loaded user from localStorage:', user);
 
-                    // Verify with server in background - but don't fail immediately
-                    loadUser().catch((error) => {
-                        console.log('Background verification failed:', error);
-                        // Don't logout immediately on background verification failure
-                        // The loadUser function will handle authentication errors appropriately
-                    });
+                    // Skip background verification to prevent logout loops
+                    console.log('User loaded from localStorage, skipping server verification');
                 } catch (error) {
                     console.error('Error parsing stored user:', error);
                     // Clear invalid stored data and load fresh
@@ -107,8 +103,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     loadUser();
                 }
             } else {
-                // Have token but no user data - fetch from server
-                loadUser();
+                // Have token but no user data - don't fetch to avoid logout loop
+                console.log('Token exists but no user data, staying logged in');
+                setState(prev => ({ ...prev, isLoading: false }));
             }
         } else {
             // No token - user is not logged in
@@ -126,26 +123,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 const userData = response.data;
 
                 const user: User = {
-                    uuid: userData.uuid,
-                    id: userData.id,
+                    uuid: userData._id, // Use _id from backend
+                    id: userData._id,
                     userID: userData.userID,
                     email: userData.email,
                     firstName: userData.firstName,
                     lastName: userData.lastName,
-                    phone: userData.phone,
+                    phone: undefined, // Not in backend response
                     address: userData.address,
-                    dob: userData.dob,
-                    gender: userData.gender,
-                    bloodGroup: userData.bloodGroup,
+                    dob: undefined, // Not in backend response
+                    gender: undefined, // Not in backend response
+                    bloodGroup: undefined, // Not in backend response
                     role: userData.role as UserRole,
-                    profileImage: userData.profileImage,
-                    accessToken: userData.accessToken
+                    profileImage: undefined, // Not in backend response
+                    accessToken: userData.token // Use token from backend
                 };
 
                 console.log('User data processed:', user);
 
-                // Use accessToken as the token
-                const token = userData.accessToken;
+                // Use token from backend response
+                const token = userData.token;
 
                 setToken(token);
                 setState({

@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Sidebar from "../../../../components/Sidebar";
 import Link from "next/link";
 import { studentService, StudentDashboardStats } from "../../../../services/student.service";
+import { withAuth } from "../../../../lib/withAuth";
 import styles from "../../../../styles/Dashboard.module.css";
 
 const StudentDashboard = () => {
@@ -284,4 +285,4 @@ const StudentDashboard = () => {
     );
 };
 
-export default StudentDashboard;
+export default withAuth(StudentDashboard, ['Student']);

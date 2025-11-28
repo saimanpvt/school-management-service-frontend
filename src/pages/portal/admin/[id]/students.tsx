@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Sidebar from '../../../../components/Sidebar';
+import { withAuth } from '../../../../lib/withAuth';
 import { apiServices } from '../../../../lib/api';
 import { Users, Plus, Search, Edit, Trash2 } from 'lucide-react';
 import UserForm, { UserFormData } from '../../../../components/UserForm';
@@ -63,7 +64,7 @@ const AdminStudents = () => {
                 });
             // Removed parent fetch for dropdown (now text input)
         }
-        console.log("students",students);
+        console.log("students", students);
     }, [id]);
 
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Sidebar from '../../../../components/Sidebar';
+import { withAuth } from '../../../../lib/withAuth';
 import { MessageSquare, Send, Search } from 'lucide-react';
 import styles from './admin.module.css';
 

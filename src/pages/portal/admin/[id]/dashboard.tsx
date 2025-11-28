@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Sidebar from '../../../../components/Sidebar';
 import { apiServices } from '../../../../lib/api';
 import { Users, BookOpen, GraduationCap, DollarSign, TrendingUp, Activity } from 'lucide-react';
+import { withAuth } from '../../../../lib/withAuth';
 import styles from './admin.module.css';
 
 const AdminDashboard = () => {
@@ -27,7 +28,7 @@ const AdminDashboard = () => {
                 apiServices.fees.getAll(),
             ])
                 .then(([studentsRes, teachersRes, coursesRes, feesRes]) => {
-                    const totalRevenue = feesRes.success 
+                    const totalRevenue = feesRes.success
                         ? feesRes.data?.reduce((sum: number, fee: any) => sum + (fee.amount || 0), 0) || 0
                         : 0;
 
@@ -112,7 +113,7 @@ const AdminDashboard = () => {
                 <div className={styles.quickActions}>
                     <h2>Quick Actions</h2>
                     <div className={styles.actionsGrid}>
-                        <button 
+                        <button
                             className={styles.actionBtn}
                             onClick={() => {
                                 const routerInstance = router as any;
@@ -122,7 +123,7 @@ const AdminDashboard = () => {
                             <Users size={20} />
                             Manage Students
                         </button>
-                        <button 
+                        <button
                             className={styles.actionBtn}
                             onClick={() => {
                                 const routerInstance = router as any;
@@ -132,7 +133,7 @@ const AdminDashboard = () => {
                             <GraduationCap size={20} />
                             Manage Teachers
                         </button>
-                        <button 
+                        <button
                             className={styles.actionBtn}
                             onClick={() => {
                                 const routerInstance = router as any;
@@ -142,7 +143,7 @@ const AdminDashboard = () => {
                             <BookOpen size={20} />
                             Manage Courses
                         </button>
-                        <button 
+                        <button
                             className={styles.actionBtn}
                             onClick={() => {
                                 const routerInstance = router as any;
@@ -159,5 +160,5 @@ const AdminDashboard = () => {
     );
 };
 
-export default AdminDashboard;
+export default withAuth(AdminDashboard, ['Admin']);
 

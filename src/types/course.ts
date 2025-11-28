@@ -7,9 +7,4 @@ export interface CourseFormData {
   classId: string;
   academicYear: string;
   isActive?: boolean;
-  department: string;
-  credits: number;
-  startDate: string;
-  endDate: string;
-  semester: string;
 }

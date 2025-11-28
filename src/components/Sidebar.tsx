@@ -54,9 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({ name, role }) => {
     } else if (role === "admin") {
       return [
         { icon: <Home size={18} />, label: "Dashboard", href: `${basePath}/dashboard` },
-        { icon: <Users size={18} />, label: "User Management", href: `${basePath}/users` },
-        { icon: <Users size={18} />, label: "Students", href: `${basePath}/students` },
-        { icon: <BookOpen size={18} />, label: "Teachers", href: `${basePath}/teachers` },
+        { icon: <Users size={18} />, label: "User Management", href: `${basePath}/user-management` },
         { icon: <FileText size={18} />, label: "Courses", href: `${basePath}/courses` },
         { icon: <ClipboardList size={18} />, label: "Exams", href: `${basePath}/exams` },
         { icon: <DollarSign size={18} />, label: "Fees", href: `${basePath}/fees` },

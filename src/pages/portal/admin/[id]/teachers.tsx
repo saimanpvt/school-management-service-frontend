@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Sidebar from '../../../../components/Sidebar';
+import { withAuth } from '../../../../lib/withAuth';
 import { apiServices } from '../../../../lib/api';
 import { GraduationCap, Plus, Search, Edit, Trash2 } from 'lucide-react';
 import UserForm, { UserFormData } from '../../../../components/UserForm';

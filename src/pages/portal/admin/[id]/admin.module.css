@@ -633,3 +633,105 @@
   color: #64748b;
   line-height: 1.6;
 }
+
+/* User Management Filter Tabs */
+.filterTabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 1rem;
+}
+
+.filterTab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid transparent;
+  border-radius: 0.75rem;
+  background: white;
+  color: #6b7280;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.filterTab:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.filterTab.active {
+  background: white;
+  border-color: currentColor;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.filterTab .count {
+  background: currentColor;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+/* Role Badge */
+.roleBadge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Status indicators */
+.activeStatus {
+  color: #059669;
+  font-weight: 500;
+}
+
+.inactiveStatus {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+/* Action Bar */
+.actionBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+}
+
+.addButtons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* Role-specific button colors */
+.createBtn.student {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.createBtn.teacher {
+  background: linear-gradient(135deg, #10b981, #047857);
+}
+
+.createBtn.parent {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.createBtn.admin {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
