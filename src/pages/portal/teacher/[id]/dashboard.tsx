@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import styles from "./teacher.module.css";
-import Sidebar from "../../../../components/Sidebar";
+import PortalLayout from "../../../../components/PortalLayout";
 import { teacherService, TeacherDashboardStats } from "../../../../services/teacher.service";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import LoadingDots from "../../../../components/LoadingDots";
 
 const TeacherDashboard = () => {
     const router = useRouter();
@@ -157,33 +158,30 @@ const TeacherDashboard = () => {
     };
 
     return (
-        <div className={styles.container}>
-            <Sidebar name={stats?.teacherName || "Teacher"} role="teacher" />
-            <main className={styles.main}>
-                {loading ? (
-                    <div className={styles.loading}>Loading...</div>
-                ) : error ? (
-                    <div className={styles.error}>{error}</div>
-                ) : (
-                    <>
-                        <header className={styles.header}>
-                            <h2>Welcome back, {stats?.teacherName || "Teacher"}! 👋</h2>
-                            <p>Manage your classes and students efficiently</p>
-                        </header>
+        <PortalLayout userName={stats?.teacherName || "Teacher"} userRole="teacher">
+            {loading ? (
+                <div className={styles.loading}><LoadingDots /></div>
+            ) : error ? (
+                <div className={styles.error}>{error}</div>
+            ) : (
+                <>
+                    <header className={styles.header}>
+                        <h2>Welcome back, {stats?.teacherName || "Teacher"}! 👋</h2>
+                        <p>Manage your classes and students efficiently</p>
+                    </header>
 
-                        {renderStatsGrid()}
+                    {renderStatsGrid()}
 
-                        <div className={styles.gridLayout}>
-                            {renderSchedule()}
-                            {renderPerformanceChart()}
-                        </div>
+                    <div className={styles.gridLayout}>
+                        {renderSchedule()}
+                        {renderPerformanceChart()}
+                    </div>
 
-                        {renderActivities()}
-                        {renderQuickActions()}
-                    </>
-                )}
-            </main>
-        </div>
+                    {renderActivities()}
+                    {renderQuickActions()}
+                </>
+            )}
+        </PortalLayout>
     );
 };
 

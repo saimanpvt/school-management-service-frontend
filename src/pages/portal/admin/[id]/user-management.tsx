@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import Sidebar from '../../../../components/Sidebar';
-import { apiServices } from '../../../../lib/api';
+import PortalLayout from '../../../../components/PortalLayout';
+import { apiServices } from '../../../../services/api';
 import { Users, Plus, Search, Edit, Trash2, UserCheck, UserX, GraduationCap, BookOpen, Heart } from 'lucide-react';
 import UserForm, { UserFormData } from '../../../../components/UserForm';
-import { withAuth } from '../../../../lib/withAuth';
+import { ProtectedRoute } from '../../../../lib/auth';
 import styles from './admin.module.css';
+import LoadingDots from '../../../../components/LoadingDots';
 
 type UserType = 'student' | 'teacher' | 'parent' | 'admin';
 
@@ -38,7 +39,7 @@ const UserManagement = () => {
         email: '',
         firstName: '',
         lastName: '',
-        role: '1', // Default to Admin
+        role: 'student', // Default to Student
         phone: '',
         userID: '',
         address: {
@@ -50,7 +51,15 @@ const UserManagement = () => {
         },
         dob: '',
         gender: '',
-        bloodGroup: ''
+        bloodGroup: '',
+        // Role-specific fields
+        employeeId: '',
+        experience: '',
+        DOJ: '',
+        admissionDate: '',
+        studentId: '',
+        childrenId: '',
+        classId: ''
     });
 
     // Role mappings
@@ -68,12 +77,16 @@ const UserManagement = () => {
         { key: 'admin' as UserType, label: 'Admins', icon: UserCheck, color: '#dc2626' }
     ];
 
-    const roleOptions = [
-        { value: '1', label: 'Admin', color: '#dc2626' },
-        { value: '2', label: 'Teacher', color: '#059669' },
-        { value: '3', label: 'Student', color: '#2563eb' },
-        { value: '4', label: 'Parent', color: '#f59e0b' }
-    ];
+    // Dynamic role options based on active user type
+    const getRoleOptions = () => {
+        const roleMap = {
+            'admin': [{ value: 'admin', label: 'Admin', color: '#dc2626' }],
+            'teacher': [{ value: 'teacher', label: 'Teacher', color: '#059669' }],
+            'student': [{ value: 'student', label: 'Student', color: '#2563eb' }],
+            'parent': [{ value: 'parent', label: 'Parent', color: '#f59e0b' }]
+        };
+        return roleMap[activeUserType] || [];
+    };
 
     const genderOptions = ['Male', 'Female', 'Other'];
     const bloodGroupOptions = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
@@ -86,9 +99,34 @@ const UserManagement = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await apiServices.admin.getAllUsers();
-            if (response.success) {
-                setUsers(response.data || []);
+            const response = await apiServices.users.getAll();
+            console.log('API Response:', response); // Debug log
+
+            if (response.success && response.data) {
+                // Handle the backend response structure
+                let allUsers: any[] = [];
+
+                // Collect users from different arrays in the response
+                if (response.data.teachers) {
+                    allUsers = [...allUsers, ...response.data.teachers];
+                }
+                if (response.data.students) {
+                    allUsers = [...allUsers, ...response.data.students];
+                }
+                if (response.data.parents) {
+                    allUsers = [...allUsers, ...response.data.parents];
+                }
+                if (response.data.admins) {
+                    allUsers = [...allUsers, ...response.data.admins];
+                }
+
+                // Fallback to direct users array if available
+                if (allUsers.length === 0 && response.data.users) {
+                    allUsers = response.data.users;
+                }
+
+                console.log('Processed user data:', allUsers); // Debug log
+                setUsers(allUsers);
             }
         } catch (error) {
             console.error('Error fetching users:', error);
@@ -97,7 +135,7 @@ const UserManagement = () => {
         }
     };
 
-    const filteredUsers = users.filter(user => {
+    const filteredUsers = (users || []).filter(user => {
         // Filter by user type
         const roleMapping = {
             'admin': 1,
@@ -120,7 +158,7 @@ const UserManagement = () => {
     const handleDelete = async (userId: string) => {
         if (confirm('Are you sure you want to delete this user?')) {
             try {
-                await apiServices.admin.deleteUser(userId);
+                await apiServices.users.delete(userId);
                 setUsers(users.filter(u => u._id !== userId));
             } catch (error) {
                 console.error('Error deleting user:', error);
@@ -139,9 +177,13 @@ const UserManagement = () => {
             const userData = {
                 ...formData,
                 password: generatedPassword,
-                role: parseInt(formData.role)
+                role: formData.role // Send role as string directly (student, teacher, parent, admin)
             };
-            const response = await apiServices.admin.createUser(userData);
+
+            console.log('Sending user data with role as string:', userData);
+            console.log('Role being sent:', userData.role, typeof userData.role);
+
+            const response = await apiServices.users.create(userData);
             if (response.success) {
                 await apiServices.admin.sendCredentialsEmail({
                     email: formData.email,
@@ -165,13 +207,21 @@ const UserManagement = () => {
             email: '',
             firstName: '',
             lastName: '',
-            role: '1',
+            role: 'student',
             phone: '',
             userID: '',
             address: { street: '', city: '', state: '', zipCode: '', country: '' },
             dob: '',
             gender: '',
-            bloodGroup: ''
+            bloodGroup: '',
+            // Role-specific fields
+            employeeId: '',
+            experience: '',
+            DOJ: '',
+            admissionDate: '',
+            studentId: '',
+            childrenId: '',
+            classId: ''
         });
         setGeneratedPassword('');
         setShowPassword(false);
@@ -189,162 +239,162 @@ const UserManagement = () => {
 
     if (loading) {
         return (
-            <div className={styles.container}>
-                <Sidebar name="Admin" role="admin" />
-                <main className={styles.main}>
-                    <div className={styles.loading}>Loading users...</div>
-                </main>
-            </div>
+            <PortalLayout userName="Admin" userRole="admin">
+                <div className={styles.loading}><LoadingDots /></div>
+            </PortalLayout>
         );
     }
 
     return (
-        <div className={styles.container}>
-            <Sidebar name="Admin" role="admin" />
-            <main className={styles.main}>
-                {showAddForm && (
-                    <UserForm
-                        formData={formData}
-                        setFormData={setFormData}
-                        onSubmit={handleSubmit}
-                        onClose={() => setShowAddForm(false)}
-                        generatedPassword={generatedPassword}
-                        setGeneratedPassword={setGeneratedPassword}
-                        showPassword={showPassword}
-                        setShowPassword={setShowPassword}
-                        roleOptions={roleOptions}
-                        genderOptions={genderOptions}
-                        bloodGroupOptions={bloodGroupOptions}
-                        fixedRole={formData.role}
-                    />
-                )}
+        <PortalLayout userName="Admin" userRole="admin">
+            {showAddForm && (
+                <UserForm
+                    formData={formData}
+                    setFormData={setFormData}
+                    onSubmit={handleSubmit}
+                    onClose={() => setShowAddForm(false)}
+                    generatedPassword={generatedPassword}
+                    setGeneratedPassword={setGeneratedPassword}
+                    showPassword={showPassword}
+                    setShowPassword={setShowPassword}
+                    roleOptions={getRoleOptions()}
+                    genderOptions={genderOptions}
+                    bloodGroupOptions={bloodGroupOptions}
+                    activeUserType={activeUserType}
+                />
+            )}
 
-                <header className={styles.pageHeader}>
-                    <div>
-                        <h1>User Management</h1>
-                        <p>Manage all users in the system - admins, teachers, students, and parents</p>
-                    </div>
-                </header>
-
-                {/* User Type Filter Tabs - At the top */}
-                <div className={styles.filterTabs}>
-                    {userTypeFilters.map(filter => {
-                        const Icon = filter.icon;
-                        const isActive = activeUserType === filter.key;
-                        const count = users.filter(u => u.role === (filter.key === 'admin' ? 1 : filter.key === 'teacher' ? 2 : filter.key === 'student' ? 3 : 4)).length;
-
-                        return (
-                            <button
-                                key={filter.key}
-                                className={`${styles.filterTab} ${isActive ? styles.active : ''}`}
-                                onClick={() => setActiveUserType(filter.key)}
-                                style={{
-                                    borderColor: isActive ? filter.color : '#e5e7eb',
-                                    color: isActive ? filter.color : '#6b7280'
-                                }}
-                            >
-                                <Icon size={18} />
-                                <span>{filter.label}</span>
-                                <span className={styles.count}>{count}</span>
-                            </button>
-                        );
-                    })}
+            <header className={styles.pageHeader}>
+                <div>
+                    <h1>User Management</h1>
+                    <p>Manage all users in the system - admins, teachers, students, and parents</p>
                 </div>
+            </header>
 
-                {/* Action bar below tabs */}
-                <div className={styles.actionBar}>
-                    <div className={styles.searchBox}>
-                        <Search size={18} />
-                        <input
-                            type="text"
-                            placeholder={`Search ${activeUserType === 'all' ? 'users' : activeUserType + 's'}...`}
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className={styles.searchInput}
-                        />
-                    </div>
-                    <div className={styles.addButtons}>
+            {/* User Type Filter Tabs - At the top */}
+            <div className={styles.filterTabs}>
+                {userTypeFilters.map(filter => {
+                    const Icon = filter.icon;
+                    const isActive = activeUserType === filter.key;
+                    const count = users.filter(u => u.role === (filter.key === 'admin' ? 1 : filter.key === 'teacher' ? 2 : filter.key === 'student' ? 3 : 4)).length;
+
+                    return (
                         <button
-                            className={`${styles.createBtn} ${styles[activeUserType]}`}
-                            onClick={() => {
-                                // Set the role based on active tab
-                                const roleMap = { student: '3', teacher: '2', parent: '4', admin: '1' };
-                                setFormData(prev => ({ ...prev, role: roleMap[activeUserType] }));
-                                setShowAddForm(true);
+                            key={filter.key}
+                            className={`${styles.filterTab} ${isActive ? styles.active : ''}`}
+                            onClick={() => setActiveUserType(filter.key)}
+                            style={{
+                                borderColor: isActive ? filter.color : '#e5e7eb',
+                                color: isActive ? filter.color : '#6b7280'
                             }}
                         >
-                            <Plus size={18} />
-                            Add {activeUserType.charAt(0).toUpperCase() + activeUserType.slice(1)}
+                            <Icon size={18} />
+                            <span>{filter.label}</span>
+                            <span className={styles.count}>{count}</span>
                         </button>
-                    </div>
-                </div>
+                    );
+                })}
+            </div>
 
-                <div className={styles.tableContainer}>
-                    <table className={styles.dataTable}>
-                        <thead>
-                            <tr>
-                                <th>User ID</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredUsers.length > 0 ? (
-                                filteredUsers.map(user => (
-                                    <tr key={user._id}>
-                                        <td>{user.userID || 'N/A'}</td>
-                                        <td>{user.firstName} {user.lastName}</td>
-                                        <td>{user.email || 'N/A'}</td>
-                                        <td>
-                                            <span
-                                                className={styles.roleBadge}
-                                                style={{
-                                                    backgroundColor: getRoleColor(user.role) + '20',
-                                                    color: getRoleColor(user.role),
-                                                    border: `1px solid ${getRoleColor(user.role)}30`
-                                                }}
+            {/* Action bar below tabs */}
+            <div className={styles.actionBar}>
+                <div className={styles.searchBox}>
+                    <Search size={18} />
+                    <input
+                        type="text"
+                        placeholder={`Search ${activeUserType === 'all' ? 'users' : activeUserType + 's'}...`}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className={styles.searchInput}
+                    />
+                </div>
+                <div className={styles.addButtons}>
+                    <button
+                        className={`${styles.createBtn} ${styles[activeUserType]}`}
+                        onClick={() => {
+                            // Reset form and set the role based on active tab
+                            resetForm();
+                            setFormData(prev => ({ ...prev, role: activeUserType }));
+                            setShowAddForm(true);
+                        }}
+                    >
+                        <Plus size={18} />
+                        Add {activeUserType.charAt(0).toUpperCase() + activeUserType.slice(1)}
+                    </button>
+                </div>
+            </div>
+
+            <div className={styles.tableContainer}>
+                <table className={styles.dataTable}>
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredUsers.length > 0 ? (
+                            filteredUsers.map(user => (
+                                <tr key={user._id}>
+                                    <td>{user.userID || 'N/A'}</td>
+                                    <td>{user.firstName} {user.lastName}</td>
+                                    <td>{user.email || 'N/A'}</td>
+                                    <td>
+                                        <span
+                                            className={styles.roleBadge}
+                                            style={{
+                                                backgroundColor: getRoleColor(user.role) + '20',
+                                                color: getRoleColor(user.role),
+                                                border: `1px solid ${getRoleColor(user.role)}30`
+                                            }}
+                                        >
+                                            {roleMap[user.role as keyof typeof roleMap] || 'Unknown'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span className={user.isActive ? styles.activeStatus : styles.inactiveStatus}>
+                                            {user.isActive ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div className={styles.actionButtons}>
+                                            <button className={styles.editBtn}>
+                                                <Edit size={16} />
+                                            </button>
+                                            <button
+                                                className={styles.deleteBtn}
+                                                onClick={() => handleDelete(user._id)}
                                             >
-                                                {roleMap[user.role as keyof typeof roleMap] || 'Unknown'}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span className={user.isActive ? styles.activeStatus : styles.inactiveStatus}>
-                                                {user.isActive ? 'Active' : 'Inactive'}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div className={styles.actionButtons}>
-                                                <button className={styles.editBtn}>
-                                                    <Edit size={16} />
-                                                </button>
-                                                <button
-                                                    className={styles.deleteBtn}
-                                                    onClick={() => handleDelete(user._id)}
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan={6} className={styles.emptyState}>
-                                        <Users size={48} />
-                                        <h3>No users found</h3>
-                                        <p>{searchTerm ? 'Try a different search term' : `No ${activeUserType}s in the system`}</p>
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </main>
-        </div>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan={6} className={styles.emptyState}>
+                                    <Users size={48} />
+                                    <h3>No users found</h3>
+                                    <p>{searchTerm ? 'Try a different search term' : `No ${activeUserType}s in the system`}</p>
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </PortalLayout>
     );
 };
 
-export default withAuth(UserManagement, ['Admin']);
+export default function ProtectedUserManagement() {
+    return (
+        <ProtectedRoute roles={['Admin']}>
+            <UserManagement />
+        </ProtectedRoute>
+    );
+}

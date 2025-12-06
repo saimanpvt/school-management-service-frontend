@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CourseFormData } from '../types/course';
+import { CourseFormData } from '../lib/types';
 import styles from '../pages/portal/admin/[id]/admin.module.css';
 
 interface CourseFormProps {

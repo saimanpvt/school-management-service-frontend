@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import Sidebar from '../../../../components/Sidebar';
+import PortalLayout from '../../../../components/PortalLayout';
 import { studentService } from '../../../../services/student.service';
 import { MessageSquare, Send, User } from 'lucide-react';
 import styles from './student.module.css';
@@ -88,7 +88,7 @@ const StudentMessages = () => {
             <div className={styles.container}>
                 <Sidebar name="Student" role="student" />
                 <main className={styles.main}>
-                    <div className={styles.loading}>Loading messages...</div>
+                    <div className={styles.loading}><LoadingDots /></div>
                 </main>
             </div>
         );

@@ -49,3 +49,16 @@ export interface ApiResponse<T = any> {
   error?: string;
   message?: string;
 }
+
+// Course Types
+export interface CourseFormData {
+  courseCode: string;
+  courseName: string;
+  description?: string;
+  duration: number;
+  teacherId: string;
+  classId: string;
+  academicYear: string;
+  isActive?: boolean;
+}
+}

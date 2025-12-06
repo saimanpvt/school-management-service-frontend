@@ -1,22 +1,16 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import { authApi } from '../../lib/api';
+import { authApi } from '../../services/authApi';
 import Link from 'next/link';
 import styles from './signup.module.css';
 import LoadingDots from '../../components/LoadingDots';
 import { getDashboardUrl } from '../../utils/routing';
 
-// Role mapping object
-const ROLE_MAPPING = {
-  admin: 1,
-  teacher: 2,
-  student: 3,
-  parent: 4
-};
+// No role mapping needed - send role names directly
 
 export default function SignupPage() {
   const router = useRouter();
-  const [userType, setUserType] = useState<'student' | 'teacher' | 'parent'>('student');
+  const [userType, setUserType] = useState<'admin' | 'teacher' | 'student' | 'parent'>('student');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -47,7 +41,7 @@ export default function SignupPage() {
         firstName: formData.name,
         email: formData.email,
         password: formData.password,
-        role: ROLE_MAPPING[userType],
+        role: userType,
       });
 
       if (response.success) {
@@ -87,7 +81,7 @@ export default function SignupPage() {
           <div className={styles["form-group"]}>
             <label className={styles["form-label"]}>I am a</label>
             <div className={styles["user-type-toggle"]}>
-               <button
+              <button
                 type="button"
                 className={`${styles["toggle-btn"]} ${userType === 'admin' ? styles["active"] : ''}`}
                 onClick={() => setUserType('admin')}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/router";
 import {
   GraduationCap,
   Calendar,
@@ -27,13 +28,31 @@ import {
 } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from "recharts";
 import styles from "./index.module.css";
+import { useAuth } from "../lib/auth";
+import { getDashboardUrl } from "../utils/routing";
 
 export default function EduConnectLanding() {
+  const router = useRouter();
+  const { user, isLoading, isAuthenticated } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  // Redirect authenticated users to their dashboard
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user) {
+      console.log('User is authenticated, redirecting to dashboard');
+      const dashboardUrl = getDashboardUrl(user.role, user.userID);
+      router.push(dashboardUrl);
+    }
+  }, [isAuthenticated, user, isLoading, router]);
+
+  // Don't render landing page if user is authenticated
+  if (isAuthenticated && user) {
+    return null;
+  }
 
   // Growth data for charts
   const growthData = [

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import Sidebar from '../../../../components/Sidebar';
-import { withAuth } from '../../../../lib/withAuth';
+import PortalLayout from '../../../../components/PortalLayout';
+import { ProtectedRoute } from '../../../../lib/auth';
 import { MessageSquare, Send, Search } from 'lucide-react';
 import styles from './admin.module.css';
+import LoadingDots from '../../../../components/LoadingDots';
 
 const AdminMessages = () => {
     const router = useRouter();
@@ -38,64 +39,58 @@ const AdminMessages = () => {
 
     if (loading) {
         return (
-            <div className={styles.container}>
-                <Sidebar name="Admin" role="admin" />
-                <main className={styles.main}>
-                    <div className={styles.loading}>Loading messages...</div>
-                </main>
-            </div>
+            <PortalLayout userRole="admin" userName="Admin">
+                <div className={styles.loading}><LoadingDots /></div>
+            </PortalLayout>
         );
     }
 
     return (
-        <div className={styles.container}>
-            <Sidebar name="Admin" role="admin" />
-            <main className={styles.main}>
-                <header className={styles.pageHeader}>
-                    <div>
-                        <h1>Messages</h1>
-                        <p>Manage system-wide messages and communications</p>
-                    </div>
-                    <div className={styles.headerActions}>
-                        <div className={styles.searchBox}>
-                            <Search size={18} />
-                            <input
-                                type="text"
-                                placeholder="Search messages..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className={styles.searchInput}
-                            />
-                        </div>
-                        <button className={styles.createBtn}>
-                            <Send size={18} />
-                            Compose Message
-                        </button>
-                    </div>
-                </header>
-
-                <div className={styles.messagesContainer}>
-                    {filteredMessages.length > 0 ? (
-                        filteredMessages.map(message => (
-                            <div key={message.id} className={styles.messageCard}>
-                                <div className={styles.messageHeader}>
-                                    <span className={styles.messageSender}>{message.sender}</span>
-                                    <span className={styles.messageDate}>{new Date(message.date).toLocaleDateString()}</span>
-                                </div>
-                                <div className={styles.messageSubject}>{message.subject}</div>
-                                <div className={styles.messageText}>{message.content}</div>
-                            </div>
-                        ))
-                    ) : (
-                        <div className={styles.emptyState}>
-                            <MessageSquare size={48} />
-                            <h3>No messages</h3>
-                            <p>{searchTerm ? 'No messages match your search' : 'No messages in the system'}</p>
-                        </div>
-                    )}
+        <PortalLayout userRole="admin" userName="Admin">
+            <header className={styles.pageHeader}>
+                <div>
+                    <h1>Messages</h1>
+                    <p>Manage system-wide messages and communications</p>
                 </div>
-            </main>
-        </div>
+                <div className={styles.headerActions}>
+                    <div className={styles.searchBox}>
+                        <Search size={18} />
+                        <input
+                            type="text"
+                            placeholder="Search messages..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className={styles.searchInput}
+                        />
+                    </div>
+                    <button className={styles.createBtn}>
+                        <Send size={18} />
+                        Compose Message
+                    </button>
+                </div>
+            </header>
+
+            <div className={styles.messagesContainer}>
+                {filteredMessages.length > 0 ? (
+                    filteredMessages.map(message => (
+                        <div key={message.id} className={styles.messageCard}>
+                            <div className={styles.messageHeader}>
+                                <span className={styles.messageSender}>{message.sender}</span>
+                                <span className={styles.messageDate}>{new Date(message.date).toLocaleDateString()}</span>
+                            </div>
+                            <div className={styles.messageSubject}>{message.subject}</div>
+                            <div className={styles.messageText}>{message.content}</div>
+                        </div>
+                    ))
+                ) : (
+                    <div className={styles.emptyState}>
+                        <MessageSquare size={48} />
+                        <h3>No messages</h3>
+                        <p>{searchTerm ? 'No messages match your search' : 'No messages in the system'}</p>
+                    </div>
+                )}
+            </div>
+        </PortalLayout>
     );
 };
 

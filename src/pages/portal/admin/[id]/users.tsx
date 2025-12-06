@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import Sidebar from '../../../../components/Sidebar';
-import { withAuth } from '../../../../lib/withAuth';
-import { apiServices } from '../../../../lib/api';
+import PortalLayout from '../../../../components/PortalLayout';
+import { ProtectedRoute } from '../../../../lib/auth';
+import { apiServices } from '../../../../services/api';
 import { Users, Plus, Search, Edit, Trash2, X, Mail, Eye, EyeOff } from 'lucide-react';
 import styles from './admin.module.css';
+import LoadingDots from '../../../../components/LoadingDots';
 
 interface UserFormData {
     email: string;
@@ -70,10 +71,10 @@ const AdminUsers = () => {
     });
 
     const roleOptions = [
-        { value: '1', label: 'Admin', color: '#ef4444' },
-        { value: '2', label: 'Teacher', color: '#3b82f6' },
-        { value: '3', label: 'Student', color: '#10b981' },
-        { value: '4', label: 'Parent', color: '#f59e0b' }
+        { value: 'admin', label: 'Admin', color: '#ef4444' },
+        { value: 'teacher', label: 'Teacher', color: '#3b82f6' },
+        { value: 'student', label: 'Student', color: '#10b981' },
+        { value: 'parent', label: 'Parent', color: '#f59e0b' }
     ];
 
     const genderOptions = ['Male', 'Female', 'Other'];
@@ -168,10 +169,10 @@ const AdminUsers = () => {
             const userData = {
                 ...formData,
                 password: generatedPassword,
-                role: parseInt(formData.role)
+                role: formData.role
             };
 
-            const response = await apiServices.admin.createUser(userData);
+            const response = await apiServices.users.create(userData);
 
             if (response.success) {
                 // Send email with credentials
@@ -219,7 +220,7 @@ const AdminUsers = () => {
     const handleDelete = async (userID: string) => {
         if (confirm('Are you sure you want to delete this user?')) {
             try {
-                await apiServices.admin.deleteUser(userID);
+                await apiServices.users.delete(userID);
                 setUsers(users.filter(u => u._id !== userID));
             } catch (error) {
                 console.error('Error deleting user:', error);
@@ -482,129 +483,123 @@ const AdminUsers = () => {
 
     if (loading) {
         return (
-            <div className={styles.container}>
-                <Sidebar name="Admin" role="admin" />
-                <main className={styles.main}>
-                    <div className={styles.loading}>Loading users...</div>
-                </main>
-            </div>
+            <PortalLayout userName="Admin" userRole="admin">
+                <div className={styles.loading}><LoadingDots /></div>
+            </PortalLayout>
         );
     }
 
     return (
-        <div className={styles.container}>
-            <Sidebar name="Admin" role="admin" />
-            <main className={styles.main}>
-                {showAddForm && renderAddUserForm()}
+        <PortalLayout userName="Admin" userRole="admin">
+            {showAddForm && renderAddUserForm()}
 
-                <header className={styles.pageHeader}>
-                    <div>
-                        <h1>User Management</h1>
-                        <p>Manage all users in the system - Students, Teachers, Parents, and Admins</p>
+            <header className={styles.pageHeader}>
+                <div>
+                    <h1>User Management</h1>
+                    <p>Manage all users in the system - Students, Teachers, Parents, and Admins</p>
+                </div>
+                <div className={styles.headerActions}>
+                    <div className={styles.searchBox}>
+                        <Search size={18} />
+                        <input
+                            type="text"
+                            placeholder="Search users..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className={styles.searchInput}
+                        />
                     </div>
-                    <div className={styles.headerActions}>
-                        <div className={styles.searchBox}>
-                            <Search size={18} />
-                            <input
-                                type="text"
-                                placeholder="Search users..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className={styles.searchInput}
-                            />
-                        </div>
-                        <button
-                            className={styles.createBtn}
-                            onClick={() => setShowAddForm(true)}
-                        >
-                            <Plus size={18} />
-                            Add User
-                        </button>
-                    </div>
-                </header>
+                    <button
+                        className={styles.createBtn}
+                        onClick={() => setShowAddForm(true)}
+                    >
+                        <Plus size={18} />
+                        Add User
+                    </button>
+                </div>
+            </header>
 
-                <div className={styles.tableContainer}>
-                    <table className={styles.dataTable}>
-                        <thead>
-                            <tr>
-                                <th>User ID</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Phone</th>
-                                <th>Status</th>
-                                <th>Last Login</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredUsers.length > 0 ? (
-                                filteredUsers.map(user => (
-                                    <tr key={user._id}>
-                                        <td>
-                                            <span className={styles.userID}>{user.userID}</span>
-                                        </td>
-                                        <td>
-                                            <div className={styles.userInfo}>
-                                                <div className={styles.userAvatar}>
-                                                    {user.firstName.charAt(0)}{user.lastName.charAt(0)}
-                                                </div>
-                                                <span>{user.fullName}</span>
+            <div className={styles.tableContainer}>
+                <table className={styles.dataTable}>
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                            <th>Last Login</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredUsers.length > 0 ? (
+                            filteredUsers.map(user => (
+                                <tr key={user._id}>
+                                    <td>
+                                        <span className={styles.userID}>{user.userID}</span>
+                                    </td>
+                                    <td>
+                                        <div className={styles.userInfo}>
+                                            <div className={styles.userAvatar}>
+                                                {user.firstName.charAt(0)}{user.lastName.charAt(0)}
                                             </div>
-                                        </td>
-                                        <td>{user.email}</td>
-                                        <td>
-                                            <span
-                                                className={styles.roleBadge}
-                                                style={{ backgroundColor: getRoleColor(user.role) }}
+                                            <span>{user.fullName}</span>
+                                        </div>
+                                    </td>
+                                    <td>{user.email}</td>
+                                    <td>
+                                        <span
+                                            className={styles.roleBadge}
+                                            style={{ backgroundColor: getRoleColor(user.role) }}
+                                        >
+                                            {user.roleName}
+                                        </span>
+                                    </td>
+                                    <td>{user.phone || 'N/A'}</td>
+                                    <td>
+                                        <span
+                                            className={`${styles.statusBadge} ${user.isActive ? styles.active : styles.inactive
+                                                }`}
+                                        >
+                                            {user.isActive ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {user.lastLogin
+                                            ? new Date(user.lastLogin).toLocaleDateString()
+                                            : 'Never'
+                                        }
+                                    </td>
+                                    <td>
+                                        <div className={styles.actionButtons}>
+                                            <button className={styles.editBtn}>
+                                                <Edit size={16} />
+                                            </button>
+                                            <button
+                                                className={styles.deleteBtn}
+                                                onClick={() => handleDelete(user._id)}
                                             >
-                                                {user.roleName}
-                                            </span>
-                                        </td>
-                                        <td>{user.phone || 'N/A'}</td>
-                                        <td>
-                                            <span
-                                                className={`${styles.statusBadge} ${user.isActive ? styles.active : styles.inactive
-                                                    }`}
-                                            >
-                                                {user.isActive ? 'Active' : 'Inactive'}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {user.lastLogin
-                                                ? new Date(user.lastLogin).toLocaleDateString()
-                                                : 'Never'
-                                            }
-                                        </td>
-                                        <td>
-                                            <div className={styles.actionButtons}>
-                                                <button className={styles.editBtn}>
-                                                    <Edit size={16} />
-                                                </button>
-                                                <button
-                                                    className={styles.deleteBtn}
-                                                    onClick={() => handleDelete(user._id)}
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan={8} className={styles.emptyState}>
-                                        <Users size={48} />
-                                        <h3>No users found</h3>
-                                        <p>{searchTerm ? 'Try a different search term' : 'No users in the system'}</p>
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </main>
-        </div>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan={8} className={styles.emptyState}>
+                                    <Users size={48} />
+                                    <h3>No users found</h3>
+                                    <p>{searchTerm ? 'Try a different search term' : 'No users in the system'}</p>
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </PortalLayout>
     );
 };
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import Sidebar from '../../../../components/Sidebar';
+import PortalLayout from '../../../../components/PortalLayout';
 import { parentService } from '../../../../services/parent.service';
 import { BarChart2, TrendingUp, Award, Users } from 'lucide-react';
 import styles from './parent.module.css';
@@ -69,8 +69,8 @@ const ParentProgress = () => {
     }, [id]);
 
     const children = Array.from(new Set(progress.map(p => ({ id: p.childId, name: p.childName }))));
-    const filteredProgress = selectedChild === 'all' 
-        ? progress 
+    const filteredProgress = selectedChild === 'all'
+        ? progress
         : progress.filter(p => p.childId === selectedChild);
 
     const calculateOverallAverage = () => {
@@ -84,7 +84,7 @@ const ParentProgress = () => {
             <div className={styles.container}>
                 <Sidebar name="Parent" role="parent" />
                 <main className={styles.main}>
-                    <div className={styles.loading}>Loading progress...</div>
+                    <div className={styles.loading}><LoadingDots /></div>
                 </main>
             </div>
         );
@@ -152,8 +152,8 @@ const ParentProgress = () => {
                                 </div>
 
                                 <div className={styles.progressBar}>
-                                    <div 
-                                        className={styles.progressFill} 
+                                    <div
+                                        className={styles.progressFill}
                                         style={{ width: `${item.currentGrade}%` }}
                                     />
                                 </div>

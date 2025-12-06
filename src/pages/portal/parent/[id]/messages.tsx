@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import Sidebar from '../../../../components/Sidebar';
-import { MessageSquare, Send, User, Search } from 'lucide-react';
+import PortalLayout from '../../../../components/PortalLayout';
+import { MessageSquare, Send, User, Search, Mail } from 'lucide-react';
 import styles from './parent.module.css';
+import LoadingDots from '../../../../components/LoadingDots';
 
 interface Message {
     id: string;
@@ -90,7 +91,7 @@ const ParentMessages = () => {
             <div className={styles.container}>
                 <Sidebar name="Parent" role="parent" />
                 <main className={styles.main}>
-                    <div className={styles.loading}>Loading messages...</div>
+                    <div className={styles.loading}><LoadingDots /></div>
                 </main>
             </div>
         );

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import Sidebar from '../../../../components/Sidebar';
-import { FileText, Calendar, Clock, MapPin, TrendingUp } from 'lucide-react';
+import PortalLayout from '../../../../components/PortalLayout';
+import { FileText, Calendar, Clock, TrendingUp, Award } from 'lucide-react';
 import styles from './parent.module.css';
+import LoadingDots from '../../../../components/LoadingDots';
 
 interface Exam {
     id: string;
@@ -71,8 +72,8 @@ const ParentExams = () => {
     };
 
     const children = Array.from(new Set(exams.map(e => ({ id: e.childId, name: e.childName }))));
-    const filteredExams = selectedChild === 'all' 
-        ? exams 
+    const filteredExams = selectedChild === 'all'
+        ? exams
         : exams.filter(e => e.childId === selectedChild);
 
     if (loading) {
@@ -80,7 +81,7 @@ const ParentExams = () => {
             <div className={styles.container}>
                 <Sidebar name="Parent" role="parent" />
                 <main className={styles.main}>
-                    <div className={styles.loading}>Loading exams...</div>
+                    <div className={styles.loading}><LoadingDots /></div>
                 </main>
             </div>
         );

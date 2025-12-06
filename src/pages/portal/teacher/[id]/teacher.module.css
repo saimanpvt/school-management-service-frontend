@@ -1,5 +1,6 @@
 .container {
-  @apply flex min-h-screen bg-gray-50;
+  @apply flex bg-gray-50;
+  min-height: calc(100vh - 73px); /* Adjust for header height */
 }
 
 .main {

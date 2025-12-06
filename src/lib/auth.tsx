@@ -1,187 +1,91 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { authApi, setToken, clearToken } from './api';
-import { AuthState, User, UserRole } from './types';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { authApi } from '../services/authApi';
+import LoadingDots from '../components/LoadingDots';
 
-interface AuthContextType extends AuthState {
+// Auth context
+const AuthContext = createContext<{
+    user: any;
+    isAuthenticated: boolean;
     login: (email: string, password: string) => Promise<boolean>;
-    logout: () => Promise<void>;
-    updateUser: (user: User) => void;
-}
-
-const initialState: AuthState = {
-    user: null,
-    token: null,
-    isAuthenticated: false,
-    isLoading: true,
-};
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+    logout: () => void;
+    loading: boolean;
+} | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [state, setState] = useState<AuthState>(initialState);
+    const [user, setUser] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const isAuthenticated = !!user;
 
-    const handleLogout = useCallback(async () => {
-        try {
-            // Only call API logout if we have a token
-            const hasToken = localStorage.getItem('token');
-            if (hasToken) {
-                await authApi.logout();
-            }
-        } catch (error) {
-            console.error('Logout error:', error);
-        } finally {
-            clearToken();
-            localStorage.removeItem('user');
-            setState({
-                user: null,
-                token: null,
-                isAuthenticated: false,
-                isLoading: false,
-            });
-
-            // Only redirect if not already on login page
-            if (window.location.pathname !== '/login') {
-                window.location.href = '/login';
-            }
-        }
-    }, []);
-
-    const loadUser = useCallback(async () => {
-        try {
-            const response = await authApi.getProfile();
-            if (response.success && response.data) {
-                setState({
-                    user: response.data,
-                    token: localStorage.getItem('token'),
-                    isAuthenticated: true,
-                    isLoading: false,
-                });
-            } else {
-                // Only logout if we get a clear failure from server
-                console.log('Profile fetch failed, user might be logged out');
-                handleLogout();
-            }
-        } catch (error: any) {
-            // Check if it's a network error vs authentication error
-            if (error.response?.status === 401) {
-                // Clear authentication - token is invalid
-                console.log('Authentication failed, logging out');
-                handleLogout();
-            } else {
-                // Network error or server issue - keep user logged in but mark as not loading
-                console.log('Network error while fetching profile, keeping user logged in');
-                setState(prev => ({ ...prev, isLoading: false }));
-            }
-        }
-    }, [handleLogout]);
-
+    // Check if user is logged in on app start
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const storedUser = localStorage.getItem('user');
+        const savedUser = localStorage.getItem('user');
 
-        if (token) {
-            setToken(token);
-
-            // If we have stored user data, use it immediately while verifying with server
-            if (storedUser) {
-                try {
-                    const user = JSON.parse(storedUser);
-                    setState({
-                        user,
-                        token,
-                        isAuthenticated: true,
-                        isLoading: false,
-                    });
-                    console.log('Loaded user from localStorage:', user);
-
-                    // Skip background verification to prevent logout loops
-                    console.log('User loaded from localStorage, skipping server verification');
-                } catch (error) {
-                    console.error('Error parsing stored user:', error);
-                    // Clear invalid stored data and load fresh
-                    localStorage.removeItem('user');
-                    loadUser();
-                }
-            } else {
-                // Have token but no user data - don't fetch to avoid logout loop
-                console.log('Token exists but no user data, staying logged in');
-                setState(prev => ({ ...prev, isLoading: false }));
-            }
-        } else {
-            // No token - user is not logged in
-            setState(prev => ({ ...prev, isLoading: false }));
+        if (token && savedUser) {
+            setUser(JSON.parse(savedUser));
         }
-    }, [loadUser]);
+        setLoading(false);
+    }, []);
 
+    // Login
     const login = async (email: string, password: string) => {
-        try {
-            const response = await authApi.login({ email, password });
-            console.log('Login response:', response);
+        const response = await authApi.login({ email, password });
 
-            if (response.success && response.data) {
-                // Extract user data from the response
-                const userData = response.data;
+        if (response.success) {
+            const userData = response.data;
+            const token = userData.token;
 
-                const user: User = {
-                    uuid: userData._id, // Use _id from backend
-                    id: userData._id,
-                    userID: userData.userID,
-                    email: userData.email,
-                    firstName: userData.firstName,
-                    lastName: userData.lastName,
-                    phone: undefined, // Not in backend response
-                    address: userData.address,
-                    dob: undefined, // Not in backend response
-                    gender: undefined, // Not in backend response
-                    bloodGroup: undefined, // Not in backend response
-                    role: userData.role as UserRole,
-                    profileImage: undefined, // Not in backend response
-                    accessToken: userData.token // Use token from backend
-                };
+            // Set token in API headers
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(userData));
 
-                console.log('User data processed:', user);
-
-                // Use token from backend response
-                const token = userData.token;
-
-                setToken(token);
-                setState({
-                    user,
-                    token,
-                    isAuthenticated: true,
-                    isLoading: false,
-                });
-
-                // Store user in localStorage for persistence
-                if (typeof window !== 'undefined') {
-                    localStorage.setItem('user', JSON.stringify(user));
-                    (window as unknown as { __authUser: User }).__authUser = user;
-                }
-                return true;
+            // Set Authorization header for future requests
+            if (typeof window !== 'undefined') {
+                const api = (await import('../services/api')).api;
+                api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             }
-            return false;
-        } catch (error: unknown) {
-            console.error('Login error:', error);
-            const errorMessage = error instanceof Error ? error.message : 'Login failed';
-            throw new Error(errorMessage);
+
+            setUser(userData);
+            return true;
         }
+        return false;
     };
 
-    const updateUser = (user: User) => {
-        setState(prev => ({ ...prev, user }));
+    // Logout
+    const logout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+        window.location.href = '/';
     };
 
     return (
-        <AuthContext.Provider value={{ ...state, login, logout: handleLogout, updateUser }}>
+        <AuthContext.Provider value={{ user, isAuthenticated, login, logout, loading }}>
             {children}
         </AuthContext.Provider>
     );
 }
 
+// Hook to use auth
 export function useAuth() {
     const context = useContext(AuthContext);
-    if (context === undefined) {
+    if (!context) {
         throw new Error('useAuth must be used within an AuthProvider');
     }
     return context;
+}
+// Simple route protection
+export function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?: string[] }) {
+    const { user, loading } = useAuth();
+    if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}><LoadingDots /></div>;
+    if (!user) {
+        window.location.href = '/';
+        return null;
+    }
+    if (roles && !roles.includes(user.role)) {
+        window.location.href = '/';
+        return null;
+    }
+
+    return <>{children}</>;
 }

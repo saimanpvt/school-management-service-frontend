@@ -31,9 +31,17 @@ const Login = () => {
     try {
       const success = await login(email, password);
       if (success) {
-        // The useEffect will handle the redirect automatically
-        // when user state is updated in auth context
-        console.log("Login successful, waiting for user data...");
+        // Login successful, redirect immediately
+        console.log("Login successful, redirecting...");
+        // Small delay to ensure state is updated
+        setTimeout(() => {
+          const userData = JSON.parse(localStorage.getItem('user') || '{}');
+          if (userData.role && userData.userID) {
+            const dashboardUrl = getDashboardUrl(userData.role, userData.userID);
+            console.log("Redirecting to:", dashboardUrl);
+            router.push(dashboardUrl);
+          }
+        }, 100);
       } else {
         setError("Invalid email or password. Please try again.");
       }

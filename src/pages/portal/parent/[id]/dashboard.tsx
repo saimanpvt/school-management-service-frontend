@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import styles from "./parent.module.css";
-import Sidebar from "../../../../components/Sidebar";
+import PortalLayout from "../../../../components/PortalLayout";
 import Link from "next/link";
 import { parentService, ParentDashboardStats } from "../../../../services/parent.service";
 
@@ -161,7 +161,7 @@ const ParentDashboard = () => {
             <Sidebar name={stats?.parentName || "Parent"} role="parent" />
             <main className={styles.main}>
                 {loading ? (
-                    <div className={styles.loading}>Loading...</div>
+                    <div className={styles.loading}><LoadingDots /></div>
                 ) : (
                     <>
                         <header className={styles.header}>

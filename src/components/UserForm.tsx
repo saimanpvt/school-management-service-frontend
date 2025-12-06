@@ -21,6 +21,14 @@ export interface UserFormData {
     bloodGroup?: string;
     profileImage?: string;
     userID: string;
+    // Role-specific fields
+    employeeId?: string;
+    experience?: string;
+    DOJ?: string;
+    admissionDate?: string;
+    studentId?: string;
+    childrenId?: string;
+    classId?: string;
 }
 
 interface UserFormProps {
@@ -36,8 +44,8 @@ interface UserFormProps {
     genderOptions: string[];
     bloodGroupOptions: string[];
     parentOptions?: { value: string; label: string }[];
+    activeUserType?: string;
     isEdit?: boolean;
-    fixedRole?: string; // When set, role dropdown is disabled and shows this role
 }
 
 const UserForm: React.FC<UserFormProps> = ({
@@ -52,10 +60,8 @@ const UserForm: React.FC<UserFormProps> = ({
     roleOptions,
     genderOptions,
     bloodGroupOptions,
-    // parentOptions removed (no longer needed for text input)
-    // teacherOptions removed
-    isEdit = false,
-    fixedRole,
+    activeUserType = 'student',
+    isEdit = false
 }) => {
     // Password generator
     const generatePassword = () => {
@@ -90,21 +96,42 @@ const UserForm: React.FC<UserFormProps> = ({
     };
 
 
-    // Custom validation for required student fields
+    // Custom validation for required fields including role-specific
     const [formError, setFormError] = useState("");
     const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setFormError("");
+
         const missing = [];
+
+        // Basic required fields
         if (!formData.email) missing.push('Email');
         if (!formData.firstName) missing.push('First Name');
         if (!formData.lastName) missing.push('Last Name');
         if (!formData.role) missing.push('Role');
-        if ((formData.role === '2' || formData.role === '3') && !formData.userID) missing.push('User ID');
+        if ((formData.role === 'teacher' || formData.role === 'student' || formData.role === 'parent') && !formData.userID) missing.push('User ID');
+
+        // Role-specific required fields
+        if (formData.role === 'teacher' || activeUserType === 'teacher') {
+            if (!formData.employeeId) missing.push('Employee ID');
+            if (!formData.experience) missing.push('Experience');
+            if (!formData.DOJ) missing.push('Date of Joining');
+        }
+
+        if (formData.role === 'student' || activeUserType === 'student') {
+            if (!formData.studentId) missing.push('Student ID');
+            if (!formData.admissionDate) missing.push('Admission Date');
+        }
+
+        if (formData.role === 'parent' || activeUserType === 'parent') {
+            if (!formData.childrenId) missing.push('Children ID');
+        }
+
         if (missing.length > 0) {
             setFormError('Please fill all required fields: ' + missing.join(', '));
             return;
         }
+
         onSubmit(e);
     };
     return (
@@ -146,22 +173,15 @@ const UserForm: React.FC<UserFormProps> = ({
                                 value={formData.role}
                                 onChange={handleInputChange}
                                 required
-                                disabled={!!fixedRole}
-                                style={fixedRole ? { backgroundColor: '#f3f4f6', color: '#6b7280' } : {}}
                             >
                                 <option value="">Select Role</option>
                                 {roleOptions.map(role => (
                                     <option key={role.value} value={role.value}>{role.label}</option>
                                 ))}
                             </select>
-                            {fixedRole && (
-                                <small style={{ color: '#6b7280', fontSize: '0.75rem', marginTop: '0.25rem', display: 'block' }}>
-                                    Role is automatically set based on the selected user type
-                                </small>
-                            )}
                         </div>
-                        {/* User ID field: editable and required for teacher (role '2') and student (role '3'), readOnly for others */}
-                        {(formData.role === '2' || formData.role === '3') ? (
+                        {/* User ID field: editable and required for teacher, student, and parent, readOnly for admin */}
+                        {(formData.role === 'teacher' || formData.role === 'student' || formData.role === 'parent') ? (
                             <div className={styles.formGroup}>
                                 <label>User ID *</label>
                                 <input
@@ -218,28 +238,132 @@ const UserForm: React.FC<UserFormProps> = ({
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
                                 <label>Street</label>
-                                <input type="text" name="address.street" value={formData.address.street} onChange={handleInputChange} />
+                                <input type="text" name="address.street" value={formData.address?.street || ''} onChange={handleInputChange} />
                             </div>
                             <div className={styles.formGroup}>
                                 <label>City</label>
-                                <input type="text" name="address.city" value={formData.address.city} onChange={handleInputChange} />
+                                <input type="text" name="address.city" value={formData.address?.city || ''} onChange={handleInputChange} />
                             </div>
                         </div>
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
                                 <label>State</label>
-                                <input type="text" name="address.state" value={formData.address.state} onChange={handleInputChange} />
+                                <input type="text" name="address.state" value={formData.address?.state || ''} onChange={handleInputChange} />
                             </div>
                             <div className={styles.formGroup}>
                                 <label>Zip Code</label>
-                                <input type="text" name="address.zipCode" value={formData.address.zipCode} onChange={handleInputChange} />
+                                <input type="text" name="address.zipCode" value={formData.address?.zipCode || ''} onChange={handleInputChange} />
                             </div>
                         </div>
                         <div className={styles.formGroup}>
                             <label>Country</label>
-                            <input type="text" name="address.country" value={formData.address.country} onChange={handleInputChange} />
+                            <input type="text" name="address.country" value={formData.address?.country || ''} onChange={handleInputChange} />
                         </div>
                     </div>
+
+                    {/* Role-specific fields */}
+                    {activeUserType === 'teacher' && (
+                        <div className={styles.roleSpecificSection}>
+                            <h3>Teacher Details</h3>
+                            <div className={styles.formRow}>
+                                <div className={styles.formGroup}>
+                                    <label>Employee ID *</label>
+                                    <input
+                                        type="text"
+                                        name="employeeId"
+                                        value={formData.employeeId || ''}
+                                        onChange={handleInputChange}
+                                        required
+                                        placeholder="Enter Employee ID"
+                                    />
+                                </div>
+                                <div className={styles.formGroup}>
+                                    <label>Experience (Years) *</label>
+                                    <input
+                                        type="number"
+                                        name="experience"
+                                        value={formData.experience || ''}
+                                        onChange={handleInputChange}
+                                        required
+                                        placeholder="Years of experience"
+                                    />
+                                </div>
+                            </div>
+                            <div className={styles.formRow}>
+                                <div className={styles.formGroup}>
+                                    <label>Date of Joining *</label>
+                                    <input
+                                        type="date"
+                                        name="DOJ"
+                                        value={formData.DOJ || ''}
+                                        onChange={handleInputChange}
+                                        required
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeUserType === 'student' && (
+                        <div className={styles.roleSpecificSection}>
+                            <h3>Student Details</h3>
+                            <div className={styles.formRow}>
+                                <div className={styles.formGroup}>
+                                    <label>Student ID *</label>
+                                    <input
+                                        type="text"
+                                        name="studentId"
+                                        value={formData.studentId || ''}
+                                        onChange={handleInputChange}
+                                        required
+                                        placeholder="Enter Student ID"
+                                    />
+                                </div>
+                                <div className={styles.formGroup}>
+                                    <label>Admission Date *</label>
+                                    <input
+                                        type="date"
+                                        name="admissionDate"
+                                        value={formData.admissionDate || ''}
+                                        onChange={handleInputChange}
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className={styles.formRow}>
+                                <div className={styles.formGroup}>
+                                    <label>Class ID</label>
+                                    <input
+                                        type="text"
+                                        name="classId"
+                                        value={formData.classId || ''}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter Class ID"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeUserType === 'parent' && (
+                        <div className={styles.roleSpecificSection}>
+                            <h3>Parent Details</h3>
+                            <div className={styles.formRow}>
+                                <div className={styles.formGroup}>
+                                    <label>Children ID *</label>
+                                    <input
+                                        type="text"
+                                        name="childrenId"
+                                        value={formData.childrenId || ''}
+                                        onChange={handleInputChange}
+                                        required
+                                        placeholder="Enter Student ID of child"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <div className={styles.passwordSection}>
                         <h3>Password Generation</h3>
                         <div className={styles.passwordGenerator}>

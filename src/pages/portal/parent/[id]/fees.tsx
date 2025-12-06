@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import Sidebar from '../../../../components/Sidebar';
+import PortalLayout from '../../../../components/PortalLayout';
 import { parentService } from '../../../../services/parent.service';
 import { DollarSign, Calendar, CheckCircle, AlertCircle, CreditCard } from 'lucide-react';
 import styles from './parent.module.css';
@@ -74,13 +74,13 @@ const ParentFees = () => {
     };
 
     const children = Array.from(new Set(fees.map(f => ({ id: f.childId, name: f.childName }))));
-    const filteredFees = selectedChild === 'all' 
-        ? fees 
+    const filteredFees = selectedChild === 'all'
+        ? fees
         : fees.filter(f => f.childId === selectedChild);
 
     const totalPending = filteredFees.filter(f => f.status === 'pending' || f.status === 'overdue')
         .reduce((sum, f) => sum + f.amount, 0);
-    
+
     const totalPaid = filteredFees.filter(f => f.status === 'paid')
         .reduce((sum, f) => sum + f.amount, 0);
 
@@ -89,7 +89,7 @@ const ParentFees = () => {
             <div className={styles.container}>
                 <Sidebar name="Parent" role="parent" />
                 <main className={styles.main}>
-                    <div className={styles.loading}>Loading fees...</div>
+                    <div className={styles.loading}><LoadingDots /></div>
                 </main>
             </div>
         );

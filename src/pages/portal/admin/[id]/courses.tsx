@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import Sidebar from '../../../../components/Sidebar';
-import { apiServices } from '../../../../lib/api';
+import PortalLayout from '../../../../components/PortalLayout';
+import { apiServices } from '../../../../services/api';
 import { BookOpen, Plus, Search, Edit, Trash2 } from 'lucide-react';
 import CourseForm from '../../../../components/CourseForm';
 import { CourseFormData } from '../../../../types/course';
-import { withAuth } from '../../../../lib/withAuth';
+import { ProtectedRoute } from '../../../../lib/auth';
 import styles from './admin.module.css';
+import LoadingDots from '../../../../components/LoadingDots';
+
 
 const AdminCourses = () => {
     const router = useRouter();
@@ -33,7 +35,7 @@ const AdminCourses = () => {
             // Fetch courses, teachers, and classes
             Promise.all([
                 apiServices.courses.getAll(),
-                apiServices.teachers.getAll(),
+                apiServices.users.getByRole(2), // Teachers
                 apiServices.classes.getAll()
             ])
                 .then(([coursesRes, teachersRes, classesRes]) => {
@@ -101,75 +103,89 @@ const AdminCourses = () => {
 
     if (loading) {
         return (
-            <div className={styles.container}>
-                <Sidebar name="Admin" role="admin" />
-                <main className={styles.main}>
-                    <div className={styles.loading}>Loading courses...</div>
-                </main>
-            </div>
+            <PortalLayout userRole="admin" userName="Admin">
+                             <div className={styles.loading}><LoadingDots /></div>
+            </PortalLayout>
         );
     }
 
     return (
-        <div className={styles.container}>
-            <Sidebar name="Admin" role="admin" />
-            <main className={styles.main}>
-                <header className={styles.pageHeader}>
-                    <div>
-                        <h1>Manage Courses</h1>
-                        <p>View and manage all courses in the system</p>
+        <PortalLayout userRole="admin" userName="Admin">
+            <header className={styles.pageHeader}>
+                <div>
+                    <h1>Manage Courses</h1>
+                    <p>View and manage all courses in the system</p>
+                </div>
+                <div className={styles.headerActions}>
+                    <div className={styles.searchBox}>
+                        <Search size={18} />
+                        <input
+                            type="text"
+                            placeholder="Search courses..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className={styles.searchInput}
+                        />
                     </div>
-                    <div className={styles.headerActions}>
-                        <div className={styles.searchBox}>
-                            <Search size={18} />
-                            <input
-                                type="text"
-                                placeholder="Search courses..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className={styles.searchInput}
-                            />
-                        </div>
-                        <button
-                            className={styles.createBtn}
-                            onClick={() => setShowAddForm(true)}
-                        >
-                            <Plus size={18} />
-                            Add Course
-                        </button>
-                    </div>
-                </header>
+                    <button
+                        className={styles.createBtn}
+                        onClick={() => setShowAddForm(true)}
+                    >
+                        <Plus size={18} />
+                        Add Course
+                    </button>
+                </div>
+            </header>
 
-                {showAddForm && (
-                    <CourseForm
-                        formData={formData}
-                        setFormData={setFormData}
-                        onSubmit={handleSubmit}
-                        onClose={() => setShowAddForm(false)}
-                        teacherOptions={teachers.map((t: any) => ({ value: t._id, label: `${t.firstName} ${t.lastName}${t.subject ? ' - ' + t.subject : ''}` }))}
-                        classOptions={classes.map((c: any) => ({ value: c._id, label: c.className }))}
-                    />
-                )}
+            {showAddForm && (
+                <CourseForm
+                    formData={formData}
+                    setFormData={setFormData}
+                    onSubmit={handleSubmit}
+                    onClose={() => setShowAddForm(false)}
+                    teacherOptions={teachers.map((t: any) => ({ value: t._id, label: `${t.firstName} ${t.lastName}${t.subject ? ' - ' + t.subject : ''}` }))}
+                    classOptions={classes.map((c: any) => ({ value: c._id, label: c.className }))}
+                />
+            )}
 
-                <div className={styles.tableContainer}>
-                    <table className={styles.dataTable}>
-                        <thead>
-                            <tr>
-                                <th>Course Name</th>
-                                <th>Course Code</th>
-                                <th>Instructor</th>
-                                <th>Credits</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredCourses.length > 0 ? (
-                                filteredCourses.map(course => (
-                                    <tr key={course.id}>
-                                        <td>{course.name || 'N/A'}</td>
-                                        <td>{course.code || 'N/A'}</td>
-                                        <td>{course.instructor || 'N/A'}</td>
-                                        <td>{course.credits || 'N/A'}</td>
+            <div className={styles.tableContainer}>
+                <table className={styles.dataTable}>
+                    <thead>
+                        <tr>
+                            <th>Course Code</th>
+                            <th>Course Name</th>
+                            <th>Academic Year</th>
+                            <th>Duration</th>
+                            <th>Teacher</th>
+                            <th>Class</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredCourses.length > 0 ? (
+                            filteredCourses.map(course => {
+                                // Find teacher name
+                                const teacher = teachers.find((t: any) => t._id === course.teacherId);
+                                const teacherName = teacher ? `${teacher.firstName} ${teacher.lastName}` : 'Not Assigned';
+
+                                // Find class name
+                                const classInfo = classes.find((c: any) => c._id === course.classId);
+                                const className = classInfo ? classInfo.className : 'Not Assigned';
+
+                                return (
+                                    <tr key={course._id || course.id}>
+                                        <td>{course.courseCode || 'N/A'}</td>
+                                        <td>{course.courseName || 'N/A'}</td>
+                                        <td>{course.academicYear || 'N/A'}</td>
+                                        <td>{course.duration ? `${course.duration} weeks` : 'N/A'}</td>
+                                        <td>{teacherName}</td>
+                                        <td>{className}</td>
+                                        <td>
+                                            <span className={`${styles.statusBadge} ${course.isActive ? styles.active : styles.inactive}`}>
+                                                {course.isActive ? 'Active' : 'Inactive'}
+                                            </span>
+                                        </td>
                                         <td>
                                             <div className={styles.actionButtons}>
                                                 <button className={styles.editBtn}>
@@ -177,30 +193,36 @@ const AdminCourses = () => {
                                                 </button>
                                                 <button
                                                     className={styles.deleteBtn}
-                                                    onClick={() => handleDelete(course.id)}
+                                                    onClick={() => handleDelete(course._id || course.id)}
                                                 >
                                                     <Trash2 size={16} />
                                                 </button>
                                             </div>
                                         </td>
                                     </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan={5} className={styles.emptyState}>
-                                        <BookOpen size={48} />
-                                        <h3>No courses found</h3>
-                                        <p>{searchTerm ? 'Try a different search term' : 'No courses in the system'}</p>
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </main>
-        </div>
+                                );
+                            })
+                        ) : (
+                            <tr>
+                                <td colSpan={8} className={styles.emptyState}>
+                                    <BookOpen size={48} />
+                                    <h3>No courses found</h3>
+                                    <p>{searchTerm ? 'Try a different search term' : 'No courses in the system'}</p>
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </PortalLayout>
     );
 };
 
-export default withAuth(AdminCourses, ['Admin']);
+export default function ProtectedAdminCourses() {
+    return (
+        <ProtectedRoute roles={['Admin']}>
+            <AdminCourses />
+        </ProtectedRoute>
+    );
+}
 

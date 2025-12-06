@@ -18,14 +18,16 @@ import {
 type Role = "student" | "teacher" | "parent" | "admin";
 
 interface SidebarProps {
-  name: string;
   role: Role;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ name, role }) => {
+const Sidebar: React.FC<SidebarProps> = ({ role }) => {
   const router = useRouter();
   const { id } = router.query;
-  const currentPath = (router as any).pathname || window?.location?.pathname || '';
+  const currentPath = router.asPath || router.pathname || '';
+
+  // Debug logging (remove in production)
+  console.log('Sidebar Debug:', { currentPath, id });
 
   const getMenuItems = () => {
     const basePath = `/portal/${role}/${id || '[id]'}`;
@@ -55,11 +57,11 @@ const Sidebar: React.FC<SidebarProps> = ({ name, role }) => {
       return [
         { icon: <Home size={18} />, label: "Dashboard", href: `${basePath}/dashboard` },
         { icon: <Users size={18} />, label: "User Management", href: `${basePath}/user-management` },
+        { icon: <BookOpen size={18} />, label: "Classes", href: `${basePath}/classes` },
         { icon: <FileText size={18} />, label: "Courses", href: `${basePath}/courses` },
         { icon: <ClipboardList size={18} />, label: "Exams", href: `${basePath}/exams` },
         { icon: <DollarSign size={18} />, label: "Fees", href: `${basePath}/fees` },
         { icon: <MessageSquare size={18} />, label: "Messages", href: `${basePath}/messages` },
-        { icon: <Settings size={18} />, label: "Settings", href: `${basePath}/settings` },
       ];
     } else {
       return [
@@ -76,22 +78,15 @@ const Sidebar: React.FC<SidebarProps> = ({ name, role }) => {
   const menuItems = getMenuItems();
 
   const isActive = (href: string) => {
-    return currentPath === href.replace(/\[id\]/g, id as string) ||
-      currentPath.replace(/\/\d+\//g, '/[id]/') === href.replace(/\[id\]/g, '[id]');
+    const actualHref = href.replace(/\[id\]/g, id as string);
+    return currentPath === actualHref;
   };
 
   return (
     <aside className={styles.sidebar}>
-      <div className={styles.profile}>
-        <div className={styles.avatar}>{name.charAt(0).toUpperCase()}</div>
-        <div>
-          <h3 className={styles.name}>{name}</h3>
-          <p className={styles.role}>{role}</p>
-        </div>
-      </div>
       <ul className={styles.menu}>
         {menuItems.map((item, index) => {
-          const active = isActive(item.href) || (index === 0 && currentPath.includes('/dashboard'));
+          const active = isActive(item.href);
           return (
             <li
               key={index}
