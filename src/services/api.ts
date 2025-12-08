@@ -144,7 +144,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      
+
       // Redirect to landing page if not already there
       if (window.location.pathname !== '/') {
         window.location.href = '/';
@@ -227,7 +227,10 @@ export const examsApi = {
     return response.data;
   },
 
-  update: async (id: string, data: Partial<ExamFormData>): Promise<ApiResponse<ExamFormData>> => {
+  update: async (
+    id: string,
+    data: Partial<ExamFormData>
+  ): Promise<ApiResponse<ExamFormData>> => {
     const response = await api.put(`/exams/${id}`, data);
     return response.data;
   },
@@ -250,12 +253,17 @@ export const feesApi = {
     return response.data;
   },
 
-  create: async (data: FeeStructureFormData): Promise<ApiResponse<FeeStructureFormData>> => {
+  create: async (
+    data: FeeStructureFormData
+  ): Promise<ApiResponse<FeeStructureFormData>> => {
     const response = await api.post('/fees', data);
     return response.data;
   },
 
-  update: async (id: string, data: Partial<FeeStructureFormData>): Promise<ApiResponse<FeeStructureFormData>> => {
+  update: async (
+    id: string,
+    data: Partial<FeeStructureFormData>
+  ): Promise<ApiResponse<FeeStructureFormData>> => {
     const response = await api.put(`/fees/${id}`, data);
     return response.data;
   },
@@ -317,8 +325,6 @@ export const referencesApi = {
   },
 };
 
-
-
 // Users API - Unified endpoint for all user types
 export const usersApi = {
   getAll: async (): Promise<ApiResponse<any[]>> => {
@@ -330,7 +336,7 @@ export const usersApi = {
     const response = await api.get('/auth/users');
     if (response.data.success && response.data.data) {
       let filteredUsers = [];
-      
+
       // Handle different response structures
       if (role === 2 && response.data.data.teachers) {
         filteredUsers = response.data.data.teachers;
@@ -345,7 +351,7 @@ export const usersApi = {
         const allUsers = response.data.data.users || [];
         filteredUsers = allUsers.filter((user: any) => user.role === role);
       }
-      
+
       return { ...response.data, data: filteredUsers };
     }
     return response.data;
@@ -513,7 +519,9 @@ export default api;
 // Teacher API - Teacher-specific operations (reusing existing endpoints where possible)
 export const teacherApi = {
   // Dashboard Statistics - Teacher specific data aggregation
-  getDashboardStats: async (teacherId: string): Promise<ApiResponse<TeacherDashboardStats>> => {
+  getDashboardStats: async (
+    teacherId: string
+  ): Promise<ApiResponse<TeacherDashboardStats>> => {
     const response = await api.get(`/teacher/${teacherId}/dashboard-stats`);
     return response.data;
   },
@@ -523,7 +531,9 @@ export const teacherApi = {
     const response = await classesApi.getAll();
     if (response.success && response.data) {
       // Filter classes where teacher is assigned (assuming classes have teacherId field)
-      const teacherClasses = response.data.filter((cls: any) => cls.teacherId === teacherId);
+      const teacherClasses = response.data.filter(
+        (cls: any) => cls.teacherId === teacherId
+      );
       return { ...response, data: teacherClasses };
     }
     return response;
@@ -534,7 +544,9 @@ export const teacherApi = {
     const response = await usersApi.getByRole(3); // Role 3 = students
     if (response.success && response.data) {
       // Filter students by classId
-      const classStudents = response.data.filter((student: any) => student.classId === classId);
+      const classStudents = response.data.filter(
+        (student: any) => student.classId === classId
+      );
       return { ...response, data: classStudents };
     }
     return response;
@@ -553,7 +565,7 @@ export const teacherApi = {
     return response.data;
   },
 
-  getAssignments: async (teacherId: string): Promise<ApiResponse<any[]>> => {
+  getAssignments: async (): Promise<ApiResponse<any[]>> => {
     const response = await api.get(`/teacher/assignments`);
     return response.data;
   },
@@ -569,12 +581,18 @@ export const teacherApi = {
     return response.data;
   },
 
-  submitGrades: async (assignmentId: string, grades: Array<{
-    studentId: string;
-    marks: number;
-    feedback?: string;
-  }>): Promise<ApiResponse<any>> => {
-    const response = await api.post(`/teacher/assignments/${assignmentId}/grades`, { grades });
+  submitGrades: async (
+    assignmentId: string,
+    grades: Array<{
+      studentId: string;
+      marks: number;
+      feedback?: string;
+    }>
+  ): Promise<ApiResponse<any>> => {
+    const response = await api.post(
+      `/teacher/assignments/${assignmentId}/grades`,
+      { grades }
+    );
     return response.data;
   },
 };
@@ -582,7 +600,9 @@ export const teacherApi = {
 // Student API - Student-specific operations (reusing existing endpoints where possible)
 export const studentApi = {
   // Dashboard Statistics - Student specific data aggregation
-  getDashboardStats: async (studentId: string): Promise<ApiResponse<StudentDashboardStats>> => {
+  getDashboardStats: async (
+    studentId: string
+  ): Promise<ApiResponse<StudentDashboardStats>> => {
     const response = await api.get(`/student/${studentId}/dashboard-stats`);
     return response.data;
   },
@@ -592,7 +612,7 @@ export const studentApi = {
     const response = await coursesApi.getAll();
     if (response.success && response.data) {
       // Filter courses where student is enrolled (assuming courses have enrolled students array)
-      const studentCourses = response.data.filter((course: any) => 
+      const studentCourses = response.data.filter((course: any) =>
         course.enrolledStudents?.includes(studentId)
       );
       return { ...response, data: studentCourses };
@@ -611,7 +631,9 @@ export const studentApi = {
     const response = await marksApi.getList();
     if (response.success && response.data) {
       // Filter grades for this student
-      const studentGrades = response.data.filter((grade: any) => grade.studentId === studentId);
+      const studentGrades = response.data.filter(
+        (grade: any) => grade.studentId === studentId
+      );
       return { ...response, data: studentGrades };
     }
     return response;
@@ -629,20 +651,27 @@ export const studentApi = {
   },
 
   // Student-specific functionality that needs dedicated endpoints
-  submitAssignment: async (assignmentId: string, submission: {
-    content?: string;
-    files?: File[];
-    submittedAt?: string;
-  }): Promise<ApiResponse<any>> => {
+  submitAssignment: async (
+    assignmentId: string,
+    submission: {
+      content?: string;
+      files?: File[];
+      submittedAt?: string;
+    }
+  ): Promise<ApiResponse<any>> => {
     const formData = new FormData();
     if (submission.content) formData.append('content', submission.content);
     if (submission.files) {
-      submission.files.forEach(file => formData.append('files', file));
+      submission.files.forEach((file) => formData.append('files', file));
     }
-    
-    const response = await api.post(`/student/assignments/${assignmentId}/submit`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
+
+    const response = await api.post(
+      `/student/assignments/${assignmentId}/submit`,
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }
+    );
     return response.data;
   },
 

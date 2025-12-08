@@ -1,12 +1,12 @@
-import Link from 'next/link'
-import { useState } from 'react'
+import Link from 'next/link';
+import { useState } from 'react';
 
 type Props = {
-  user?: { name?: string; role?: string }
-}
+  user?: { name?: string; role?: string };
+};
 
 export default function Header({ user }: Props) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
 
   return (
     <header className="bg-white border-b">
@@ -17,11 +17,21 @@ export default function Header({ user }: Props) {
           </Link>
 
           <nav className="hidden md:flex items-center space-x-4 ml-6 text-sm text-gray-700">
-            <Link href="/" className="hover:text-indigo-600">Home</Link>
-            <Link href="/courses" className="hover:text-indigo-600">Courses</Link>
-            <Link href="/students" className="hover:text-indigo-600">Students</Link>
-            <Link href="/teachers" className="hover:text-indigo-600">Teachers</Link>
-            <Link href="/exams" className="hover:text-indigo-600">Exams</Link>
+            <Link href="/" className="hover:text-indigo-600">
+              Home
+            </Link>
+            <Link href="/courses" className="hover:text-indigo-600">
+              Courses
+            </Link>
+            <Link href="/students" className="hover:text-indigo-600">
+              Students
+            </Link>
+            <Link href="/teachers" className="hover:text-indigo-600">
+              Teachers
+            </Link>
+            <Link href="/exams" className="hover:text-indigo-600">
+              Exams
+            </Link>
           </nav>
         </div>
 
@@ -35,14 +45,15 @@ export default function Header({ user }: Props) {
                 >
                   Login
                 </Link>
-
               </>
             )}
 
             {user && (
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-gray-700">{user.name}</span>
-                <span className="px-2 py-0.5 text-xs bg-gray-100 rounded">{user.role}</span>
+                <span className="px-2 py-0.5 text-xs bg-gray-100 rounded">
+                  {user.role}
+                </span>
               </div>
             )}
           </div>
@@ -63,7 +74,7 @@ export default function Header({ user }: Props) {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d={open ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+                d={open ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'}
               />
             </svg>
           </button>
@@ -73,20 +84,31 @@ export default function Header({ user }: Props) {
       {open && (
         <div className="md:hidden border-t">
           <div className="px-4 py-3 space-y-2">
-            <Link href="/" className="block">Home</Link>
-            <Link href="/courses" className="block">Courses</Link>
-            <Link href="/students" className="block">Students</Link>
-            <Link href="/teachers" className="block">Teachers</Link>
-            <Link href="/exams" className="block">Exams</Link>
+            <Link href="/" className="block">
+              Home
+            </Link>
+            <Link href="/courses" className="block">
+              Courses
+            </Link>
+            <Link href="/students" className="block">
+              Students
+            </Link>
+            <Link href="/teachers" className="block">
+              Teachers
+            </Link>
+            <Link href="/exams" className="block">
+              Exams
+            </Link>
             {!user && (
               <>
-                <Link href="/auth/login" className="block">Login</Link>
-                
+                <Link href="/auth/login" className="block">
+                  Login
+                </Link>
               </>
             )}
           </div>
         </div>
       )}
     </header>
-  )
+  );
 }

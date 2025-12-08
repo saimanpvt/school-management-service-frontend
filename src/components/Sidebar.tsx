@@ -1,7 +1,7 @@
-import React from "react";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import styles from "./Sidebar.module.css";
+import React from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import styles from './Sidebar.module.css';
 import {
   Home,
   BookOpen,
@@ -14,9 +14,9 @@ import {
   CalendarDays,
   Settings,
   X,
-} from "lucide-react";
+} from 'lucide-react';
 
-type Role = "student" | "teacher" | "parent" | "admin";
+type Role = 'student' | 'teacher' | 'parent' | 'admin';
 
 interface SidebarProps {
   role: Role;
@@ -35,45 +35,145 @@ const Sidebar: React.FC<SidebarProps> = ({ role, isOpen, onClose }) => {
   const getMenuItems = () => {
     const basePath = `/portal/${role}/${id || '[id]'}`;
 
-    if (role === "student") {
+    if (role === 'student') {
       return [
-        { icon: <Home size={18} />, label: "Dashboard", href: `${basePath}/dashboard` },
-        { icon: <BookOpen size={18} />, label: "Courses", href: `${basePath}/courses` },
-        { icon: <FileText size={18} />, label: "Assignments", href: `${basePath}/assignments` },
-        { icon: <BarChart2 size={18} />, label: "Grades", href: `${basePath}/grades` },
-        { icon: <CalendarDays size={18} />, label: "Attendance", href: `${basePath}/attendance` },
-        { icon: <FileText size={18} />, label: "Exams", href: `${basePath}/exams` },
-        { icon: <DollarSign size={18} />, label: "Fees", href: `${basePath}/fees` },
+        {
+          icon: <Home size={18} />,
+          label: 'Dashboard',
+          href: `${basePath}/dashboard`,
+        },
+        {
+          icon: <BookOpen size={18} />,
+          label: 'Courses',
+          href: `${basePath}/courses`,
+        },
+        {
+          icon: <FileText size={18} />,
+          label: 'Assignments',
+          href: `${basePath}/assignments`,
+        },
+        {
+          icon: <BarChart2 size={18} />,
+          label: 'Grades',
+          href: `${basePath}/grades`,
+        },
+        {
+          icon: <CalendarDays size={18} />,
+          label: 'Attendance',
+          href: `${basePath}/attendance`,
+        },
+        {
+          icon: <FileText size={18} />,
+          label: 'Exams',
+          href: `${basePath}/exams`,
+        },
+        {
+          icon: <DollarSign size={18} />,
+          label: 'Fees',
+          href: `${basePath}/fees`,
+        },
         // { icon: <MessageSquare size={18} />, label: "Messages", href: `${basePath}/messages` },
       ];
-    } else if (role === "teacher") {
+    } else if (role === 'teacher') {
       return [
-        { icon: <Home size={18} />, label: "Dashboard", href: `${basePath}/dashboard` },
-        { icon: <Users size={18} />, label: "Class", href: `${basePath}/class` },
-        { icon: <BookOpen size={18} />, label: "Students", href: `${basePath}/students` },
-        { icon: <ClipboardList size={18} />, label: "Assignments", href: `${basePath}/assignments` },
-        { icon: <CalendarDays size={18} />, label: "Attendance", href: `${basePath}/attendance` },
-        { icon: <FileText size={18} />, label: "Exams", href: `${basePath}/exams` },
+        {
+          icon: <Home size={18} />,
+          label: 'Dashboard',
+          href: `${basePath}/dashboard`,
+        },
+        {
+          icon: <Users size={18} />,
+          label: 'Class',
+          href: `${basePath}/class`,
+        },
+        {
+          icon: <BookOpen size={18} />,
+          label: 'Students',
+          href: `${basePath}/students`,
+        },
+        {
+          icon: <ClipboardList size={18} />,
+          label: 'Assignments',
+          href: `${basePath}/assignments`,
+        },
+        {
+          icon: <CalendarDays size={18} />,
+          label: 'Attendance',
+          href: `${basePath}/attendance`,
+        },
+        {
+          icon: <FileText size={18} />,
+          label: 'Exams',
+          href: `${basePath}/exams`,
+        },
         // { icon: <MessageSquare size={18} />, label: "Messages", href: `${basePath}/messages` },
       ];
-    } else if (role === "admin") {
+    } else if (role === 'admin') {
       return [
-        { icon: <Home size={18} />, label: "Dashboard", href: `${basePath}/dashboard` },
-        { icon: <Users size={18} />, label: "User Management", href: `${basePath}/user-management` },
-        { icon: <CalendarDays size={18} />, label: "Attendance", href: `${basePath}/attendance` },
-        { icon: <BookOpen size={18} />, label: "Classes", href: `${basePath}/classes` },
-        { icon: <FileText size={18} />, label: "Courses", href: `${basePath}/courses` },
-        { icon: <ClipboardList size={18} />, label: "Exams", href: `${basePath}/exams` },
-        { icon: <DollarSign size={18} />, label: "Fees", href: `${basePath}/fees` },
+        {
+          icon: <Home size={18} />,
+          label: 'Dashboard',
+          href: `${basePath}/dashboard`,
+        },
+        {
+          icon: <Users size={18} />,
+          label: 'User Management',
+          href: `${basePath}/user-management`,
+        },
+        {
+          icon: <CalendarDays size={18} />,
+          label: 'Attendance',
+          href: `${basePath}/attendance`,
+        },
+        {
+          icon: <BookOpen size={18} />,
+          label: 'Classes',
+          href: `${basePath}/classes`,
+        },
+        {
+          icon: <FileText size={18} />,
+          label: 'Courses',
+          href: `${basePath}/courses`,
+        },
+        {
+          icon: <ClipboardList size={18} />,
+          label: 'Exams',
+          href: `${basePath}/exams`,
+        },
+        {
+          icon: <DollarSign size={18} />,
+          label: 'Fees',
+          href: `${basePath}/fees`,
+        },
         // { icon: <MessageSquare size={18} />, label: "Messages", href: `${basePath}/messages` },
       ];
     } else {
       return [
-        { icon: <Home size={18} />, label: "Dashboard", href: `${basePath}/dashboard` },
-        { icon: <CalendarDays size={18} />, label: "Attendance", href: `${basePath}/attendance` },
-        { icon: <BarChart2 size={18} />, label: "Progress", href: `${basePath}/progress` },
-        { icon: <DollarSign size={18} />, label: "Fees", href: `${basePath}/fees` },
-        { icon: <FileText size={18} />, label: "Exams", href: `${basePath}/exams` },
+        {
+          icon: <Home size={18} />,
+          label: 'Dashboard',
+          href: `${basePath}/dashboard`,
+        },
+        {
+          icon: <CalendarDays size={18} />,
+          label: 'Attendance',
+          href: `${basePath}/attendance`,
+        },
+        {
+          icon: <BarChart2 size={18} />,
+          label: 'Progress',
+          href: `${basePath}/progress`,
+        },
+        {
+          icon: <DollarSign size={18} />,
+          label: 'Fees',
+          href: `${basePath}/fees`,
+        },
+        {
+          icon: <FileText size={18} />,
+          label: 'Exams',
+          href: `${basePath}/exams`,
+        },
         // { icon: <MessageSquare size={18} />, label: "Messages", href: `${basePath}/messages` },
       ];
     }
@@ -119,14 +219,16 @@ const Sidebar: React.FC<SidebarProps> = ({ role, isOpen, onClose }) => {
             return (
               <li
                 key={index}
-                className={`${styles.menuItem} ${active ? styles.active : ""}`}
+                className={`${styles.menuItem} ${active ? styles.active : ''}`}
               >
                 <Link
                   href={item.href}
                   className={styles.link}
                   onClick={onClose} // Close sidebar when menu item is clicked on mobile
                 >
-                  <span className={styles.icon}>{item.icon}  {item.label}</span>
+                  <span className={styles.icon}>
+                    {item.icon} {item.label}
+                  </span>
                 </Link>
               </li>
             );

@@ -617,17 +617,17 @@
   margin-bottom: 0.5rem;
 }
 
-.statusBadge[data-status="upcoming"] {
+.statusBadge[data-status='upcoming'] {
   background: #dbeafe;
   color: #2563eb;
 }
 
-.statusBadge[data-status="completed"] {
+.statusBadge[data-status='completed'] {
   background: #d1fae5;
   color: #059669;
 }
 
-.statusBadge[data-status="ongoing"] {
+.statusBadge[data-status='ongoing'] {
   background: #fef3c7;
   color: #d97706;
 }

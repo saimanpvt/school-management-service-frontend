@@ -2,14 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body, #__next {
+html,
+body,
+#__next {
   height: 100%;
 }
 
 body {
   @apply bg-gray-50 text-gray-800;
 }
-
 
 /* General Layout */
 body {
@@ -18,7 +19,9 @@ body {
   color: #222;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   margin-bottom: 10px;
 }
 

@@ -1,6 +1,9 @@
 .header-logo {
-  transition: transform .12s ease-in-out;
+  transition: transform 0.12s ease-in-out;
 }
-.header-logo:hover { transform: translateY(-1px) }
-.header { display: block }
-
+.header-logo:hover {
+  transform: translateY(-1px);
+}
+.header {
+  display: block;
+}

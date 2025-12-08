@@ -65,7 +65,15 @@ export interface CourseFormData {
 // Exam Types
 export interface ExamFormData {
   examName: string;
-  examType: 'Quiz' | 'Midterm' | 'Final' | 'Assignment' | 'Project' | 'Presentation' | 'Lab' | 'Practical';
+  examType:
+    | 'Quiz'
+    | 'Midterm'
+    | 'Final'
+    | 'Assignment'
+    | 'Project'
+    | 'Presentation'
+    | 'Lab'
+    | 'Practical';
   course: string;
   classId: string;
   academicYear: string;
@@ -108,4 +116,3 @@ export interface FeeStructureFormData {
   validFrom: string;
   validTo: string;
 }
-

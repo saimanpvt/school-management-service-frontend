@@ -10,7 +10,9 @@ import { getDashboardUrl } from '../../lib/utils/routing';
 
 export default function SignupPage() {
   const router = useRouter();
-  const [userType, setUserType] = useState<'admin' | 'teacher' | 'student' | 'parent'>('student');
+  const [userType, setUserType] = useState<
+    'admin' | 'teacher' | 'student' | 'parent'
+  >('student');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -56,55 +58,61 @@ export default function SignupPage() {
         setError(response.error || 'Registration failed. Please try again.');
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'An error occurred. Please try again.');
+      setError(
+        err.response?.data?.error || 'An error occurred. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className={styles["signup-container"]}>
-      <div className={styles["signup-card"]}>
-        <div className={styles["signup-header"]}>
-          <h1 className={styles["signup-title"]}>Create your account</h1>
-          <p className={styles["signup-subtitle"]}>Join EduConnect community</p>
+    <div className={styles['signup-container']}>
+      <div className={styles['signup-card']}>
+        <div className={styles['signup-header']}>
+          <h1 className={styles['signup-title']}>Create your account</h1>
+          <p className={styles['signup-subtitle']}>Join EduConnect community</p>
         </div>
 
-        {error && (
-          <div className={styles["error-message"]}>
-            {error}
-          </div>
-        )}
+        {error && <div className={styles['error-message']}>{error}</div>}
 
-        <form className={styles["signup-form"]} onSubmit={handleSubmit}>
+        <form className={styles['signup-form']} onSubmit={handleSubmit}>
           {loading && <LoadingDots />}
-          <div className={styles["form-group"]}>
-            <label className={styles["form-label"]}>I am a</label>
-            <div className={styles["user-type-toggle"]}>
+          <div className={styles['form-group']}>
+            <label className={styles['form-label']}>I am a</label>
+            <div className={styles['user-type-toggle']}>
               <button
                 type="button"
-                className={`${styles["toggle-btn"]} ${userType === 'admin' ? styles["active"] : ''}`}
+                className={`${styles['toggle-btn']} ${
+                  userType === 'admin' ? styles['active'] : ''
+                }`}
                 onClick={() => setUserType('admin')}
               >
                 Admin
               </button>
               <button
                 type="button"
-                className={`${styles["toggle-btn"]} ${userType === 'teacher' ? styles["active"] : ''}`}
+                className={`${styles['toggle-btn']} ${
+                  userType === 'teacher' ? styles['active'] : ''
+                }`}
                 onClick={() => setUserType('teacher')}
               >
                 Teacher
               </button>
               <button
                 type="button"
-                className={`${styles["toggle-btn"]} ${userType === 'student' ? styles["active"] : ''}`}
+                className={`${styles['toggle-btn']} ${
+                  userType === 'student' ? styles['active'] : ''
+                }`}
                 onClick={() => setUserType('student')}
               >
                 Student
               </button>
               <button
                 type="button"
-                className={`${styles["toggle-btn"]} ${userType === 'parent' ? styles["active"] : ''}`}
+                className={`${styles['toggle-btn']} ${
+                  userType === 'parent' ? styles['active'] : ''
+                }`}
                 onClick={() => setUserType('parent')}
               >
                 Parent
@@ -112,63 +120,79 @@ export default function SignupPage() {
             </div>
           </div>
 
-          <div className={styles["form-group"]}>
-            <label className={styles["form-label"]}>Full Name</label>
+          <div className={styles['form-group']}>
+            <label className={styles['form-label']}>Full Name</label>
             <input
               type="text"
-              className={styles["form-input"]}
+              className={styles['form-input']}
               placeholder="Enter your full name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               required
             />
           </div>
 
-          <div className={styles["form-group"]}>
-            <label className={styles["form-label"]}>Email Address</label>
+          <div className={styles['form-group']}>
+            <label className={styles['form-label']}>Email Address</label>
             <input
               type="email"
-              className={styles["form-input"]}
+              className={styles['form-input']}
               placeholder="Enter your email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
               required
             />
           </div>
 
-          <div className={styles["form-group"]}>
-            <label className={styles["form-label"]}>Password</label>
+          <div className={styles['form-group']}>
+            <label className={styles['form-label']}>Password</label>
             <input
               type="password"
-              className={styles["form-input"]}
+              className={styles['form-input']}
               placeholder="Create a password"
               value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
               required
               minLength={6}
             />
           </div>
 
-          <div className={styles["form-group"]}>
-            <label className={styles["form-label"]}>Confirm Password</label>
+          <div className={styles['form-group']}>
+            <label className={styles['form-label']}>Confirm Password</label>
             <input
               type="password"
-              className={styles["form-input"]}
+              className={styles['form-input']}
               placeholder="Confirm your password"
               value={formData.confirmPassword}
-              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, confirmPassword: e.target.value })
+              }
               required
               minLength={6}
             />
           </div>
 
-          <button type="submit" className={styles["btn-signup"]} disabled={loading}>
+          <button
+            type="submit"
+            className={styles['btn-signup']}
+            disabled={loading}
+          >
             {loading ? <LoadingDots /> : 'Sign Up'}
           </button>
 
-          <div className={styles["signup-footer"]}>
-            <span className={styles["footer-text"]}>Already have an account? </span>
-            <Link href="/login" className={styles["footer-link"]}>Login</Link>
+          <div className={styles['signup-footer']}>
+            <span className={styles['footer-text']}>
+              Already have an account?{' '}
+            </span>
+            <Link href="/login" className={styles['footer-link']}>
+              Login
+            </Link>
           </div>
         </form>
       </div>
