@@ -52,7 +52,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ name, role }) => {
                 onClick={() => setIsOpen(!isOpen)}
                 className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-semibold hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
-                {name.charAt(0).toUpperCase()}
+                {name ? name.charAt(0).toUpperCase() : 'U'}
             </button>
 
             {/* Dropdown Menu */}
@@ -62,12 +62,12 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ name, role }) => {
                     <div className="px-4 py-3 border-b border-gray-100">
                         <div className="flex items-center space-x-3">
                             <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                                {name.charAt(0).toUpperCase()}
+                                {name ? name.charAt(0).toUpperCase() : 'U'}
                             </div>
                             <div className="flex-1">
-                                <p className="text-sm font-medium text-gray-900">{name}</p>
+                                <p className="text-sm font-medium text-gray-900">{name || 'User'}</p>
                                 <p className={`text-xs px-2 py-1 rounded-full inline-flex capitalize mt-1 ${getRoleColor(role)}`}>
-                                    {role}
+                                    {role || 'User'}
                                 </p>
                             </div>
                         </div>
@@ -78,37 +78,23 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ name, role }) => {
                         <button
                             onClick={() => {
                                 setIsOpen(false);
-                                // Navigate to profile settings when implemented
-                                console.log('Navigate to profile settings');
+                                router.push('/settings');
                             }}
                             className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
                         >
-                            <User size={16} />
-                            <span>Profile Settings</span>
+                            <Settings size={16} />
+                            <span>Settings</span>
                         </button>
 
                         <button
                             onClick={() => {
                                 setIsOpen(false);
-                                // Navigate to change password when implemented
-                                console.log('Navigate to change password');
+                                router.push('/change-password');
                             }}
                             className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
                         >
                             <Lock size={16} />
                             <span>Change Password</span>
-                        </button>
-
-                        <button
-                            onClick={() => {
-                                setIsOpen(false);
-                                // Navigate to account settings when implemented
-                                console.log('Navigate to account settings');
-                            }}
-                            className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
-                        >
-                            <Settings size={16} />
-                            <span>Account Settings</span>
                         </button>
 
                         <div className="border-t border-gray-100 my-1"></div>

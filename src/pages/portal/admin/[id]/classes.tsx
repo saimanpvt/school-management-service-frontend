@@ -113,7 +113,7 @@ const AdminClasses = () => {
     if (loading) {
         return (
             <PortalLayout userRole="admin" userName="Admin">
-                               <div className={styles.loading}><LoadingDots /></div>
+                <div className={styles.loading}><LoadingDots /></div>
             </PortalLayout>
         );
     }

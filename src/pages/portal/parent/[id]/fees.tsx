@@ -86,19 +86,15 @@ const ParentFees = () => {
 
     if (loading) {
         return (
-            <div className={styles.container}>
-                <Sidebar name="Parent" role="parent" />
-                <main className={styles.main}>
-                    <div className={styles.loading}><LoadingDots /></div>
-                </main>
-            </div>
+            <PortalLayout userName="Parent" userRole="parent">
+                <div className={styles.loading}><LoadingDots /></div>
+            </PortalLayout>
         );
     }
 
     return (
-        <div className={styles.container}>
-            <Sidebar name="Parent" role="parent" />
-            <main className={styles.main}>
+        <PortalLayout userName="Parent" userRole="parent">
+            <div className={styles.main}>
                 <header className={styles.header}>
                     <div>
                         <h1>Fee Management</h1>
@@ -178,8 +174,8 @@ const ParentFees = () => {
                         </div>
                     )}
                 </div>
-            </main>
-        </div>
+            </div>
+        </PortalLayout>
     );
 };
 

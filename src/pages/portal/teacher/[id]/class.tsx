@@ -1,29 +1,48 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import PortalLayout from '../../../../components/PortalLayout';
-import { teacherService, Class } from '../../../../services/teacher.service';
-import { Users, Clock, TrendingUp, ArrowRight } from 'lucide-react';
+import { apiServices } from '../../../../services/api';
+import { Users, Clock, TrendingUp, ArrowRight, BookOpen, GraduationCap } from 'lucide-react';
 import styles from './teacher.module.css';
 import LoadingDots from '../../../../components/LoadingDots';
+
+interface TeacherClass {
+    id: string;
+    name: string;
+    code: string;
+    studentsCount: number;
+    courseName: string;
+    schedule: {
+        day: string;
+        startTime: string;
+        endTime: string;
+    }[];
+    averagePerformance: number;
+    recentActivity: string;
+}
 
 const TeacherClass = () => {
     const router = useRouter();
     const { id } = router.query;
-    const [classes, setClasses] = useState<Class[]>([]);
+    const [classes, setClasses] = useState<TeacherClass[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (id) {
-            teacherService.getClasses(id as string)
-                .then(data => {
-                    setClasses(data);
-                    setLoading(false);
-                })
-                .catch(error => {
+        const loadClasses = async () => {
+            if (id) {
+                try {
+                    const response = await apiServices.teacher.getTeacherClasses(id as string);
+                    if (response.success && response.data) {
+                        setClasses(response.data);
+                    }
+                } catch (error) {
                     console.error('Error fetching classes:', error);
+                } finally {
                     setLoading(false);
-                });
-        }
+                }
+            }
+        };
+        loadClasses();
     }, [id]);
 
     if (loading) {

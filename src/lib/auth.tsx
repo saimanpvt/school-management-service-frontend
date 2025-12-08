@@ -79,11 +79,15 @@ export function ProtectedRoute({ children, roles }: { children: React.ReactNode;
     const { user, loading } = useAuth();
     if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}><LoadingDots /></div>;
     if (!user) {
-        window.location.href = '/';
+        if (typeof window !== 'undefined') {
+            window.location.href = '/';
+        }
         return null;
     }
     if (roles && !roles.includes(user.role)) {
-        window.location.href = '/';
+        if (typeof window !== 'undefined') {
+            window.location.href = '/';
+        }
         return null;
     }
 

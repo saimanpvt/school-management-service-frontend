@@ -26,41 +26,47 @@ const TeacherExams = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (id) {
-            // Mock data - replace with actual API call
-            setTimeout(() => {
-                const mockData: Exam[] = [
-                    {
-                        id: '1',
-                        title: 'Mathematics Midterm',
-                        subject: 'Mathematics',
-                        classId: 'c1',
-                        className: 'Grade 10A',
-                        date: '2024-02-15',
-                        time: '09:00 AM',
-                        duration: '2 hours',
-                        location: 'Hall A',
-                        totalStudents: 30,
-                        status: 'upcoming'
-                    },
-                    {
-                        id: '2',
-                        title: 'Science Quiz',
-                        subject: 'Science',
-                        classId: 'c2',
-                        className: 'Grade 9B',
-                        date: '2024-01-20',
-                        time: '11:00 AM',
-                        duration: '1 hour',
-                        location: 'Room 201',
-                        totalStudents: 25,
-                        status: 'completed'
-                    }
-                ];
-                setExams(mockData);
-                setLoading(false);
-            }, 1000);
-        }
+        const loadExams = async () => {
+            if (id) {
+                try {
+                    // Mock data for now - replace with actual API call when available
+                    const mockData: Exam[] = [
+                        {
+                            id: '1',
+                            title: 'Mid-term Mathematics Exam',
+                            subject: 'Mathematics',
+                            classId: 'class1',
+                            className: 'Grade 10A',
+                            date: '2025-01-15',
+                            time: '09:00 AM',
+                            duration: '2 hours',
+                            location: 'Room 101',
+                            totalStudents: 30,
+                            status: 'upcoming'
+                        },
+                        {
+                            id: '2',
+                            title: 'Science Quiz',
+                            subject: 'Science',
+                            classId: 'class2',
+                            className: 'Grade 10B',
+                            date: '2025-01-20',
+                            time: '11:00 AM',
+                            duration: '1 hour',
+                            location: 'Lab 2',
+                            totalStudents: 25,
+                            status: 'upcoming'
+                        }
+                    ];
+                    setExams(mockData);
+                } catch (error) {
+                    console.error('Error fetching exams:', error);
+                } finally {
+                    setLoading(false);
+                }
+            }
+        };
+        loadExams();
     }, [id]);
 
     const formatDate = (dateString: string) => {

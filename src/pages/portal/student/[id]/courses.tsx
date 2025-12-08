@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import PortalLayout from '../../../../components/PortalLayout';
-import { studentService, Course } from '../../../../services/student.service';
+import { apiServices, Course } from '../../../../services/api';
 import { BookOpen, Clock, User, TrendingUp, FileText } from 'lucide-react';
 import styles from './student.module.css';
+import LoadingDots from '../../../../components/LoadingDots';
 
 const StudentCourses = () => {
     const router = useRouter();
@@ -12,17 +13,21 @@ const StudentCourses = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (id) {
-            studentService.getCourses(id as string)
-                .then(data => {
-                    setCourses(data);
-                    setLoading(false);
-                })
-                .catch(error => {
+        const loadCourses = async () => {
+            if (id) {
+                try {
+                    const response = await apiServices.student.getStudentCourses(id as string);
+                    if (response.success && response.data) {
+                        setCourses(response.data);
+                    }
+                } catch (error) {
                     console.error('Error fetching courses:', error);
+                } finally {
                     setLoading(false);
-                });
-        }
+                }
+            }
+        };
+        loadCourses();
     }, [id]);
 
     if (loading) {

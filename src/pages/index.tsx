@@ -29,11 +29,11 @@ import {
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from "recharts";
 import styles from "./index.module.css";
 import { useAuth } from "../lib/auth";
-import { getDashboardUrl } from "../utils/routing";
+import { getDashboardUrl } from "../lib/utils/routing";
 
 export default function EduConnectLanding() {
   const router = useRouter();
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
@@ -42,34 +42,12 @@ export default function EduConnectLanding() {
 
   // Redirect authenticated users to their dashboard
   useEffect(() => {
-    if (!isLoading && isAuthenticated && user) {
+    if (isAuthenticated && user) {
       console.log('User is authenticated, redirecting to dashboard');
       const dashboardUrl = getDashboardUrl(user.role, user.userID);
       router.push(dashboardUrl);
     }
-  }, [isAuthenticated, user, isLoading, router]);
-
-  // Don't render landing page if user is authenticated
-  if (isAuthenticated && user) {
-    return null;
-  }
-
-  // Growth data for charts
-  const growthData = [
-    { month: 'Jan', schools: 8200, students: 410000 },
-    { month: 'Feb', schools: 8600, students: 430000 },
-    { month: 'Mar', schools: 8900, students: 445000 },
-    { month: 'Apr', schools: 9200, students: 460000 },
-    { month: 'May', schools: 9500, students: 475000 },
-    { month: 'Jun', schools: 9800, students: 490000 },
-  ];
-
-  const featureUsageData = [
-    { name: 'Attendance', value: 35, color: '#6366f1' },
-    { name: 'Grades', value: 28, color: '#8b5cf6' },
-    { name: 'Messages', value: 22, color: '#a78bfa' },
-    { name: 'Schedules', value: 15, color: '#c084fc' },
-  ];
+  }, [isAuthenticated, user, router]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -105,6 +83,28 @@ export default function EduConnectLanding() {
 
     return () => observer.disconnect();
   }, []);
+
+  // Don't render landing page if user is authenticated
+  if (isAuthenticated && user) {
+    return null;
+  }
+
+  // Growth data for charts
+  const growthData = [
+    { month: 'Jan', schools: 8200, students: 410000 },
+    { month: 'Feb', schools: 8600, students: 430000 },
+    { month: 'Mar', schools: 8900, students: 445000 },
+    { month: 'Apr', schools: 9200, students: 460000 },
+    { month: 'May', schools: 9500, students: 475000 },
+    { month: 'Jun', schools: 9800, students: 490000 },
+  ];
+
+  const featureUsageData = [
+    { name: 'Attendance', value: 35, color: '#6366f1' },
+    { name: 'Grades', value: 28, color: '#8b5cf6' },
+    { name: 'Messages', value: 22, color: '#a78bfa' },
+    { name: 'Schedules', value: 15, color: '#c084fc' },
+  ];
 
   const features = [
     { icon: Users, title: "Smart User Management", desc: "Manage students, teachers, and staff with AI-powered insights and automation" },

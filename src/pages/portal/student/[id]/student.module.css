@@ -6,9 +6,15 @@
 
 .main {
   flex: 1;
-  padding: 2rem;
+  padding: 1rem;
   max-width: 1400px;
   margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .main {
+    padding: 2rem;
+  }
 }
 
 .pageHeader {

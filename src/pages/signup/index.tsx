@@ -4,7 +4,7 @@ import { authApi } from '../../services/authApi';
 import Link from 'next/link';
 import styles from './signup.module.css';
 import LoadingDots from '../../components/LoadingDots';
-import { getDashboardUrl } from '../../utils/routing';
+import { getDashboardUrl } from '../../lib/utils/routing';
 
 // No role mapping needed - send role names directly
 

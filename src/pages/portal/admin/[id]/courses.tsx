@@ -4,10 +4,10 @@ import PortalLayout from '../../../../components/PortalLayout';
 import { apiServices } from '../../../../services/api';
 import { BookOpen, Plus, Search, Edit, Trash2 } from 'lucide-react';
 import CourseForm from '../../../../components/CourseForm';
-import { CourseFormData } from '../../../../types/course';
 import { ProtectedRoute } from '../../../../lib/auth';
 import styles from './admin.module.css';
 import LoadingDots from '../../../../components/LoadingDots';
+import { CourseFormData } from '../../../../lib/types';
 
 
 const AdminCourses = () => {
@@ -104,7 +104,7 @@ const AdminCourses = () => {
     if (loading) {
         return (
             <PortalLayout userRole="admin" userName="Admin">
-                             <div className={styles.loading}><LoadingDots /></div>
+                <div className={styles.loading}><LoadingDots /></div>
             </PortalLayout>
         );
     }

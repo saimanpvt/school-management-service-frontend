@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import PortalLayout from '../../../../components/PortalLayout';
-import { studentService, Assignment } from '../../../../services/student.service';
+import { apiServices, Assignment } from '../../../../services/api';
 import { FileText, Calendar, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import styles from './student.module.css';
+import LoadingDots from '../../../../components/LoadingDots';
 
 const StudentAssignments = () => {
     const router = useRouter();
@@ -12,17 +13,21 @@ const StudentAssignments = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (id) {
-            studentService.getAssignments(id as string)
-                .then(data => {
-                    setAssignments(data);
-                    setLoading(false);
-                })
-                .catch(error => {
+        const loadAssignments = async () => {
+            if (id) {
+                try {
+                    const response = await apiServices.student.getAssignments(id as string);
+                    if (response.success && response.data) {
+                        setAssignments(response.data);
+                    }
+                } catch (error) {
                     console.error('Error fetching assignments:', error);
+                } finally {
                     setLoading(false);
-                });
-        }
+                }
+            }
+        };
+        loadAssignments();
     }, [id]);
 
     const getStatusBadge = (status: string) => {

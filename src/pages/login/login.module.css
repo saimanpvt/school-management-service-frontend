@@ -2,17 +2,26 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  min-height: 100vh;
   background: linear-gradient(135deg, #9b8bff, #7ac4ff);
+  padding: 1rem;
 }
 
 .login-card {
   background: #fff;
   border-radius: 12px;
-  padding: 2.5rem 2rem;
-  width: 360px;
+  padding: 1.5rem 1rem;
+  width: 100%;
+  max-width: 360px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   text-align: center;
+}
+
+@media (min-width: 768px) {
+  .login-card {
+    padding: 2.5rem 2rem;
+    width: 360px;
+  }
 }
 
 .login-icon {

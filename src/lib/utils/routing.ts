@@ -1,4 +1,4 @@
-import { UserRole } from '../lib/types';
+import { UserRole } from '../types';
 
 export const getDashboardUrl = (role: UserRole, id: string): string => {
   switch (role) {

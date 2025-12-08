@@ -61,4 +61,51 @@ export interface CourseFormData {
   academicYear: string;
   isActive?: boolean;
 }
+
+// Exam Types
+export interface ExamFormData {
+  examName: string;
+  examType: 'Quiz' | 'Midterm' | 'Final' | 'Assignment' | 'Project' | 'Presentation' | 'Lab' | 'Practical';
+  course: string;
+  classId: string;
+  academicYear: string;
+  totalMarks: number;
+  passingMarks: number;
+  examDate: string;
+  startTime: string;
+  endTime: string;
+  duration: number;
+  venue: string;
+  instructions?: string;
+  isActive?: boolean;
+  isCompleted?: boolean;
+  resultsPublished?: boolean;
 }
+
+// Fee Structure Types
+export interface FeeComponent {
+  name: string;
+  amount: number;
+  isMandatory?: boolean;
+  description?: string;
+  dueDate?: string;
+  isRecurring?: boolean;
+  frequency?: 'One-time' | 'Monthly' | 'Quarterly' | 'Semester' | 'Annual';
+}
+
+export interface FeeStructureFormData {
+  name: string;
+  description?: string;
+  course: string;
+  academicYear: string;
+  semester: 'Spring' | 'Summer' | 'Fall' | 'Winter';
+  feeComponents: FeeComponent[];
+  totalAmount: number;
+  discountPercentage?: number;
+  lateFeePercentage?: number;
+  lateFeeGraceDays?: number;
+  isActive?: boolean;
+  validFrom: string;
+  validTo: string;
+}
+

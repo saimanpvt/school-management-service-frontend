@@ -2,13 +2,13 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import styles from "./parent.module.css";
 import PortalLayout from "../../../../components/PortalLayout";
-import Link from "next/link";
-import { parentService, ParentDashboardStats } from "../../../../services/parent.service";
+import { parentService } from "../../../../services/parent.service";
+import LoadingDots from "../../../../components/LoadingDots";
 
 const ParentDashboard = () => {
     const router = useRouter();
     const { id } = router.query;
-    const [stats, setStats] = useState<ParentDashboardStats | null>(null);
+    const [stats, setStats] = useState<null>(null);
     const [loading, setLoading] = useState(true);
     const [selectedChild, setSelectedChild] = useState<string | null>(null);
 
@@ -157,9 +157,8 @@ const ParentDashboard = () => {
     );
 
     return (
-        <div className={styles.container}>
-            <Sidebar name={stats?.parentName || "Parent"} role="parent" />
-            <main className={styles.main}>
+        <PortalLayout userName={stats?.parentName || "Parent"} userRole="parent">
+            <div className={styles.main}>
                 {loading ? (
                     <div className={styles.loading}><LoadingDots /></div>
                 ) : (
@@ -193,8 +192,8 @@ const ParentDashboard = () => {
                         {renderQuickActions()}
                     </>
                 )}
-            </main>
-        </div>
+            </div>
+        </PortalLayout>
     );
 };
 

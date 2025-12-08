@@ -139,9 +139,6 @@
 }
 
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   margin-bottom: 2rem;
 }
 
@@ -743,4 +740,86 @@
   border-radius: 0.25rem;
   font-size: 0.75rem;
   font-weight: 500;
+}
+
+/* Assignment Actions */
+.assignmentActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.primaryBtn {
+  padding: 0.5rem 1rem;
+  background: #6366f1;
+  color: white;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.primaryBtn:hover {
+  background: #4f46e5;
+}
+
+.secondaryBtn {
+  padding: 0.5rem 1rem;
+  background: #f3f4f6;
+  color: #374151;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.secondaryBtn:hover {
+  background: #e5e7eb;
+}
+
+.deleteBtn {
+  padding: 0.5rem 1rem;
+  background: #fef2f2;
+  color: #dc2626;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.deleteBtn:hover {
+  background: #fee2e2;
+}
+
+.createBtn {
+  padding: 0.5rem 1rem;
+  background: #6366f1;
+  color: white;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.createBtn:hover {
+  background: #4f46e5;
 }

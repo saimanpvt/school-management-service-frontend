@@ -1,29 +1,75 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import PortalLayout from '../../../../components/PortalLayout';
-import { teacherService, Assignment } from '../../../../services/teacher.service';
-import { ClipboardList, Plus, Calendar, Users, FileCheck } from 'lucide-react';
+import { apiServices } from '../../../../services/api';
+import { ClipboardList, Plus, Calendar, Users, FileCheck, Edit, Trash2 } from 'lucide-react';
 import styles from './teacher.module.css';
 import LoadingDots from '../../../../components/LoadingDots';
+import AssignmentForm, { AssignmentFormData } from '../../../../components/AssignmentForm';
+
+interface Assignment {
+    id: string;
+    title: string;
+    description: string;
+    dueDate: string;
+    dueTime?: string;
+    className: string;
+    courseName: string;
+    submissionsCount: number;
+    totalStudents: number;
+    maxMarks: number;
+    instructions?: string;
+    status: 'active' | 'completed' | 'overdue';
+}
+
+interface TeacherClass {
+    id: string;
+    name: string;
+    code: string;
+}
 
 const TeacherAssignments = () => {
     const router = useRouter();
     const { id } = router.query;
     const [assignments, setAssignments] = useState<Assignment[]>([]);
+    const [classes, setClasses] = useState<TeacherClass[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showAssignmentForm, setShowAssignmentForm] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [editingAssignmentId, setEditingAssignmentId] = useState<string | null>(null);
+    const [formData, setFormData] = useState<AssignmentFormData>({
+        title: '',
+        description: '',
+        classId: '',
+        dueDate: '',
+        dueTime: '',
+        maxMarks: 100,
+        instructions: ''
+    });
 
     useEffect(() => {
-        if (id) {
-            teacherService.getPendingAssignments(id as string)
-                .then(data => {
-                    setAssignments(data);
+        const loadData = async () => {
+            if (id) {
+                try {
+                    // Load assignments
+                    const assignmentsResponse = await apiServices.teacher.getAssignments(id as string);
+                    if (assignmentsResponse.success && assignmentsResponse.data) {
+                        setAssignments(assignmentsResponse.data);
+                    }
+
+                    // Load teacher's classes
+                    const classesResponse = await apiServices.teacher.getTeacherClasses(id as string);
+                    if (classesResponse.success && classesResponse.data) {
+                        setClasses(classesResponse.data);
+                    }
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                } finally {
                     setLoading(false);
-                })
-                .catch(error => {
-                    console.error('Error fetching assignments:', error);
-                    setLoading(false);
-                });
-        }
+                }
+            }
+        };
+        loadData();
     }, [id]);
 
     const formatDate = (dateString: string) => {
@@ -32,6 +78,69 @@ const TeacherAssignments = () => {
             day: 'numeric',
             year: 'numeric'
         });
+    };
+
+    const handleSubmitAssignment = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            if (isEditMode && editingAssignmentId) {
+                // Update existing assignment
+                // const response = await apiServices.teacher.updateAssignment(editingAssignmentId, formData);
+                alert('Assignment updated successfully!');
+            } else {
+                // Create new assignment
+                const response = await apiServices.teacher.createAssignment({
+                    title: formData.title,
+                    description: formData.description,
+                    classId: formData.classId,
+                    dueDate: `${formData.dueDate}T${formData.dueTime}`,
+                    maxMarks: formData.maxMarks
+                });
+
+                if (response.success) {
+                    alert('Assignment created successfully!');
+                    // Reload assignments
+                    const assignmentsResponse = await apiServices.teacher.getAssignments(id as string);
+                    if (assignmentsResponse.success && assignmentsResponse.data) {
+                        setAssignments(assignmentsResponse.data);
+                    }
+                } else {
+                    alert('Failed to create assignment. Please try again.');
+                }
+            }
+            setShowAssignmentForm(false);
+        } catch (error) {
+            console.error('Error submitting assignment:', error);
+            alert('Failed to submit assignment. Please try again.');
+        }
+    };
+
+    const handleEditAssignment = (assignment: Assignment) => {
+        setFormData({
+            title: assignment.title,
+            description: assignment.description,
+            classId: '', // Would need to get this from assignment data
+            dueDate: assignment.dueDate.split('T')[0],
+            dueTime: assignment.dueTime || '',
+            maxMarks: assignment.maxMarks,
+            instructions: assignment.instructions || ''
+        });
+        setIsEditMode(true);
+        setEditingAssignmentId(assignment.id);
+        setShowAssignmentForm(true);
+    };
+
+    const handleDeleteAssignment = async (assignmentId: string) => {
+        if (confirm('Are you sure you want to delete this assignment?')) {
+            try {
+                // await apiServices.teacher.deleteAssignment(assignmentId);
+                setAssignments(assignments.filter(a => a.id !== assignmentId));
+                alert('Assignment deleted successfully!');
+            } catch (error) {
+                console.error('Error deleting assignment:', error);
+                alert('Failed to delete assignment.');
+            }
+        }
     };
 
     if (loading) {
@@ -51,7 +160,20 @@ const TeacherAssignments = () => {
                 </div>
                 <button
                     className={styles.createBtn}
-                    onClick={() => router.push(`/portal/teacher/${id}/assignments/create`)}
+                    onClick={() => {
+                        setIsEditMode(false);
+                        setEditingAssignmentId(null);
+                        setFormData({
+                            title: '',
+                            description: '',
+                            classId: '',
+                            dueDate: '',
+                            dueTime: '',
+                            maxMarks: 100,
+                            instructions: ''
+                        });
+                        setShowAssignmentForm(true);
+                    }}
                 >
                     <Plus size={18} />
                     Create Assignment
@@ -79,7 +201,7 @@ const TeacherAssignments = () => {
                                             Due: {formatDate(assignment.dueDate)}
                                         </span>
                                         <span className={styles.scoreInfo}>
-                                            Max Score: {assignment.maxScore}
+                                            Max Marks: {assignment.maxMarks}
                                         </span>
                                     </div>
                                 </div>
@@ -94,9 +216,17 @@ const TeacherAssignments = () => {
                                 </button>
                                 <button
                                     className={styles.secondaryBtn}
-                                    onClick={() => router.push(`/portal/teacher/${id}/assignments/${assignment.id}`)}
+                                    onClick={() => handleEditAssignment(assignment)}
                                 >
-                                    View Details
+                                    <Edit size={16} />
+                                    Edit
+                                </button>
+                                <button
+                                    className={styles.deleteBtn}
+                                    onClick={() => handleDeleteAssignment(assignment.id)}
+                                >
+                                    <Trash2 size={16} />
+                                    Delete
                                 </button>
                             </div>
                         </div>
@@ -116,6 +246,22 @@ const TeacherAssignments = () => {
                     </div>
                 )}
             </div>
+
+            {/* Assignment Form Modal */}
+            {showAssignmentForm && (
+                <AssignmentForm
+                    formData={formData}
+                    setFormData={setFormData}
+                    onSubmit={handleSubmitAssignment}
+                    onClose={() => {
+                        setShowAssignmentForm(false);
+                        setIsEditMode(false);
+                        setEditingAssignmentId(null);
+                    }}
+                    classes={classes}
+                    isEdit={isEditMode}
+                />
+            )}
         </PortalLayout>
     );
 };

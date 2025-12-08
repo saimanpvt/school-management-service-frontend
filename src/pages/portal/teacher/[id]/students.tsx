@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import PortalLayout from '../../../../components/PortalLayout';
 import LoadingDots from '../../../../components/LoadingDots';
-import { teacherService } from '../../../../services/teacher.service';
+import { apiServices } from '../../../../services/api';
 import { Users, Mail, Phone, Search } from 'lucide-react';
 import styles from './teacher.module.css';
 
@@ -25,17 +25,32 @@ const TeacherStudents = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
-        if (id) {
-            teacherService.getStudents(id as string)
-                .then(data => {
-                    setStudents(data);
-                    setLoading(false);
-                })
-                .catch(error => {
+        const loadStudents = async () => {
+            if (id) {
+                try {
+                    const classesResponse = await apiServices.teacher.getTeacherClasses(id as string);
+                    if (classesResponse.success && classesResponse.data) {
+                        let allStudents: Student[] = [];
+                        for (const cls of classesResponse.data) {
+                            const studentsResponse = await apiServices.teacher.getStudentsByClass(cls.id);
+                            if (studentsResponse.success && studentsResponse.data) {
+                                allStudents = [...allStudents, ...studentsResponse.data];
+                            }
+                        }
+                        // Remove duplicates based on student ID
+                        const uniqueStudents = allStudents.filter((student, index, self) =>
+                            index === self.findIndex(s => s.id === student.id)
+                        );
+                        setStudents(uniqueStudents);
+                    }
+                } catch (error) {
                     console.error('Error fetching students:', error);
+                } finally {
                     setLoading(false);
-                });
-        }
+                }
+            }
+        };
+        loadStudents();
     }, [id]);
 
     const filteredStudents = students.filter(student =>

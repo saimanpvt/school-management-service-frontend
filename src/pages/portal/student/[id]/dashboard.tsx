@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import PortalLayout from "../../../../components/PortalLayout";
 import Link from "next/link";
-import { studentService, StudentDashboardStats } from "../../../../services/student.service";
+import { apiServices, StudentDashboardStats } from "../../../../services/api";
 import { ProtectedRoute } from "../../../../lib/auth";
 import styles from "../../../../styles/Dashboard.module.css";
 import LoadingDots from "../../../../components/LoadingDots";
@@ -14,17 +14,23 @@ const StudentDashboard = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (id) {
-            studentService.getDashboardStats(id as string)
-                .then(data => {
-                    setStats(data);
-                    setLoading(false);
-                })
-                .catch(error => {
+        const loadDashboardStats = async () => {
+            if (id) {
+                try {
+                    const response = await apiServices.student.getDashboardStats(id as string);
+                    if (response.success && response.data) {
+                        setStats(response.data);
+                    } else {
+                        console.error('Failed to load dashboard stats');
+                    }
+                } catch (error) {
                     console.error('Error fetching dashboard stats:', error);
+                } finally {
                     setLoading(false);
-                });
-        }
+                }
+            }
+        };
+        loadDashboardStats();
     }, [id]);
 
     if (loading) {

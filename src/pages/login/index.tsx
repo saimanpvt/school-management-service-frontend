@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "../../lib/auth";
-import { getDashboardUrl } from "../../utils/routing";
+import { getDashboardUrl } from "../../lib/utils/routing";
 import styles from "./login.module.css";
 import Link from "next/link";
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import styles from "./teacher.module.css";
 import PortalLayout from "../../../../components/PortalLayout";
-import { teacherService, TeacherDashboardStats } from "../../../../services/teacher.service";
+import { apiServices, TeacherDashboardStats } from "../../../../services/api";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import LoadingDots from "../../../../components/LoadingDots";
 
@@ -18,8 +18,12 @@ const TeacherDashboard = () => {
 
         try {
             setLoading(true);
-            const data = await teacherService.getDashboardStats(id as string);
-            setStats(data);
+            const response = await apiServices.teacher.getDashboardStats(id as string);
+            if (response.success && response.data) {
+                setStats(response.data);
+            } else {
+                setError("Failed to load dashboard data");
+            }
         } catch (err) {
             console.error('Error loading dashboard stats:', err);
             setError("Failed to load dashboard data");
@@ -35,20 +39,24 @@ const TeacherDashboard = () => {
     const renderStatsGrid = () => (
         <div className={styles.statsGrid}>
             <div className={styles.statsCard}>
-                <h3>Active Classes</h3>
-                <p className={styles.statNumber}>{stats?.activeClasses || 0}</p>
+                <h3>My Students</h3>
+                <p className={styles.statNumber}>{stats?.totalStudents || 0}</p>
+                <small>Total enrolled students</small>
             </div>
             <div className={styles.statsCard}>
-                <h3>Total Students</h3>
-                <p className={styles.statNumber}>{stats?.totalStudents || 0}</p>
+                <h3>Courses Teaching</h3>
+                <p className={styles.statNumber}>{stats?.totalCourses || 0}</p>
+                <small>Active courses</small>
             </div>
             <div className={styles.statsCard}>
                 <h3>Assignments to Grade</h3>
                 <p className={styles.statNumber}>{stats?.quickStats?.assignmentsToGrade || 0}</p>
+                <small>Pending reviews</small>
             </div>
             <div className={styles.statsCard}>
-                <h3>Today&apos;s Attendance</h3>
-                <p className={styles.statNumber}>{stats?.quickStats?.todayAttendance || 0}%</p>
+                <h3>Class Performance</h3>
+                <p className={styles.statNumber}>{stats?.quickStats?.averageClassPerformance || 0}%</p>
+                <small>Average score</small>
             </div>
         </div>
     );

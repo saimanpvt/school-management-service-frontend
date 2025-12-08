@@ -78,19 +78,15 @@ const ParentExams = () => {
 
     if (loading) {
         return (
-            <div className={styles.container}>
-                <Sidebar name="Parent" role="parent" />
-                <main className={styles.main}>
-                    <div className={styles.loading}><LoadingDots /></div>
-                </main>
-            </div>
+            <PortalLayout userName="Parent" userRole="parent">
+                <div className={styles.loading}><LoadingDots /></div>
+            </PortalLayout>
         );
     }
 
     return (
-        <div className={styles.container}>
-            <Sidebar name="Parent" role="parent" />
-            <main className={styles.main}>
+        <PortalLayout userName="Parent" userRole="parent">
+            <div className={styles.main}>
                 <header className={styles.header}>
                     <div>
                         <h1>Children&apos;s Exams</h1>
@@ -159,8 +155,8 @@ const ParentExams = () => {
                         </div>
                     )}
                 </div>
-            </main>
-        </div>
+            </div>
+        </PortalLayout>
     );
 };
 

@@ -45,6 +45,14 @@ export const authApi = {
     const response = await api.post('/logout');
     return response.data;
   },
+
+  changePassword: async (data: {
+    currentPassword: string;
+    newPassword: string;
+  }): Promise<ApiResponse<{ message: string }>> => {
+    const response = await api.post('/auth/change-password', data);
+    return response.data;
+  },
 };
 
 // Token management utilities

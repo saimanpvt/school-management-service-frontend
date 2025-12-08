@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import PortalLayout from '../../../../components/PortalLayout';
-import { studentService } from '../../../../services/student.service';
+import { apiServices } from '../../../../services/api';
 import { BarChart2, TrendingUp, Award } from 'lucide-react';
 import styles from './student.module.css';
 import LoadingDots from '../../../../components/LoadingDots';
@@ -21,17 +21,21 @@ const StudentGrades = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (id) {
-            studentService.getGrades(id as string)
-                .then(data => {
-                    setGrades(data);
-                    setLoading(false);
-                })
-                .catch(error => {
+        const loadGrades = async () => {
+            if (id) {
+                try {
+                    const response = await apiServices.student.getGrades(id as string);
+                    if (response.success && response.data) {
+                        setGrades(response.data);
+                    }
+                } catch (error) {
                     console.error('Error fetching grades:', error);
+                } finally {
                     setLoading(false);
-                });
-        }
+                }
+            }
+        };
+        loadGrades();
     }, [id]);
 
     const calculateAverage = (items: { grade: number; maxGrade: number }[]) => {

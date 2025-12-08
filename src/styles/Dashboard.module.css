@@ -8,9 +8,15 @@
 
 .dashboard_main {
   flex: 1;
-  padding: 24px;
+  padding: 16px;
   max-width: 1600px;
   margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .dashboard_main {
+    padding: 24px;
+  }
 }
 
 .dashboard_header {

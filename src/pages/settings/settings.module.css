@@ -1,0 +1,264 @@
+.settings-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #9b8bff, #7ac4ff);
+  padding: 1rem;
+}
+
+.settings-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem 1rem;
+  width: 100%;
+  max-width: 800px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile responsive adjustments */
+@media (min-width: 768px) {
+  .settings-container {
+    padding: 2rem 1rem;
+  }
+  
+  .settings-card {
+    padding: 2.5rem 2rem;
+  }
+}
+
+.settings-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.settings-icon {
+  font-size: 2rem;
+  background: #f0f3ff;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.settings-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #333;
+}
+
+.settings-subtitle {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  color: #005cff;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0;
+  transition: color 0.2s ease;
+}
+
+.back-button:hover {
+  color: #0046cc;
+}
+
+.back-icon {
+  margin-right: 0.5rem;
+}
+
+.profile-header {
+  background: linear-gradient(135deg, #005cff, #7c3aed);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  color: white;
+  text-align: center;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #005cff;
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin: 0 auto 1rem;
+}
+
+.profile-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.role-admin {
+  background: rgba(239, 68, 68, 0.2);
+  color: #dc2626;
+}
+
+.role-teacher {
+  background: rgba(59, 130, 246, 0.2);
+  color: #2563eb;
+}
+
+.role-student {
+  background: rgba(34, 197, 94, 0.2);
+  color: #16a34a;
+}
+
+.role-parent {
+  background: rgba(147, 51, 234, 0.2);
+  color: #9333ea;
+}
+
+.profile-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+  .profile-content {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+}
+
+.info-section {
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.info-item:last-child {
+  margin-bottom: 0;
+}
+
+.info-icon {
+  color: #666;
+  margin-right: 0.75rem;
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+}
+
+.info-content .label {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+.info-content .value {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.address-value {
+  line-height: 1.4;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+@media (min-width: 768px) {
+  .actions {
+    flex-direction: row;
+    gap: 1rem;
+  }
+}
+
+.primary-button {
+  background: #005cff;
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.primary-button:hover {
+  background: #0046cc;
+}
+
+.secondary-button {
+  background: white;
+  color: #005cff;
+  font-weight: 600;
+  border: 1px solid #005cff;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.secondary-button:hover {
+  background: #005cff;
+  color: white;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+}
+
+.error {
+  text-align: center;
+  color: #dc2626;
+}
+
+.error h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}

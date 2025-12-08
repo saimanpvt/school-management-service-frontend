@@ -5,26 +5,8 @@ import { apiServices } from '../../../../services/api';
 import { DollarSign, Plus, Search, Edit, Trash2, X } from 'lucide-react';
 import styles from './admin.module.css';
 import LoadingDots from '../../../../components/LoadingDots';
-
-interface FeeStructureFormData {
-    name: string;
-    description: string;
-    course: string;
-    academicYear: string;
-    semester: string;
-    feeComponents: FeeComponent[];
-    discountPercentage: number;
-    lateFeePercentage: number;
-    lateFeeGraceDays: number;
-    validFrom: string;
-    validTo: string;
-}
-
-interface FeeComponent {
-    name: string;
-    amount: number;
-    type: string;
-}
+import FeeForm from '../../../../components/FeeForm';
+import { FeeStructureFormData } from '../../../../lib/types';
 
 const AdminFees = () => {
     const router = useRouter();
@@ -33,35 +15,89 @@ const AdminFees = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [showAddForm, setShowAddForm] = useState(false);
-    const [formData, setFormData] = useState<FeeStructureFormData>({
+    const [courses, setCourses] = useState<any[]>([]);
+    const [feeFormData, setFeeFormData] = useState<FeeStructureFormData>({
         name: '',
         description: '',
         course: '',
         academicYear: '',
-        semester: '',
-        feeComponents: [{ name: '', amount: 0, type: 'tuition' }],
+        semester: 'Spring',
+        feeComponents: [],
+        totalAmount: 0,
         discountPercentage: 0,
         lateFeePercentage: 0,
         lateFeeGraceDays: 0,
+        isActive: true,
         validFrom: '',
         validTo: ''
     });
 
     useEffect(() => {
         if (id) {
-            apiServices.fees.getAll()
-                .then(response => {
-                    if (response.success) {
-                        setFees(response.data || []);
+            // Fetch fees and courses
+            Promise.all([
+                apiServices.fees.getAll(),
+                apiServices.courses.getAll()
+            ])
+                .then(([feesResponse, coursesResponse]) => {
+                    if (feesResponse.success) {
+                        setFees(feesResponse.data || []);
+                    }
+                    if (coursesResponse.success) {
+                        setCourses(coursesResponse.data || []);
                     }
                     setLoading(false);
                 })
                 .catch(error => {
-                    console.error('Error fetching fees:', error);
+                    console.error('Error fetching data:', error);
                     setLoading(false);
                 });
         }
     }, [id]);
+
+    // Handle fee form submission
+    const handleFeeSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const response = await apiServices.fees.create(feeFormData);
+            if (response.success) {
+                alert('Fee structure created successfully!');
+                setShowAddForm(false);
+                // Reset form
+                setFeeFormData({
+                    name: '',
+                    description: '',
+                    course: '',
+                    academicYear: '',
+                    semester: 'Spring',
+                    feeComponents: [],
+                    totalAmount: 0,
+                    discountPercentage: 0,
+                    lateFeePercentage: 0,
+                    lateFeeGraceDays: 0,
+                    isActive: true,
+                    validFrom: '',
+                    validTo: ''
+                });
+                // Refresh fees list
+                const feesResponse = await apiServices.fees.getAll();
+                if (feesResponse.success) {
+                    setFees(feesResponse.data || []);
+                }
+            } else {
+                alert('Failed to create fee structure: ' + (response.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error creating fee structure:', error);
+            alert('Failed to create fee structure. Please try again.');
+        }
+    };
+
+    // Prepare course options for dropdown
+    const courseOptions = courses.map(course => ({
+        value: course._id || course.id,
+        label: `${course.courseCode} - ${course.courseName}`
+    }));
 
     const filteredFees = fees.filter(fee =>
         fee.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -240,213 +276,16 @@ const AdminFees = () => {
                 </table>
             </div>
 
-            {/* Add Fee Structure Modal */}
+            {/* Fee Structure Modal */}
             {showAddForm && (
-                <div className={styles.modalOverlay}>
-                    <div className={styles.modal}>
-                        <div className={styles.modalHeader}>
-                            <h2>Add Fee Structure</h2>
-                            <button
-                                className={styles.closeBtn}
-                                onClick={() => setShowAddForm(false)}
-                            >
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        <div className={styles.modalContent}>
-                            <form onSubmit={handleSubmit}>
-                                <div className={styles.formGrid}>
-                                    <div className={styles.formGroup}>
-                                        <label>Fee Structure Name *</label>
-                                        <input
-                                            type="text"
-                                            value={formData.name}
-                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            placeholder="Enter fee structure name"
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className={styles.formGroup}>
-                                        <label>Course *</label>
-                                        <input
-                                            type="text"
-                                            value={formData.course}
-                                            onChange={(e) => setFormData({ ...formData, course: e.target.value })}
-                                            placeholder="Enter course"
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className={styles.formGroup}>
-                                        <label>Academic Year *</label>
-                                        <input
-                                            type="text"
-                                            value={formData.academicYear}
-                                            onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })}
-                                            placeholder="2023-2024"
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className={styles.formGroup}>
-                                        <label>Semester *</label>
-                                        <select
-                                            value={formData.semester}
-                                            onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
-                                            required
-                                        >
-                                            <option value="">Select Semester</option>
-                                            <option value="1">Semester 1</option>
-                                            <option value="2">Semester 2</option>
-                                            <option value="3">Semester 3</option>
-                                            <option value="4">Semester 4</option>
-                                            <option value="5">Semester 5</option>
-                                            <option value="6">Semester 6</option>
-                                            <option value="7">Semester 7</option>
-                                            <option value="8">Semester 8</option>
-                                        </select>
-                                    </div>
-
-                                    <div className={styles.formGroup}>
-                                        <label>Valid From *</label>
-                                        <input
-                                            type="date"
-                                            value={formData.validFrom}
-                                            onChange={(e) => setFormData({ ...formData, validFrom: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className={styles.formGroup}>
-                                        <label>Valid To *</label>
-                                        <input
-                                            type="date"
-                                            value={formData.validTo}
-                                            onChange={(e) => setFormData({ ...formData, validTo: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className={styles.formGroup}>
-                                        <label>Discount Percentage (%)</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            max="100"
-                                            value={formData.discountPercentage}
-                                            onChange={(e) => setFormData({ ...formData, discountPercentage: Number(e.target.value) })}
-                                            placeholder="0"
-                                        />
-                                    </div>
-
-                                    <div className={styles.formGroup}>
-                                        <label>Late Fee Percentage (%)</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            max="100"
-                                            value={formData.lateFeePercentage}
-                                            onChange={(e) => setFormData({ ...formData, lateFeePercentage: Number(e.target.value) })}
-                                            placeholder="0"
-                                        />
-                                    </div>
-
-                                    <div className={styles.formGroup}>
-                                        <label>Late Fee Grace Days</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            value={formData.lateFeeGraceDays}
-                                            onChange={(e) => setFormData({ ...formData, lateFeeGraceDays: Number(e.target.value) })}
-                                            placeholder="0"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className={styles.formGroup}>
-                                    <label>Description</label>
-                                    <textarea
-                                        value={formData.description}
-                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                        placeholder="Enter fee structure description"
-                                        rows={3}
-                                    />
-                                </div>
-
-                                {/* Fee Components Section */}
-                                <div className={styles.feeComponentsSection}>
-                                    <h3>Fee Components</h3>
-                                    {formData.feeComponents.map((component, index) => (
-                                        <div key={index} className={styles.componentRow}>
-                                            <input
-                                                type="text"
-                                                placeholder="Component name (e.g., Tuition Fee)"
-                                                value={component.name}
-                                                onChange={(e) => updateFeeComponent(index, 'name', e.target.value)}
-                                                required
-                                            />
-                                            <input
-                                                type="number"
-                                                placeholder="Amount"
-                                                value={component.amount}
-                                                onChange={(e) => updateFeeComponent(index, 'amount', Number(e.target.value))}
-                                                required
-                                            />
-                                            <select
-                                                value={component.type}
-                                                onChange={(e) => updateFeeComponent(index, 'type', e.target.value)}
-                                                required
-                                            >
-                                                <option value="tuition">Tuition</option>
-                                                <option value="library">Library</option>
-                                                <option value="lab">Laboratory</option>
-                                                <option value="sports">Sports</option>
-                                                <option value="transport">Transport</option>
-                                                <option value="other">Other</option>
-                                            </select>
-                                            {formData.feeComponents.length > 1 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeFeeComponent(index)}
-                                                    className={styles.removeComponentBtn}
-                                                >
-                                                    <X size={16} />
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
-                                    <button
-                                        type="button"
-                                        onClick={addFeeComponent}
-                                        className={styles.addComponentBtn}
-                                    >
-                                        <Plus size={16} />
-                                        Add Component
-                                    </button>
-                                </div>
-
-                                <div className={styles.modalActions}>
-                                    <button
-                                        type="button"
-                                        className={styles.cancelBtn}
-                                        onClick={() => setShowAddForm(false)}
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className={styles.createBtn}
-                                        disabled={loading}
-                                    >
-                                        {loading ? 'Creating...' : 'Create Fee Structure'}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
+                <FeeForm
+                    formData={feeFormData}
+                    setFormData={setFeeFormData}
+                    onSubmit={handleFeeSubmit}
+                    onClose={() => setShowAddForm(false)}
+                    courseOptions={courseOptions}
+                    isEdit={false}
+                />
             )}
         </PortalLayout>
     );

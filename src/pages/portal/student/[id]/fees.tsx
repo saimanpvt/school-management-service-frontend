@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import PortalLayout from '../../../../components/PortalLayout';
-import { DollarSign, Calendar, CreditCard, AlertCircle } from 'lucide-react';
+import { DollarSign, Calendar, CreditCard, AlertCircle, CheckCircle } from 'lucide-react';
 import styles from './student.module.css';
 import LoadingDots from '../../../../components/LoadingDots';
 

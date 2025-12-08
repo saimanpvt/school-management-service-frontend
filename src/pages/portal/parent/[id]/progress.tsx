@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import PortalLayout from '../../../../components/PortalLayout';
-import { parentService } from '../../../../services/parent.service';
-import { BarChart2, TrendingUp, Award, Users } from 'lucide-react';
+import { BarChart2, TrendingUp, Award } from 'lucide-react';
 import styles from './parent.module.css';
+import LoadingDots from '../../../../components/LoadingDots';
 
 interface ProgressData {
     childId: string;
@@ -81,19 +81,15 @@ const ParentProgress = () => {
 
     if (loading) {
         return (
-            <div className={styles.container}>
-                <Sidebar name="Parent" role="parent" />
-                <main className={styles.main}>
-                    <div className={styles.loading}><LoadingDots /></div>
-                </main>
-            </div>
+            <PortalLayout userName="Parent" userRole="parent">
+                <div className={styles.loading}><LoadingDots /></div>
+            </PortalLayout>
         );
     }
 
     return (
-        <div className={styles.container}>
-            <Sidebar name="Parent" role="parent" />
-            <main className={styles.main}>
+        <PortalLayout userName="Parent" userRole="parent">
+            <div className={styles.main}>
                 <header className={styles.header}>
                     <div>
                         <h1>Children&apos;s Progress</h1>
@@ -199,8 +195,8 @@ const ParentProgress = () => {
                         </div>
                     )}
                 </div>
-            </main>
-        </div>
+            </div>
+        </PortalLayout>
     );
 };
 

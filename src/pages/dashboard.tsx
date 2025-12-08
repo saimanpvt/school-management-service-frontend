@@ -1,23 +1,21 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../lib/auth';
-import { getDashboardUrl } from '../utils/routing';
+import { getDashboardUrl } from '../lib/utils/routing';
 
 export default function Dashboard() {
     const router = useRouter();
-    const { user, isLoading } = useAuth();
+    const { user } = useAuth();
 
     useEffect(() => {
-        if (!isLoading) {
-            const routerInstance = router as any;
-            if (user) {
-                const dashboardUrl = getDashboardUrl(user.role, user.userID);
-                routerInstance?.push(dashboardUrl);
-            } else {
-                routerInstance?.push('/');
-            }
+        const routerInstance = router as any;
+        if (user) {
+            const dashboardUrl = getDashboardUrl(user.role, user.userID);
+            routerInstance?.push(dashboardUrl);
+        } else {
+            routerInstance?.push('/');
         }
-    }, [user, isLoading, router]);
+    }, [user, router]);
 
     return (
         <div style={{

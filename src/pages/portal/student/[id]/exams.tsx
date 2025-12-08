@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import PortalLayout from '../../../../components/PortalLayout';
-import { FileText, Calendar, Clock, MapPin, TrendingUp } from 'lucide-react';
+import { FileText, Calendar, Clock, MapPin, TrendingUp, CheckCircle, AlertCircle } from 'lucide-react';
 import styles from './student.module.css';
 import LoadingDots from '../../../../components/LoadingDots';
 
