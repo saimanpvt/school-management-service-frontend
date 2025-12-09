@@ -199,18 +199,63 @@ const UserManagement = () => {
             console.log('API Response:', response); // Debug log
 
             if (response.success && response.data) {
-                // Handle different response structures
+                // Handle API response structure: { students: [], teachers: [], parent: [] }
                 let userData: User[] = [];
 
                 if (Array.isArray(response.data)) {
                     userData = response.data as User[];
                 } else if (response.data && typeof response.data === 'object') {
-                    // Handle case where data might be nested (students, teachers, etc.)
                     const data = response.data as Record<string, User[]>;
-                    if (data.students) userData = [...userData, ...data.students];
-                    if (data.teachers) userData = [...userData, ...data.teachers];
-                    if (data.parents) userData = [...userData, ...data.parents];
-                    if (data.admins) userData = [...userData, ...data.admins];
+
+                    // Parse students array
+                    if (data.students && Array.isArray(data.students)) {
+                        const students = data.students.map(student => ({
+                            _id: student.userId || student._id,
+                            email: student.userId?.email || '',
+                            firstName: student.fullName?.split(' ')[0] || '',
+                            lastName: student.fullName?.split(' ').slice(1).join(' ') || '',
+                            userID: student.userRefId || student.userId,
+                            role: 3, // Student role
+                            // Add student-specific data
+                            admissionDate: student.admissionDate,
+                            timeWithUs: student.timeWithUs,
+                            classes: student.classes,
+                            parentName: student.parentName,
+                            ...student
+                        }));
+                        userData = [...userData, ...students];
+                    }
+
+                    // Parse teachers array
+                    if (data.teachers && Array.isArray(data.teachers)) {
+                        const teachers = data.teachers.map(teacher => ({
+                            _id: teacher.dbId || teacher._id,
+                            email: teacher.userId?.email || '',
+                            firstName: teacher.fullName?.split(' ')[0] || '',
+                            lastName: teacher.fullName?.split(' ').slice(1).join(' ') || '',
+                            userID: teacher.userId || teacher.userRefId,
+                            role: 2, // Teacher role
+                            // Add teacher-specific data
+                            experience: teacher.experience,
+                            empId: teacher.empId,
+                            ...teacher
+                        }));
+                        userData = [...userData, ...teachers];
+                    }
+
+                    // Parse parent array (note: it's 'parent' not 'parents' in your API)
+                    if (data.parent && Array.isArray(data.parent)) {
+                        const parents = data.parent.map(parent => ({
+                            _id: parent._id,
+                            email: parent.email || '',
+                            firstName: parent.firstName || '',
+                            lastName: parent.lastName || '',
+                            userID: parent.userID || parent.uuid,
+                            role: 4, // Parent role
+                            ...parent
+                        }));
+                        userData = [...userData, ...parents];
+                    }
                 }
 
                 console.log('Processed user data:', userData);
@@ -269,6 +314,65 @@ const UserManagement = () => {
                 }
                 closeAlert();
             },
+        });
+    };
+
+    // Edit user function
+    const handleEditUser = (user: User) => {
+        setFormData({
+            email: user.email || '',
+            firstName: user.firstName || '',
+            lastName: user.lastName || '',
+            role: activeUserType,
+            phone: user.phone || '',
+            userID: user.userID || '',
+            address: user.address || {
+                street: '',
+                city: '',
+                state: '',
+                zipCode: '',
+                country: '',
+            },
+            dob: user.dob || '',
+            gender: user.gender || '',
+            bloodGroup: user.bloodGroup || '',
+            // Role-specific fields
+            employeeId: (user as any).empId || (user as any).employeeId || '',
+            experience: (user as any).experience || '',
+            DOJ: (user as any).DOJ || '',
+            admissionDate: (user as any).admissionDate || '',
+            studentId: (user as any).studentId || '',
+            childrenId: (user as any).childrenId || '',
+            classId: (user as any).classId || '',
+        });
+        setIsEditMode(true);
+        setEditingUserId(user._id);
+        setShowAddForm(true);
+    };
+
+    // View user details function
+    const handleViewUser = (user: User) => {
+        let userDetails = `Name: ${user.firstName} ${user.lastName}\n`;
+        userDetails += `Email: ${user.email}\n`;
+        userDetails += `User ID: ${user.userID}\n`;
+
+        if (user.role === 3) { // Student
+            userDetails += `Admission Date: ${(user as any).admissionDate || 'N/A'}\n`;
+            userDetails += `Time with Us: ${(user as any).timeWithUs || 'N/A'}\n`;
+            userDetails += `Parent: ${(user as any).parentName || 'N/A'}`;
+        } else if (user.role === 2) { // Teacher
+            userDetails += `Employee ID: ${(user as any).empId || 'N/A'}\n`;
+            userDetails += `Experience: ${(user as any).experience || 'N/A'} years`;
+        }
+
+        setAlertConfig({
+            isOpen: true,
+            title: 'User Details',
+            message: userDetails,
+            type: 'info',
+            confirmText: 'Close',
+            showCancel: false,
+            onConfirm: closeAlert,
         });
     };
 
@@ -412,41 +516,7 @@ const UserManagement = () => {
         setEditingUserId(null);
     };
 
-    // Handle edit user
-    const handleEditUser = (user: User) => {
-        // Convert user data to form format
-        setFormData({
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            role: getRoleString(user.role),
-            phone: user.phone || '',
-            userID: user.userID || '',
-            address: {
-                street: user.address?.street || '',
-                city: user.address?.city || '',
-                state: user.address?.state || '',
-                zipCode: user.address?.zipCode || '',
-                country: user.address?.country || '',
-            },
-            dob: user.dob || '',
-            gender: user.gender || '',
-            bloodGroup: user.bloodGroup || '',
-            // Role-specific fields - you may need to adjust based on your user data structure
-            employeeId: (user as User & { employeeId?: string }).employeeId || '',
-            experience: (user as User & { experience?: string }).experience || '',
-            DOJ: (user as User & { DOJ?: string }).DOJ || '',
-            admissionDate: (user as User & { admissionDate?: string }).admissionDate || '',
-            studentId: (user as User & { studentId?: string }).studentId || '',
-            childrenId: (user as User & { childrenId?: string }).childrenId || '',
-            classId: (user as User & { classId?: string }).classId || '',
-        });
-        setIsEditMode(true);
-        setEditingUserId(user._id);
-        setShowAddForm(true);
-        setOpenDropdown(null);
-    };
-
+   
     // Helper function to convert role number to string
     const getRoleString = (roleNumber: number): string => {
         const roleMapping = {
@@ -480,6 +550,14 @@ const UserManagement = () => {
         if (percentage >= 90) return '#059669'; // Green
         if (percentage >= 75) return '#f59e0b'; // Yellow
         return '#dc2626'; // Red
+    };
+
+
+
+    // Add new user function
+    const handleAddUser = () => {
+        resetForm();
+        setShowAddForm(true);
     };
 
     // Navigation handlers
@@ -945,7 +1023,13 @@ const UserManagement = () => {
                                                             }}
                                                         />
 
-                                                        <button className={styles.editAction}>
+                                                        <button
+                                                            className={styles.editAction}
+                                                            onClick={() => {
+                                                                handleEditUser(user);
+                                                                setOpenDropdown(null);
+                                                            }}
+                                                        >
                                                             <Edit size={14} />
                                                             Edit User
                                                         </button>
