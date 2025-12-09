@@ -1,5 +1,6 @@
-import Header from './Header';
-import Footer from './Footer';
+import Header from '../Header';
+import Footer from '../Footer';
+import styles from './Layout.module.css';
 
 type Props = {
   children?: any;
@@ -8,10 +9,10 @@ type Props = {
 
 export default function Layout({ children, user }: Props) {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className={styles.container}>
       <Header user={user} />
 
-      <main className="flex-1 max-w-6xl mx-auto px-4 py-8 w-full">
+      <main className={styles.main}>
         {children}
       </main>
 

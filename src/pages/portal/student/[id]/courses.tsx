@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices, Course } from '../../../../services/api';
 import { BookOpen, Clock, User, TrendingUp, FileText } from 'lucide-react';
 import styles from './student.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
 const StudentCourses = () => {
   const router = useRouter();
@@ -16,9 +16,8 @@ const StudentCourses = () => {
     const loadCourses = async () => {
       if (id) {
         try {
-          const response = await apiServices.student.getStudentCourses(
-            id as string
-          );
+          // Use unified courses API - backend filters for student
+          const response = await apiServices.courses.getAll();
           if (response.success && response.data) {
             setCourses(response.data);
           }

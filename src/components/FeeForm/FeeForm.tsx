@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Plus, Trash2 } from 'lucide-react';
-import styles from '../pages/portal/admin/[id]/admin.module.css';
-import { FeeStructureFormData, FeeComponent } from '../lib/types';
+import styles from './FeeForm.module.css';
+import { FeeStructureFormData, FeeComponent } from '../../lib/types';
 
 interface FeeFormProps {
   formData: FeeStructureFormData;
@@ -69,20 +69,18 @@ const FeeForm: React.FC<FeeFormProps> = ({
   const handleComponentChange = (
     index: number,
     field: keyof FeeComponent,
-    value: any
+    value: any,
   ) => {
     const updatedComponents = [...formData.feeComponents];
     updatedComponents[index] = {
       ...updatedComponents[index],
       [field]: value,
     };
-
     // Recalculate total amount
     const totalAmount = updatedComponents.reduce(
       (sum, component) => sum + component.amount,
       0
     );
-
     setFormData({
       ...formData,
       feeComponents: updatedComponents,
@@ -509,7 +507,6 @@ const FeeForm: React.FC<FeeFormProps> = ({
                 </div>
               </div>
             ))}
-
             {formData.feeComponents.length === 0 && (
               <p
                 style={{
@@ -517,13 +514,11 @@ const FeeForm: React.FC<FeeFormProps> = ({
                   textAlign: 'center',
                   padding: '2rem',
                 }}
-              >
-                No fee components added. Click "Add Component" to add fee
+              >No fee components added. Click "Add Component" to add fee
                 components.
               </p>
             )}
           </div>
-
           <div className={styles.checkboxGroup} style={{ marginTop: '1rem' }}>
             <label>
               <input
@@ -535,7 +530,6 @@ const FeeForm: React.FC<FeeFormProps> = ({
               Active
             </label>
           </div>
-
           <div className={styles.formActions}>
             <button
               type="button"

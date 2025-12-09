@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../../components/PortalLayout';
+import PortalLayout from '../../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../../services/api';
 import {
   ArrowLeft,
@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { ProtectedRoute } from '../../../../../lib/auth';
 import styles from '../admin.module.css';
-import LoadingDots from '../../../../../components/LoadingDots';
+import LoadingDots from '../../../../../components/LoadingDots/LoadingDots';
 
 interface StudentDetails {
   _id: string;
@@ -177,9 +177,8 @@ const StudentDetailsPage = () => {
                 </h1>
                 <p className={styles.subtitle}>Student ID: {student.userID}</p>
                 <span
-                  className={`${styles.statusBadge} ${
-                    student.isActive ? styles.active : styles.inactive
-                  }`}
+                  className={`${styles.statusBadge} ${student.isActive ? styles.active : styles.inactive
+                    }`}
                 >
                   {student.isActive ? 'Active' : 'Inactive'}
                 </span>
@@ -361,14 +360,14 @@ const StudentDetailsPage = () => {
                             student.feeStatus.status === 'paid'
                               ? '#dcfce7'
                               : student.feeStatus.status === 'pending'
-                              ? '#fef3c7'
-                              : '#fee2e2',
+                                ? '#fef3c7'
+                                : '#fee2e2',
                           color:
                             student.feeStatus.status === 'paid'
                               ? '#166534'
                               : student.feeStatus.status === 'pending'
-                              ? '#92400e'
-                              : '#991b1b',
+                                ? '#92400e'
+                                : '#991b1b',
                         }}
                       >
                         {student.feeStatus.status.toUpperCase()}

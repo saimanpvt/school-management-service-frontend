@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import {
   DollarSign,
   Calendar,
@@ -9,7 +9,7 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import styles from './student.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
 interface Fee {
   id: string;
@@ -196,14 +196,14 @@ const StudentFees = () => {
                       fee.status === 'paid'
                         ? '#d1fae5'
                         : fee.status === 'overdue'
-                        ? '#fee2e2'
-                        : '#fef3c7',
+                          ? '#fee2e2'
+                          : '#fef3c7',
                     color:
                       fee.status === 'paid'
                         ? '#059669'
                         : fee.status === 'overdue'
-                        ? '#dc2626'
-                        : '#d97706',
+                          ? '#dc2626'
+                          : '#d97706',
                   }}
                 >
                   {fee.status === 'paid' && (

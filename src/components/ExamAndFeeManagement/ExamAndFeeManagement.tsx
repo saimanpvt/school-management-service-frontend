@@ -2,8 +2,8 @@
 // You can use this as a reference to add these modals to your admin pages
 
 import React, { useState } from 'react';
-import ExamForm from '../../../components/ExamForm';
-import FeeForm from '../../../components/FeeForm';
+import ExamForm from '../../../components/ExamForm/ExamForm';
+import FeeForm from '../../../components/FeeForm/FeeForm';
 import { ExamFormData, FeeStructureFormData } from '../../../lib/types';
 import { examsApi, feesApi } from '../../../services/api';
 
@@ -186,3 +186,4 @@ const ExamAndFeeManagement: React.FC = () => {
 };
 
 export default ExamAndFeeManagement;
+

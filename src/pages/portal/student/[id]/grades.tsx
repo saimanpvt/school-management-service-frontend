@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
-import { BarChart2, TrendingUp, Award } from 'lucide-react';
+import { BarChart2, Award } from 'lucide-react';
 import styles from './student.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
 interface GradeData {
   courseId: string;
@@ -24,7 +24,8 @@ const StudentGrades = () => {
     const loadGrades = async () => {
       if (id) {
         try {
-          const response = await apiServices.student.getGrades(id as string);
+          // Use unified marks API - backend filters for student
+          const response = apiServices.marks.getList ? await apiServices.marks.getList() : { success: false, data: [] };
           if (response.success && response.data) {
             setGrades(response.data);
           }
@@ -158,9 +159,9 @@ const StudentGrades = () => {
                     {course.finalGrade !== undefined
                       ? `${course.finalGrade.toFixed(1)}%`
                       : `${calculateAverage([
-                          ...course.assignments,
-                          ...course.tests,
-                        ]).toFixed(1)}%`}
+                        ...course.assignments,
+                        ...course.tests,
+                      ]).toFixed(1)}%`}
                   </span>
                 </div>
               )}

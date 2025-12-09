@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import Link from 'next/link';
 import { apiServices, StudentDashboardStats } from '../../../../services/api';
 import { ProtectedRoute } from '../../../../lib/auth';
 import styles from '../../../../styles/Dashboard.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
 const StudentDashboard = () => {
   const router = useRouter();
@@ -17,9 +17,8 @@ const StudentDashboard = () => {
     const loadDashboardStats = async () => {
       if (id) {
         try {
-          const response = await apiServices.student.getDashboardStats(
-            id as string
-          );
+          // Use unified dashboard API - backend filters for student
+          const response = await apiServices.dashboard.getStats();
           if (response.success && response.data) {
             setStats(response.data);
           } else {
@@ -269,9 +268,8 @@ const StudentDashboard = () => {
             {Array.from({ length: 7 }, (_, i) => (
               <div
                 key={i}
-                className={`${styles.calendar_day} ${
-                  i === 3 ? styles.active : ''
-                }`}
+                className={`${styles.calendar_day} ${i === 3 ? styles.active : ''
+                  }`}
               >
                 {24 + i}
               </div>

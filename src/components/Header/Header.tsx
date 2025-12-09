@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { useState } from 'react';
+import styles from './Header.module.css';
 
 type Props = {
   user?: { name?: string; role?: string };
@@ -9,39 +10,39 @@ export default function Header({ user }: Props) {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="bg-white border-b">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <Link href="/" className="text-2xl font-bold text-indigo-600">
-            School<span className="text-gray-800">Mgmt</span>
+    <header className={styles.header}>
+      <div className={styles.container}>
+        <div className={styles.brandSection}>
+          <Link href="/" className={styles.logo}>
+            School<span className={styles.logoText}>Mgmt</span>
           </Link>
 
-          <nav className="hidden md:flex items-center space-x-4 ml-6 text-sm text-gray-700">
-            <Link href="/" className="hover:text-indigo-600">
+          <nav className={styles.nav}>
+            <Link href="/" className={styles.navLink}>
               Home
             </Link>
-            <Link href="/courses" className="hover:text-indigo-600">
+            <Link href="/courses" className={styles.navLink}>
               Courses
             </Link>
-            <Link href="/students" className="hover:text-indigo-600">
+            <Link href="/students" className={styles.navLink}>
               Students
             </Link>
-            <Link href="/teachers" className="hover:text-indigo-600">
+            <Link href="/teachers" className={styles.navLink}>
               Teachers
             </Link>
-            <Link href="/exams" className="hover:text-indigo-600">
+            <Link href="/exams" className={styles.navLink}>
               Exams
             </Link>
           </nav>
         </div>
 
-        <div className="flex items-center space-x-4">
-          <div className="hidden md:flex items-center space-x-3">
+        <div className={styles.rightSection}>
+          <div className={styles.desktopAuth}>
             {!user && (
               <>
                 <Link
                   href="/auth/login"
-                  className="px-3 py-1 text-sm rounded-md border border-indigo-600 text-indigo-600 hover:bg-indigo-50"
+                  className={styles.loginButton}
                 >
                   Login
                 </Link>
@@ -49,9 +50,9 @@ export default function Header({ user }: Props) {
             )}
 
             {user && (
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-700">{user.name}</span>
-                <span className="px-2 py-0.5 text-xs bg-gray-100 rounded">
+              <div className={styles.userInfo}>
+                <span className={styles.userName}>{user.name}</span>
+                <span className={styles.userRole}>
                   {user.role}
                 </span>
               </div>
@@ -59,13 +60,13 @@ export default function Header({ user }: Props) {
           </div>
 
           <button
-            className="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100"
+            className={styles.mobileMenuButton}
             onClick={() => setOpen(!open)}
             aria-label="Toggle menu"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
+              className={styles.menuIcon}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -82,26 +83,26 @@ export default function Header({ user }: Props) {
       </div>
 
       {open && (
-        <div className="md:hidden border-t">
-          <div className="px-4 py-3 space-y-2">
-            <Link href="/" className="block">
+        <div className={styles.mobileMenu}>
+          <div className={styles.mobileMenuContent}>
+            <Link href="/" className={styles.mobileMenuLink}>
               Home
             </Link>
-            <Link href="/courses" className="block">
+            <Link href="/courses" className={styles.mobileMenuLink}>
               Courses
             </Link>
-            <Link href="/students" className="block">
+            <Link href="/students" className={styles.mobileMenuLink}>
               Students
             </Link>
-            <Link href="/teachers" className="block">
+            <Link href="/teachers" className={styles.mobileMenuLink}>
               Teachers
             </Link>
-            <Link href="/exams" className="block">
+            <Link href="/exams" className={styles.mobileMenuLink}>
               Exams
             </Link>
             {!user && (
               <>
-                <Link href="/auth/login" className="block">
+                <Link href="/auth/login" className={styles.mobileMenuLink}>
                   Login
                 </Link>
               </>

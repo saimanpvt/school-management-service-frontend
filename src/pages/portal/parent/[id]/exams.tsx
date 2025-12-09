@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
-import { FileText, Calendar, Clock, TrendingUp, Award } from 'lucide-react';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
+import { FileText, Calendar, Clock, TrendingUp } from 'lucide-react';
 import styles from './parent.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
 interface Exam {
   id: string;

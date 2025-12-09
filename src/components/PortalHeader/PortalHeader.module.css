@@ -1,0 +1,9 @@
+/* PortalHeader.module.css */
+
+.header {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+  padding: 1rem;
+}

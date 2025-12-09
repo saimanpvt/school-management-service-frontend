@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import styles from './teacher.module.css';
-import PortalLayout from '../../../../components/PortalLayout';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices, TeacherDashboardStats } from '../../../../services/api';
 import {
   LineChart,
@@ -12,7 +12,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import LoadingDots from '../../../../components/LoadingDots';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
 const TeacherDashboard = () => {
   const router = useRouter();
@@ -26,9 +26,8 @@ const TeacherDashboard = () => {
 
     try {
       setLoading(true);
-      const response = await apiServices.teacher.getDashboardStats(
-        id as string
-      );
+      // Use unified dashboard API - backend handles role-based stats
+      const response = await apiServices.dashboard?.getStats() || { success: false, data: null };
       if (response.success && response.data) {
         setStats(response.data);
       } else {

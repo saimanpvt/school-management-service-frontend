@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { authApi } from '../../services/authApi';
 import Link from 'next/link';
 import styles from './signup.module.css';
-import LoadingDots from '../../components/LoadingDots';
+import LoadingDots from '../../components/LoadingDots/LoadingDots';
 import { getDashboardUrl } from '../../lib/utils/routing';
 
 // No role mapping needed - send role names directly
@@ -83,36 +83,32 @@ export default function SignupPage() {
             <div className={styles['user-type-toggle']}>
               <button
                 type="button"
-                className={`${styles['toggle-btn']} ${
-                  userType === 'admin' ? styles['active'] : ''
-                }`}
+                className={`${styles['toggle-btn']} ${userType === 'admin' ? styles['active'] : ''
+                  }`}
                 onClick={() => setUserType('admin')}
               >
                 Admin
               </button>
               <button
                 type="button"
-                className={`${styles['toggle-btn']} ${
-                  userType === 'teacher' ? styles['active'] : ''
-                }`}
+                className={`${styles['toggle-btn']} ${userType === 'teacher' ? styles['active'] : ''
+                  }`}
                 onClick={() => setUserType('teacher')}
               >
                 Teacher
               </button>
               <button
                 type="button"
-                className={`${styles['toggle-btn']} ${
-                  userType === 'student' ? styles['active'] : ''
-                }`}
+                className={`${styles['toggle-btn']} ${userType === 'student' ? styles['active'] : ''
+                  }`}
                 onClick={() => setUserType('student')}
               >
                 Student
               </button>
               <button
                 type="button"
-                className={`${styles['toggle-btn']} ${
-                  userType === 'parent' ? styles['active'] : ''
-                }`}
+                className={`${styles['toggle-btn']} ${userType === 'parent' ? styles['active'] : ''
+                  }`}
                 onClick={() => setUserType('parent')}
               >
                 Parent

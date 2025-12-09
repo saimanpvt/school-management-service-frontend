@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices, Assignment } from '../../../../services/api';
 import {
   FileText,
@@ -10,7 +10,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import styles from './student.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
 const StudentAssignments = () => {
   const router = useRouter();
@@ -22,9 +22,8 @@ const StudentAssignments = () => {
     const loadAssignments = async () => {
       if (id) {
         try {
-          const response = await apiServices.student.getAssignments(
-            id as string
-          );
+          // Use unified assignments API - backend filters for student
+          const response = await apiServices.assignments.getAll();
           if (response.success && response.data) {
             setAssignments(response.data);
           }
@@ -73,7 +72,7 @@ const StudentAssignments = () => {
   }
 
   return (
-    <PortalLayout userRole="student" userId={id as string}>
+    <PortalLayout userRole="student" userName="Student">
       <header className={styles.pageHeader}>
         <h1>My Assignments</h1>
         <p>Track and manage your assignments</p>
@@ -108,9 +107,8 @@ const StudentAssignments = () => {
                   </div>
                   <div>
                     <span
-                      className={`${styles.statusBadge} ${
-                        styles[getStatusBadge(assignment.status)]
-                      }`}
+                      className={`${styles.statusBadge} ${styles[getStatusBadge(assignment.status)]
+                        }`}
                     >
                       {assignment.status === 'pending' && <Clock size={14} />}
                       {assignment.status === 'submitted' && (

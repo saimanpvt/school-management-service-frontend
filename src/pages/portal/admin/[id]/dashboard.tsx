@@ -1,18 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
 import {
   Users,
   BookOpen,
   GraduationCap,
-  DollarSign,
-  TrendingUp,
-  Activity,
 } from 'lucide-react';
 import { ProtectedRoute } from '../../../../lib/auth';
 import styles from './admin.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
 const AdminDashboard = () => {
   const router = useRouter();
@@ -20,9 +17,10 @@ const AdminDashboard = () => {
   const [stats, setStats] = useState({
     totalStudents: 0,
     totalTeachers: 0,
+    totalParents: 0,
     totalCourses: 0,
     totalRevenue: 0,
-    recentActivity: [] as any[],
+    recentActivity: [] as unknown[],
   });
   const [loading, setLoading] = useState(true);
 
@@ -30,26 +28,43 @@ const AdminDashboard = () => {
     if (id) {
       // Fetch dashboard stats using unified users API
       Promise.all([
-        apiServices.users.getByRole(3), // Students
-        apiServices.users.getByRole(2), // Teachers
+        apiServices.users.getAll(),
         apiServices.courses.getAll(),
         apiServices.fees.getAll(),
       ])
-        .then(([studentsRes, teachersRes, coursesRes, feesRes]) => {
+        .then(([usersRes, coursesRes, feesRes]) => {
+          // Count users by role from the API response
+          let totalStudents = 0;
+          let totalTeachers = 0;
+          let totalParents = 0;
+
+          if (usersRes.success && usersRes.data) {
+            // Handle different API response structures
+            if (Array.isArray(usersRes.data)) {
+              // If data is a direct array of users
+              totalStudents = usersRes.data.filter((user: { role: number }) => user.role === 3).length;
+              totalTeachers = usersRes.data.filter((user: { role: number }) => user.role === 2).length;
+              totalParents = usersRes.data.filter((user: { role: number }) => user.role === 4).length;
+            } else if (typeof usersRes.data === 'object') {
+              // If data is nested (students, teachers, parents arrays)
+              const data = usersRes.data as { students?: unknown[]; teachers?: unknown[]; parents?: unknown[] };
+              totalStudents = data.students?.length || 0;
+              totalTeachers = data.teachers?.length || 0;
+              totalParents = data.parents?.length || 0;
+            }
+          }
+
           const totalRevenue = feesRes.success
             ? feesRes.data?.reduce(
-                (sum: number, fee: any) => sum + (fee.amount || 0),
-                0
-              ) || 0
+              (sum: number, fee: { amount?: number }) => sum + (fee.amount || 0),
+              0
+            ) || 0
             : 0;
 
           setStats({
-            totalStudents: studentsRes.success
-              ? studentsRes.data?.length || 0
-              : 0,
-            totalTeachers: teachersRes.success
-              ? teachersRes.data?.length || 0
-              : 0,
+            totalStudents,
+            totalTeachers,
+            totalParents,
             totalCourses: coursesRes.success ? coursesRes.data?.length || 0 : 0,
             totalRevenue,
             recentActivity: [],
@@ -108,6 +123,16 @@ const AdminDashboard = () => {
           <div className={styles.statInfo}>
             <h3>Total Courses</h3>
             <p className={styles.statNumber}>{stats.totalCourses}</p>
+          </div>
+        </div>
+
+        <div className={styles.statCard}>
+          <div className={styles.statIcon} style={{ background: '#fef2f2' }}>
+            <Users size={24} color="#dc2626" />
+          </div>
+          <div className={styles.statInfo}>
+            <h3>Total Parents</h3>
+            <p className={styles.statNumber}>{stats.totalParents}</p>
           </div>
         </div>
       </div>

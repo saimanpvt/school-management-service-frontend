@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
-import { parentService } from '../../../../services/parent.service';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { CalendarDays, CheckCircle, XCircle, TrendingUp } from 'lucide-react';
 import styles from './parent.module.css';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
 interface AttendanceRecord {
     id: string;

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../../components/PortalLayout';
+import PortalLayout from '../../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../../services/api';
 import {
   ArrowLeft,
@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { ProtectedRoute } from '../../../../../lib/auth';
 import styles from '../admin.module.css';
-import LoadingDots from '../../../../../components/LoadingDots';
+import LoadingDots from '../../../../../components/LoadingDots/LoadingDots';
 
 interface TeacherDetails {
   _id: string;
@@ -148,9 +148,8 @@ const TeacherDetailsPage = () => {
                     Teacher ID: {teacher.userID}
                   </p>
                   <span
-                    className={`${styles.statusBadge} ${
-                      teacher.isActive ? styles.active : styles.inactive
-                    }`}
+                    className={`${styles.statusBadge} ${teacher.isActive ? styles.active : styles.inactive
+                      }`}
                   >
                     {teacher.isActive ? 'Active' : 'Inactive'}
                   </span>
