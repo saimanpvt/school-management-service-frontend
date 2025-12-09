@@ -10,7 +10,7 @@ import {
   CheckCircle,
   AlertCircle,
 } from 'lucide-react';
-import LoadingDots from '../../components/LoadingDots';
+import LoadingDots from '../../components/LoadingDots/LoadingDots';
 import styles from './change-password.module.css';
 
 interface PasswordForm {
@@ -330,3 +330,4 @@ const ChangePassword = () => {
 };
 
 export default ChangePassword;
+

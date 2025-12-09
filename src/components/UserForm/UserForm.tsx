@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, X } from 'lucide-react';
-import styles from '../pages/portal/admin/[id]/admin.module.css';
+import styles from './UserForm.module.css';
 
 export interface UserFormData {
   email: string;
@@ -129,6 +129,7 @@ const UserForm: React.FC<UserFormProps> = ({
     if (formData.role === 'student' || activeUserType === 'student') {
       if (!formData.studentId) missing.push('Student ID');
       if (!formData.admissionDate) missing.push('Admission Date');
+      if (!formData.classId) missing.push('Class');
     }
 
     if (formData.role === 'parent' || activeUserType === 'parent') {
@@ -152,7 +153,7 @@ const UserForm: React.FC<UserFormProps> = ({
           </button>
         </div>
         {formError && (
-          <div style={{ color: 'red', marginBottom: 8 }}>{formError}</div>
+          <div className={styles.errorMessage}>{formError}</div>
         )}
         <form onSubmit={handleFormSubmit} className={styles.form}>
           <div className={styles.formRow}>
@@ -217,8 +218,8 @@ const UserForm: React.FC<UserFormProps> = ({
             </div>
             {/* User ID field: editable and required for teacher, student, and parent, readOnly for admin */}
             {formData.role === 'teacher' ||
-            formData.role === 'student' ||
-            formData.role === 'parent' ? (
+              formData.role === 'student' ||
+              formData.role === 'parent' ? (
               <div className={styles.formGroup}>
                 <label>User ID *</label>
                 <input
@@ -341,9 +342,10 @@ const UserForm: React.FC<UserFormProps> = ({
           </div>
 
           {/* Role-specific fields */}
+          {/* REQUIRED ROLE-SPECIFIC FIELDS */}
           {activeUserType === 'teacher' && (
             <div className={styles.roleSpecificSection}>
-              <h3>Teacher Details</h3>
+              <h3>Teacher Details (Required for Teacher Role)</h3>
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
                   <label>Employee ID *</label>
@@ -385,7 +387,7 @@ const UserForm: React.FC<UserFormProps> = ({
 
           {activeUserType === 'student' && (
             <div className={styles.roleSpecificSection}>
-              <h3>Student Details</h3>
+              <h3>Student Details (Required for Student Role)</h3>
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
                   <label>Student ID *</label>
@@ -426,7 +428,7 @@ const UserForm: React.FC<UserFormProps> = ({
 
           {activeUserType === 'parent' && (
             <div className={styles.roleSpecificSection}>
-              <h3>Parent Details</h3>
+              <h3>Parent Details (Required for Parent Role)</h3>
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
                   <label>Children ID *</label>
@@ -474,13 +476,23 @@ const UserForm: React.FC<UserFormProps> = ({
               automatically
             </p>
           </div>
-          <button
-            type="submit"
-            className={styles.submitButton}
-            disabled={!generatedPassword}
-          >
-            {isEdit ? 'Update User' : 'Create User & Send Credentials'}
-          </button>
+
+          <div className={styles.formButtons}>
+            <button
+              type="button"
+              className={styles.cancelButton}
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className={styles.submitButton}
+              disabled={!generatedPassword && !isEdit}
+            >
+              {isEdit ? 'Update User' : 'Create User & Send Credentials'}
+            </button>
+          </div>
         </form>
       </div>
     </div>

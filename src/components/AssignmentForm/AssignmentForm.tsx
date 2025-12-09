@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Calendar, FileText, Users, Clock } from 'lucide-react';
-import styles from '../pages/portal/admin/[id]/admin.module.css';
+import styles from './AssignmentForm.module.css';
 
 export interface AssignmentFormData {
   title: string;

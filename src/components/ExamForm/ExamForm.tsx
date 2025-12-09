@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import styles from '../pages/portal/admin/[id]/admin.module.css';
-import { ExamFormData } from '../lib/types';
+import styles from './ExamForm.module.css';
+import { ExamFormData } from '../../lib/types';
 
 interface ExamFormProps {
   formData: ExamFormData;
@@ -19,7 +19,6 @@ const ExamForm: React.FC<ExamFormProps> = ({
   onSubmit,
   onClose,
   courseOptions,
-  classOptions,
   isEdit = false,
 }) => {
   const [formError, setFormError] = useState('');

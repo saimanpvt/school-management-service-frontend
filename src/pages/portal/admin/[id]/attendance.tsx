@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
 import {
   Users,
@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { ProtectedRoute } from '../../../../lib/auth';
 import styles from './admin.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
 interface AttendanceRecord {
   _id: string;
@@ -63,11 +63,22 @@ const AdminAttendance = () => {
     try {
       setLoading(true);
 
-      // Fetch students and teachers with attendance data
-      const [studentsResponse, teachersResponse] = await Promise.all([
-        apiServices.users.getByRole(3), // Students
-        apiServices.users.getByRole(2), // Teachers
-      ]);
+      // Fetch all users and filter by role
+      const usersResponse = await apiServices.users.getAll();
+
+      let studentsResponse = { success: false, data: [] };
+      let teachersResponse = { success: false, data: [] };
+
+      if (usersResponse.success && Array.isArray(usersResponse.data)) {
+        studentsResponse = {
+          success: true,
+          data: usersResponse.data.filter((user: { role: number }) => user.role === 3)
+        };
+        teachersResponse = {
+          success: true,
+          data: usersResponse.data.filter((user: { role: number }) => user.role === 2)
+        };
+      }
 
       if (studentsResponse.success) {
         // Transform student data to include mock attendance
@@ -139,17 +150,17 @@ const AdminAttendance = () => {
 
   const filteredData = getCurrentData().filter((record) => {
     const matchesSearch =
-      record.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.userID.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.email.toLowerCase().includes(searchTerm.toLowerCase());
+      (record.firstName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (record.lastName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (record.userID?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (record.email?.toLowerCase() || '').includes(searchTerm.toLowerCase());
 
     const matchesFilter =
       filterStatus === 'all' ||
-      (filterStatus === 'present' && record.attendance.percentage >= 90) ||
+      (filterStatus === 'present' && (record.attendance?.percentage || 0) >= 90) ||
       (filterStatus === 'absent' &&
-        record.recentAttendance[0]?.status === 'absent') ||
-      (filterStatus === 'low' && record.attendance.percentage < 75);
+        record.recentAttendance?.[0]?.status === 'absent') ||
+      (filterStatus === 'low' && (record.attendance?.percentage || 0) < 75);
 
     return matchesSearch && matchesFilter;
   });
@@ -212,12 +223,12 @@ const AdminAttendance = () => {
       prev.map((record) =>
         record._id === userId
           ? {
-              ...record,
-              recentAttendance: [
-                { date: selectedDate, status },
-                ...record.recentAttendance.slice(1),
-              ],
-            }
+            ...record,
+            recentAttendance: [
+              { date: selectedDate, status },
+              ...(record.recentAttendance || []).slice(1),
+            ],
+          }
           : record
       )
     );
@@ -314,9 +325,8 @@ const AdminAttendance = () => {
         <div className={styles.tabsContainer}>
           <div className={styles.tabsHeader}>
             <button
-              className={`${styles.tabBtn} ${
-                activeTab === 'students' ? styles.tabBtnActive : ''
-              }`}
+              className={`${styles.tabBtn} ${activeTab === 'students' ? styles.tabBtnActive : ''
+                }`}
               onClick={() => {
                 setActiveTab('students');
                 setSearchTerm(''); // Reset search when switching tabs
@@ -327,9 +337,8 @@ const AdminAttendance = () => {
               Students ({students.length})
             </button>
             <button
-              className={`${styles.tabBtn} ${
-                activeTab === 'teachers' ? styles.tabBtnActive : ''
-              }`}
+              className={`${styles.tabBtn} ${activeTab === 'teachers' ? styles.tabBtnActive : ''
+                }`}
               onClick={() => {
                 setActiveTab('teachers');
                 setSearchTerm(''); // Reset search when switching tabs
@@ -402,56 +411,55 @@ const AdminAttendance = () => {
                           </div>
                           <div>
                             <div className={styles.userName}>
-                              {record.firstName} {record.lastName}
+                              {record.firstName || ''} {record.lastName || ''}
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td>{record.userID}</td>
-                      <td>{record.email}</td>
+                      <td>{record.userID || 'N/A'}</td>
+                      <td>{record.email || 'N/A'}</td>
                       <td>
                         <span
                           className={styles.attendancePercentage}
                           style={{
                             color: getAttendanceColor(
-                              record.attendance.percentage
+                              record.attendance?.percentage || 0
                             ),
                           }}
                         >
-                          {record.attendance.percentage}%
+                          {record.attendance?.percentage || 0}%
                         </span>
                       </td>
                       <td>
-                        {record.attendance.present}/{record.attendance.total}
+                        {record.attendance?.present || 0}/{record.attendance?.total || 0}
                       </td>
                       <td>
                         <span className={styles.streak}>
-                          🔥 {record.attendance.streak} days
+                          🔥 {record.attendance?.streak || 0} days
                         </span>
                       </td>
                       <td>
                         <div className={styles.recentAttendance}>
-                          {record.recentAttendance.map((day, index) => (
+                          {(record.recentAttendance || []).map((day, index) => (
                             <div
                               key={index}
                               className={styles.attendanceDay}
                               style={{
-                                backgroundColor: getStatusColor(day.status),
+                                backgroundColor: getStatusColor(day?.status || 'unknown'),
                               }}
-                              title={`${day.date}: ${day.status}`}
+                              title={`${day?.date || 'N/A'}: ${day?.status || 'unknown'}`}
                             />
                           ))}
                         </div>
                       </td>
                       <td>
                         <span
-                          className={`${styles.statusBadge} ${
-                            styles[
-                              record.recentAttendance[0]?.status || 'unknown'
-                            ]
-                          }`}
+                          className={`${styles.statusBadge} ${styles[
+                            record.recentAttendance?.[0]?.status || 'unknown'
+                          ]
+                            }`}
                         >
-                          {record.recentAttendance[0]?.status || 'Not marked'}
+                          {record.recentAttendance?.[0]?.status || 'Not marked'}
                         </span>
                       </td>
                       <td>

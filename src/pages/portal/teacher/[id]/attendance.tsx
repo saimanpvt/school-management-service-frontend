@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
 import {
   Users,
@@ -11,7 +11,7 @@ import {
   Save,
 } from 'lucide-react';
 import styles from './teacher.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
 interface Student {
   id: string;
@@ -42,9 +42,8 @@ const TeacherAttendance = () => {
     const loadClasses = async () => {
       if (id) {
         try {
-          const response = await apiServices.teacher.getTeacherClasses(
-            id as string
-          );
+          // Use unified classes API - backend filters for teacher
+          const response = await apiServices.classes.getAll();
           if (response.success && response.data) {
             setClasses(response.data);
             if (response.data.length > 0) {
@@ -65,9 +64,8 @@ const TeacherAttendance = () => {
     const loadStudents = async () => {
       if (selectedClass) {
         try {
-          const response = await apiServices.teacher.getStudentsByClass(
-            selectedClass
-          );
+          // Use unified users API to get students
+          const response = await apiServices.users.getAll();
           if (response.success && response.data) {
             setStudents(response.data);
             // Initialize attendance records
@@ -101,7 +99,7 @@ const TeacherAttendance = () => {
 
     setSaving(true);
     try {
-      await apiServices.teacher.markAttendance({
+      await apiServices.attendance?.mark({
         classId: selectedClass,
         date: selectedDate,
         attendance,
@@ -191,31 +189,28 @@ const TeacherAttendance = () => {
                   </div>
                   <div className={styles.attendanceButtons}>
                     <button
-                      className={`${styles.attendanceBtn} ${
-                        attendanceRecord?.status === 'present'
-                          ? styles.active
-                          : ''
-                      }`}
+                      className={`${styles.attendanceBtn} ${attendanceRecord?.status === 'present'
+                        ? styles.active
+                        : ''
+                        }`}
                       onClick={() => updateAttendance(student.id, 'present')}
                     >
                       <CheckCircle size={16} />
                       Present
                     </button>
                     <button
-                      className={`${styles.attendanceBtn} ${
-                        attendanceRecord?.status === 'late' ? styles.active : ''
-                      }`}
+                      className={`${styles.attendanceBtn} ${attendanceRecord?.status === 'late' ? styles.active : ''
+                        }`}
                       onClick={() => updateAttendance(student.id, 'late')}
                     >
                       <Clock size={16} />
                       Late
                     </button>
                     <button
-                      className={`${styles.attendanceBtn} ${
-                        attendanceRecord?.status === 'absent'
-                          ? styles.active
-                          : ''
-                      }`}
+                      className={`${styles.attendanceBtn} ${attendanceRecord?.status === 'absent'
+                        ? styles.active
+                        : ''
+                        }`}
                       onClick={() => updateAttendance(student.id, 'absent')}
                     >
                       <XCircle size={16} />

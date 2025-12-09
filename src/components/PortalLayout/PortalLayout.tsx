@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Menu } from 'lucide-react';
-import Sidebar from './Sidebar';
-import ProfileDropdown from './ProfileDropdown';
+import styles from './PortalLayout.module.css';
+import Sidebar from '../Sidebar/Sidebar';
+import ProfileDropdown from '../ProfileDropdown/ProfileDropdown';
 
 interface PortalLayoutProps {
   children: React.ReactNode;
@@ -25,19 +26,19 @@ const PortalLayout: React.FC<PortalLayoutProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={styles.container}>
       {/* Mobile Header */}
-      <div className="md:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
+      <div className={styles.mobileHeader}>
         <button
           onClick={toggleSidebar}
-          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          className={styles.menuButton}
           aria-label="Open menu"
         >
-          <Menu size={24} className="text-gray-600" />
+          <Menu size={24} className={styles.menuIcon} />
         </button>
 
-        <div className="flex items-center">
-          <span className="text-lg font-semibold text-gray-800 mr-4">
+        <div className={styles.headerRight}>
+          <span className={styles.portalTitle}>
             {userRole.charAt(0).toUpperCase() + userRole.slice(1)} Portal
           </span>
           <ProfileDropdown name={userName} role={userRole} />
@@ -45,19 +46,19 @@ const PortalLayout: React.FC<PortalLayoutProps> = ({
       </div>
 
       {/* Main Content Area */}
-      <div className="flex min-h-screen">
+      <div className={styles.mainContent}>
         {/* Sidebar */}
         <Sidebar role={userRole} isOpen={sidebarOpen} onClose={closeSidebar} />
 
         {/* Page Content with Avatar */}
-        <main className="flex-1 md:ml-60 p-4 md:p-8 relative">
+        <main className={styles.content}>
           {/* Desktop Avatar in top-right corner */}
-          <div className="hidden md:block absolute top-4 right-4 z-10">
+          <div className={styles.desktopAvatar}>
             <ProfileDropdown name={userName} role={userRole} />
           </div>
 
           {/* Add top margin on mobile to account for fixed header */}
-          <div className="md:mt-0">{children}</div>
+          <div className={styles.contentInner}>{children}</div>
         </main>
       </div>
     </div>

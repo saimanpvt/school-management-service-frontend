@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
 import { DollarSign, Plus, Search, Edit, Trash2, X } from 'lucide-react';
 import styles from './admin.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
-import FeeForm from '../../../../components/FeeForm';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
+import FeeForm from '../../../../components/FeeForm/FeeForm';
 import { FeeStructureFormData } from '../../../../lib/types';
 
 const AdminFees = () => {
@@ -84,7 +84,7 @@ const AdminFees = () => {
       } else {
         alert(
           'Failed to create fee structure: ' +
-            (response.error || 'Unknown error')
+          (response.error || 'Unknown error')
         );
       }
     } catch (error) {
@@ -155,7 +155,7 @@ const AdminFees = () => {
     setLoading(true);
 
     try {
-      const response = await apiServices.admin.addFeeStructure(formData);
+      const response = await apiServices.fees.create(formData);
       if (response.success) {
         alert('Fee structure created successfully!');
         setShowAddForm(false);

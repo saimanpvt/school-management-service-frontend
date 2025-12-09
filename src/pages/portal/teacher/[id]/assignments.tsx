@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
 import {
   ClipboardList,
@@ -12,10 +12,10 @@ import {
   Trash2,
 } from 'lucide-react';
 import styles from './teacher.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 import AssignmentForm, {
   AssignmentFormData,
-} from '../../../../components/AssignmentForm';
+} from '../../../../components/AssignmentForm/AssignmentForm';
 
 interface Assignment {
   id: string;
@@ -63,18 +63,15 @@ const TeacherAssignments = () => {
     const loadData = async () => {
       if (id) {
         try {
-          // Load assignments
-          const assignmentsResponse = await apiServices.teacher.getAssignments(
-            id as string
-          );
+          // Load assignments using unified API
+          const assignmentsResponse = await apiServices.assignments.getAll();
           if (assignmentsResponse.success && assignmentsResponse.data) {
             setAssignments(assignmentsResponse.data);
           }
 
           // Load teacher's classes
-          const classesResponse = await apiServices.teacher.getTeacherClasses(
-            id as string
-          );
+          // Use unified classes API
+          const classesResponse = await apiServices.classes.getAll();
           if (classesResponse.success && classesResponse.data) {
             setClasses(classesResponse.data);
           }
@@ -105,7 +102,7 @@ const TeacherAssignments = () => {
         alert('Assignment updated successfully!');
       } else {
         // Create new assignment
-        const response = await apiServices.teacher.createAssignment({
+        const response = await apiServices.assignments?.create({
           title: formData.title,
           description: formData.description,
           classId: formData.classId,
@@ -115,10 +112,8 @@ const TeacherAssignments = () => {
 
         if (response.success) {
           alert('Assignment created successfully!');
-          // Reload assignments
-          const assignmentsResponse = await apiServices.teacher.getAssignments(
-            id as string
-          );
+          // Reload assignments using unified API
+          const assignmentsResponse = await apiServices.assignments.getAll();
           if (assignmentsResponse.success && assignmentsResponse.data) {
             setAssignments(assignmentsResponse.data);
           }

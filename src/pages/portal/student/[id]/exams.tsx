@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import {
   FileText,
   Calendar,
   Clock,
   MapPin,
-  TrendingUp,
   CheckCircle,
   AlertCircle,
 } from 'lucide-react';
 import styles from './student.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
 interface Exam {
   id: string;
@@ -156,14 +155,14 @@ const StudentExams = () => {
                         exam.status === 'completed'
                           ? '#d1fae5'
                           : exam.status === 'ongoing'
-                          ? '#fef3c7'
-                          : '#dbeafe',
+                            ? '#fef3c7'
+                            : '#dbeafe',
                       color:
                         exam.status === 'completed'
                           ? '#059669'
                           : exam.status === 'ongoing'
-                          ? '#d97706'
-                          : '#2563eb',
+                            ? '#d97706'
+                            : '#2563eb',
                     }}
                   >
                     {exam.status === 'completed' && (

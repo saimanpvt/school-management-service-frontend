@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
 import {
   Users,
@@ -11,7 +11,7 @@ import {
   GraduationCap,
 } from 'lucide-react';
 import styles from './teacher.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
 interface TeacherClass {
   id: string;
@@ -38,9 +38,8 @@ const TeacherClass = () => {
     const loadClasses = async () => {
       if (id) {
         try {
-          const response = await apiServices.teacher.getTeacherClasses(
-            id as string
-          );
+          // Use unified classes API - backend filters for teacher
+          const response = await apiServices.classes.getAll();
           if (response.success && response.data) {
             setClasses(response.data);
           }

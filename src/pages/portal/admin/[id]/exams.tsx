@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
-import { ProtectedRoute } from '../../../../lib/auth';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
-import { FileText, Plus, Search, Calendar } from 'lucide-react';
+import { FileText, Plus, Calendar } from 'lucide-react';
 import styles from './admin.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
-import ExamForm from '../../../../components/ExamForm';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
+import ExamForm from '../../../../components/ExamForm/ExamForm';
 import { ExamFormData } from '../../../../lib/types';
 
 const AdminExams = () => {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { CourseFormData } from '../lib/types';
-import styles from '../pages/portal/admin/[id]/admin.module.css';
+import { CourseFormData } from '../../lib/types';
+import styles from './CourseForm.module.css';
 
 interface CourseFormProps {
   formData: CourseFormData;
@@ -156,9 +156,19 @@ const CourseForm: React.FC<CourseFormProps> = ({
               Active
             </label>
           </div>
-          <button type="submit" className={styles.submitButton}>
-            {isEdit ? 'Update Course' : 'Create Course'}
-          </button>
+
+          <div className={styles.formButtons}>
+            <button
+              type="button"
+              className={styles.cancelButton}
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button type="submit" className={styles.submitButton}>
+              {isEdit ? 'Update Course' : 'Create Course'}
+            </button>
+          </div>
         </form>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { authApi } from '../services/authApi';
-import LoadingDots from '../components/LoadingDots';
+import LoadingDots from '../components/LoadingDots/LoadingDots';
 
 // Auth context
 const AuthContext = createContext<{

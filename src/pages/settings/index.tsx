@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../lib/auth';
 import { ArrowLeft, User, Mail, Phone, Calendar, MapPin } from 'lucide-react';
-import LoadingDots from '../../components/LoadingDots';
+import LoadingDots from '../../components/LoadingDots/LoadingDots';
 import styles from './settings.module.css';
 
 interface UserProfile {

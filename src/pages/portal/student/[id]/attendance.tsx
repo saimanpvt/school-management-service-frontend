@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import {
   Calendar,
   Clock,
@@ -10,7 +10,7 @@ import {
   CalendarDays,
 } from 'lucide-react';
 import styles from './student.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
 interface AttendanceRecord {
   id: string;
@@ -265,9 +265,8 @@ const StudentAttendance = () => {
                   {formatDate(record.date)}
                 </div>
                 <span
-                  className={`${styles.attendanceStatus} ${
-                    styles[record.status]
-                  }`}
+                  className={`${styles.attendanceStatus} ${styles[record.status]
+                    }`}
                 >
                   {getStatusIcon(record.status)}
                   {record.status.charAt(0).toUpperCase() +

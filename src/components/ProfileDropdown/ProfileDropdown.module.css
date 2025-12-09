@@ -1,0 +1,157 @@
+.profileDropdown {
+  position: relative;
+}
+
+.profileButton {
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: #4f46e5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.profileButton:hover {
+  background-color: #4338ca;
+}
+
+.profileButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #6366f1;
+}
+
+.dropdown {
+  position: absolute;
+  right: 0;
+  margin-top: 0.5rem;
+  width: 16rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  padding: 0.5rem 0;
+  z-index: 50;
+}
+
+.profileHeader {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.profileInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.profileAvatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: #4f46e5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.profileDetails {
+  flex: 1;
+}
+
+.userName {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+  margin: 0;
+}
+
+.userRole {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  text-transform: capitalize;
+  margin-top: 0.25rem;
+}
+
+.roleAdmin {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.roleTeacher {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.roleStudent {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.roleParent {
+  background-color: #f3e8ff;
+  color: #7c2d12;
+}
+
+.roleDefault {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.menuItems {
+  padding: 0.25rem 0;
+}
+
+.menuItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: #374151;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  text-align: left;
+}
+
+.menuItem:hover {
+  background-color: #f3f4f6;
+}
+
+.menuDivider {
+  border-top: 1px solid #f3f4f6;
+  margin: 0.25rem 0;
+}
+
+.logoutItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: #dc2626;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  text-align: left;
+}
+
+.logoutItem:hover {
+  background-color: #fef2f2;
+}
