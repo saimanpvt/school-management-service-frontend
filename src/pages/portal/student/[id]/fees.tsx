@@ -196,14 +196,14 @@ const StudentFees = () => {
                       fee.status === 'paid'
                         ? '#d1fae5'
                         : fee.status === 'overdue'
-                          ? '#fee2e2'
-                          : '#fef3c7',
+                        ? '#fee2e2'
+                        : '#fef3c7',
                     color:
                       fee.status === 'paid'
                         ? '#059669'
                         : fee.status === 'overdue'
-                          ? '#dc2626'
-                          : '#d97706',
+                        ? '#dc2626'
+                        : '#d97706',
                   }}
                 >
                   {fee.status === 'paid' && (

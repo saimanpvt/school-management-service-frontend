@@ -84,7 +84,7 @@ const AdminFees = () => {
       } else {
         alert(
           'Failed to create fee structure: ' +
-          (response.error || 'Unknown error')
+            (response.error || 'Unknown error')
         );
       }
     } catch (error) {

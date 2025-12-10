@@ -152,9 +152,7 @@ const UserForm: React.FC<UserFormProps> = ({
             <X size={24} />
           </button>
         </div>
-        {formError && (
-          <div className={styles.errorMessage}>{formError}</div>
-        )}
+        {formError && <div className={styles.errorMessage}>{formError}</div>}
         <form onSubmit={handleFormSubmit} className={styles.form}>
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
@@ -218,8 +216,8 @@ const UserForm: React.FC<UserFormProps> = ({
             </div>
             {/* User ID field: editable and required for teacher, student, and parent, readOnly for admin */}
             {formData.role === 'teacher' ||
-              formData.role === 'student' ||
-              formData.role === 'parent' ? (
+            formData.role === 'student' ||
+            formData.role === 'parent' ? (
               <div className={styles.formGroup}>
                 <label>User ID *</label>
                 <input

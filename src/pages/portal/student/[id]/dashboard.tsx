@@ -268,8 +268,9 @@ const StudentDashboard = () => {
             {Array.from({ length: 7 }, (_, i) => (
               <div
                 key={i}
-                className={`${styles.calendar_day} ${i === 3 ? styles.active : ''
-                  }`}
+                className={`${styles.calendar_day} ${
+                  i === 3 ? styles.active : ''
+                }`}
               >
                 {24 + i}
               </div>

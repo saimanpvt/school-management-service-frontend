@@ -148,8 +148,9 @@ const TeacherDetailsPage = () => {
                     Teacher ID: {teacher.userID}
                   </p>
                   <span
-                    className={`${styles.statusBadge} ${teacher.isActive ? styles.active : styles.inactive
-                      }`}
+                    className={`${styles.statusBadge} ${
+                      teacher.isActive ? styles.active : styles.inactive
+                    }`}
                   >
                     {teacher.isActive ? 'Active' : 'Inactive'}
                   </span>

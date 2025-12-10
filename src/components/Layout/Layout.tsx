@@ -12,9 +12,7 @@ export default function Layout({ children, user }: Props) {
     <div className={styles.container}>
       <Header user={user} />
 
-      <main className={styles.main}>
-        {children}
-      </main>
+      <main className={styles.main}>{children}</main>
 
       <Footer />
     </div>

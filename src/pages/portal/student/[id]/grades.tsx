@@ -25,7 +25,9 @@ const StudentGrades = () => {
       if (id) {
         try {
           // Use unified marks API - backend filters for student
-          const response = apiServices.marks.getList ? await apiServices.marks.getList() : { success: false, data: [] };
+          const response = apiServices.marks.getList
+            ? await apiServices.marks.getList()
+            : { success: false, data: [] };
           if (response.success && response.data) {
             setGrades(response.data);
           }
@@ -159,9 +161,9 @@ const StudentGrades = () => {
                     {course.finalGrade !== undefined
                       ? `${course.finalGrade.toFixed(1)}%`
                       : `${calculateAverage([
-                        ...course.assignments,
-                        ...course.tests,
-                      ]).toFixed(1)}%`}
+                          ...course.assignments,
+                          ...course.tests,
+                        ]).toFixed(1)}%`}
                   </span>
                 </div>
               )}

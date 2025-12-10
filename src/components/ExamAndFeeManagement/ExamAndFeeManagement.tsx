@@ -186,4 +186,3 @@ const ExamAndFeeManagement: React.FC = () => {
 };
 
 export default ExamAndFeeManagement;
-

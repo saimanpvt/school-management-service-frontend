@@ -2,142 +2,150 @@ import { makeHttpRequest, httpClient } from '../lib/httpClient';
 import { ExamFormData, FeeStructureFormData } from '../lib/types';
 
 export const getUserById = async (id: string) =>
-  makeHttpRequest("get", `/users/${id}`);
+  makeHttpRequest('get', `/users/${id}`);
 
 export const createUser = async (userData: any) =>
-  makeHttpRequest("post", "/auth/register", userData);
+  makeHttpRequest('post', '/auth/register', userData);
 
 export const updateUserProfile = async (id: string, data: any) =>
-  makeHttpRequest("put", `/users/${id}`, data);
+  makeHttpRequest('put', `/users/${id}`, data);
 
 export const deleteUser = async (id: string) =>
-  makeHttpRequest("delete", `/users/${id}`);
+  makeHttpRequest('delete', `api/auth/users/delete/${id}`);
 
-export const getAllCourses = async () =>
-  makeHttpRequest("get", "/courses");
+export const getAllCourses = async () => makeHttpRequest('get', '/courses');
 
 export const createCourse = async (courseData: any) =>
-  makeHttpRequest("post", "/courses/add", courseData);
+  makeHttpRequest('post', '/courses/add', courseData);
 
+// Users APIs - Role-based data fetching
 
-// Users APIs
-export const getAllUsers = async () =>
-  makeHttpRequest("get", "/auth/users");
+export const getAllUsers = async () => makeHttpRequest('get', '/auth/users');
 
+// Role-specific user lists (only returns necessary fields)
+export const getStudentsList = async () =>
+  makeHttpRequest('get', '/api/users/list?role=Student');
+
+export const getTeachersList = async () =>
+  makeHttpRequest('get', '/api/users/list?role=Teacher');
+
+export const getParentsList = async () =>
+  makeHttpRequest('get', '/api/users/list?role=Parent');
+
+export const getAdminsList = async () =>
+  makeHttpRequest('get', '/api/users/list?role=Admin');
+
+// Get role-specific user details
 export const getUserProfile = async (id: string) =>
-  makeHttpRequest("get", `/users/${id}`);
+  makeHttpRequest('get', `/users/${id}`);
 
 export const registerUser = async (userData: any) =>
-  makeHttpRequest("post", "/auth/register", userData);
+  makeHttpRequest('post', '/auth/register', userData);
 
 export const updateUser = async (id: string, data: any) =>
-  makeHttpRequest("put", `/users/${id}`, data);
+  makeHttpRequest('put', `/users/${id}`, data);
 
 export const removeUser = async (id: string) =>
-  makeHttpRequest("delete", `/users/${id}`);
+  makeHttpRequest('delete', `auth/delete/${id}`);
 
 // Courses APIs
-export const listCourses = async () =>
-  makeHttpRequest("get", "/courses");
+export const listCourses = async () => makeHttpRequest('get', '/courses');
 
 export const getCourse = async (id: string) =>
-  makeHttpRequest("get", `/courses/${id}`);
+  makeHttpRequest('get', `/courses/${id}`);
 
 export const addCourse = async (courseData: any) =>
-  makeHttpRequest("post", "/courses/add", courseData);
+  makeHttpRequest('post', '/courses/add', courseData);
 
 export const updateCourse = async (id: string, data: any) =>
-  makeHttpRequest("put", `/courses/${id}`, data);
+  makeHttpRequest('put', `/courses/${id}`, data);
 
 export const deleteCourse = async (id: string) =>
-  makeHttpRequest("delete", `/courses/${id}`);
+  makeHttpRequest('delete', `/courses/${id}`);
 
 // Classes APIs
-export const getAllClasses = async () =>
-  makeHttpRequest("get", "/classes");
+export const getAllClasses = async () => makeHttpRequest('get', '/classes');
 
 export const getClass = async (id: string) =>
-  makeHttpRequest("get", `/classes/${id}`);
+  makeHttpRequest('get', `/classes/${id}`);
 
 export const createClass = async (classData: any) =>
-  makeHttpRequest("post", "/classes", classData);
+  makeHttpRequest('post', '/classes', classData);
 
 export const editClass = async (id: string, data: any) =>
-  makeHttpRequest("put", `/classes/${id}`, data);
+  makeHttpRequest('put', `/classes/${id}`, data);
 
 export const removeClass = async (id: string) =>
-  makeHttpRequest("delete", `/classes/${id}`);
+  makeHttpRequest('delete', `/classes/${id}`);
 
 // Exams APIs
-export const getAllExams = async () =>
-  makeHttpRequest("get", "/exams");
+export const getAllExams = async () => makeHttpRequest('get', '/exams');
 
 export const getExam = async (id: string) =>
-  makeHttpRequest("get", `/exams/${id}`);
+  makeHttpRequest('get', `/exams/${id}`);
 
 export const createExam = async (examData: ExamFormData) =>
-  makeHttpRequest("post", "/exams", examData);
+  makeHttpRequest('post', '/exams', examData);
 
 export const updateExam = async (id: string, data: Partial<ExamFormData>) =>
-  makeHttpRequest("put", `/exams/${id}`, data);
+  makeHttpRequest('put', `/exams/${id}`, data);
 
 export const deleteExam = async (id: string) =>
-  makeHttpRequest("delete", `/exams/${id}`);
+  makeHttpRequest('delete', `/exams/${id}`);
 
 // Fees APIs
-export const getAllFees = async () =>
-  makeHttpRequest("get", "/fees");
+export const getAllFees = async () => makeHttpRequest('get', '/fees');
 
 export const getFee = async (id: string) =>
-  makeHttpRequest("get", `/fees/${id}`);
+  makeHttpRequest('get', `/fees/${id}`);
 
 export const createFee = async (feeData: FeeStructureFormData) =>
-  makeHttpRequest("post", "/fees", feeData);
+  makeHttpRequest('post', '/fees', feeData);
 
-export const updateFee = async (id: string, data: Partial<FeeStructureFormData>) =>
-  makeHttpRequest("put", `/fees/${id}`, data);
+export const updateFee = async (
+  id: string,
+  data: Partial<FeeStructureFormData>
+) => makeHttpRequest('put', `/fees/${id}`, data);
 
 export const deleteFee = async (id: string) =>
-  makeHttpRequest("delete", `/fees/${id}`);
+  makeHttpRequest('delete', `/fees/${id}`);
 
 // Marks APIs
-export const getAllMarks = async () =>
-  makeHttpRequest("get", "/marks");
+export const getAllMarks = async () => makeHttpRequest('get', '/marks');
 
 export const getMark = async (id: string) =>
-  makeHttpRequest("get", `/marks/${id}`);
+  makeHttpRequest('get', `/marks/${id}`);
 
-export const getMarksList = async () =>
-  makeHttpRequest("get", "/marks/list");
+export const getMarksList = async () => makeHttpRequest('get', '/marks/list');
 
 export const createMark = async (markData: any) =>
-  makeHttpRequest("post", "/marks", markData);
+  makeHttpRequest('post', '/marks', markData);
 
 export const updateMark = async (id: string, data: any) =>
-  makeHttpRequest("put", `/marks/${id}`, data);
+  makeHttpRequest('put', `/marks/${id}`, data);
 
 export const deleteMark = async (id: string) =>
-  makeHttpRequest("delete", `/marks/${id}`);
+  makeHttpRequest('delete', `/marks/${id}`);
 
 // References APIs
 export const getAllReferences = async () =>
-  makeHttpRequest("get", "/references");
+  makeHttpRequest('get', '/references');
 
 export const getReference = async (id: string) =>
-  makeHttpRequest("get", `/references/${id}`);
+  makeHttpRequest('get', `/references/${id}`);
 
 export const createReference = async (refData: any) =>
-  makeHttpRequest("post", "/references", refData);
+  makeHttpRequest('post', '/references', refData);
 
 export const updateReference = async (id: string, data: any) =>
-  makeHttpRequest("put", `/references/${id}`, data);
+  makeHttpRequest('put', `/references/${id}`, data);
 
 export const deleteReference = async (id: string) =>
-  makeHttpRequest("delete", `/references/${id}`);
+  makeHttpRequest('delete', `/references/${id}`);
 
 // Dashboard APIs
 export const getDashboardStats = async () =>
-  makeHttpRequest("get", "/dashboard/stats");
+  makeHttpRequest('get', '/dashboard/stats');
 
 // Attendance APIs
 export const markAttendance = async (attendanceData: {
@@ -147,11 +155,11 @@ export const markAttendance = async (attendanceData: {
     studentId: string;
     status: 'present' | 'absent' | 'late';
   }>;
-}) => makeHttpRequest("post", "/attendance", attendanceData);
+}) => makeHttpRequest('post', '/attendance', attendanceData);
 
 // Assignment APIs
 export const getAllAssignments = async () =>
-  makeHttpRequest("get", "/assignments");
+  makeHttpRequest('get', '/assignments');
 
 export const createAssignment = async (assignmentData: {
   title: string;
@@ -159,9 +167,9 @@ export const createAssignment = async (assignmentData: {
   classId: string;
   dueDate: string;
   maxMarks: number;
-}) => makeHttpRequest("post", "/assignments", assignmentData);
+}) => makeHttpRequest('post', '/assignments', assignmentData);
 
-// Export all APIs - 
+// Export all APIs -
 export const apiServices = {
   users: {
     getAll: getAllUsers,
@@ -169,6 +177,11 @@ export const apiServices = {
     create: registerUser,
     update: updateUser,
     delete: removeUser,
+    // Role-specific lists
+    getStudents: getStudentsList,
+    getTeachers: getTeachersList,
+    getParents: getParentsList,
+    getAdmins: getAdminsList,
   },
   courses: {
     getAll: listCourses,

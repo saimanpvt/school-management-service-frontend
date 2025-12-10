@@ -115,7 +115,8 @@
   box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
 }
 
-.input, .textarea {
+.input,
+.textarea {
   width: 100%;
   padding: 0.5rem 0.75rem;
   border: 1px solid #d1d5db;
@@ -124,7 +125,8 @@
   transition: all 0.2s ease;
 }
 
-.input:focus, .textarea:focus {
+.input:focus,
+.textarea:focus {
   outline: none;
   border-color: #059669;
   box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
@@ -198,7 +200,7 @@
     margin: 0.5rem;
     max-height: 95vh;
   }
-  
+
   .formRow {
     flex-direction: column;
     gap: 0.5rem;

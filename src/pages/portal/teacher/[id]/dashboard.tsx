@@ -27,7 +27,10 @@ const TeacherDashboard = () => {
     try {
       setLoading(true);
       // Use unified dashboard API - backend handles role-based stats
-      const response = await apiServices.dashboard?.getStats() || { success: false, data: null };
+      const response = (await apiServices.dashboard?.getStats()) || {
+        success: false,
+        data: null,
+      };
       if (response.success && response.data) {
         setStats(response.data);
       } else {

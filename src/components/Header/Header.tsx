@@ -40,10 +40,7 @@ export default function Header({ user }: Props) {
           <div className={styles.desktopAuth}>
             {!user && (
               <>
-                <Link
-                  href="/auth/login"
-                  className={styles.loginButton}
-                >
+                <Link href="/auth/login" className={styles.loginButton}>
                   Login
                 </Link>
               </>
@@ -52,9 +49,7 @@ export default function Header({ user }: Props) {
             {user && (
               <div className={styles.userInfo}>
                 <span className={styles.userName}>{user.name}</span>
-                <span className={styles.userRole}>
-                  {user.role}
-                </span>
+                <span className={styles.userRole}>{user.role}</span>
               </div>
             )}
           </div>

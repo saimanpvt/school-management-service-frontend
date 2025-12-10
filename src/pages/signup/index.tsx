@@ -83,32 +83,36 @@ export default function SignupPage() {
             <div className={styles['user-type-toggle']}>
               <button
                 type="button"
-                className={`${styles['toggle-btn']} ${userType === 'admin' ? styles['active'] : ''
-                  }`}
+                className={`${styles['toggle-btn']} ${
+                  userType === 'admin' ? styles['active'] : ''
+                }`}
                 onClick={() => setUserType('admin')}
               >
                 Admin
               </button>
               <button
                 type="button"
-                className={`${styles['toggle-btn']} ${userType === 'teacher' ? styles['active'] : ''
-                  }`}
+                className={`${styles['toggle-btn']} ${
+                  userType === 'teacher' ? styles['active'] : ''
+                }`}
                 onClick={() => setUserType('teacher')}
               >
                 Teacher
               </button>
               <button
                 type="button"
-                className={`${styles['toggle-btn']} ${userType === 'student' ? styles['active'] : ''
-                  }`}
+                className={`${styles['toggle-btn']} ${
+                  userType === 'student' ? styles['active'] : ''
+                }`}
                 onClick={() => setUserType('student')}
               >
                 Student
               </button>
               <button
                 type="button"
-                className={`${styles['toggle-btn']} ${userType === 'parent' ? styles['active'] : ''
-                  }`}
+                className={`${styles['toggle-btn']} ${
+                  userType === 'parent' ? styles['active'] : ''
+                }`}
                 onClick={() => setUserType('parent')}
               >
                 Parent

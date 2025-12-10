@@ -2,11 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
-import {
-  Users,
-  BookOpen,
-  GraduationCap,
-} from 'lucide-react';
+import { Users, BookOpen, GraduationCap } from 'lucide-react';
 import { ProtectedRoute } from '../../../../lib/auth';
 import styles from './admin.module.css';
 import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
@@ -37,35 +33,43 @@ const AdminDashboard = () => {
           let totalStudents = 0;
           let totalTeachers = 0;
           let totalParents = 0;
-
           if (usersRes.success && usersRes.data) {
             // Handle different API response structures
             if (Array.isArray(usersRes.data)) {
               // If data is a direct array of users
-              totalStudents = usersRes.data.filter((user: { role: number }) => user.role === 3).length;
-              totalTeachers = usersRes.data.filter((user: { role: number }) => user.role === 2).length;
-              totalParents = usersRes.data.filter((user: { role: number }) => user.role === 4).length;
+              totalStudents = usersRes.data.filter(
+                (user: { role: number }) => user.role === 3
+              ).length;
+              totalTeachers = usersRes.data.filter(
+                (user: { role: number }) => user.role === 2
+              ).length;
+              totalParents = usersRes.data.filter(
+                (user: { role: number }) => user.role === 4
+              ).length;
             } else if (typeof usersRes.data === 'object') {
               // If data is nested (students, teachers, parents arrays)
-              const data = usersRes.data as { students?: unknown[]; teachers?: unknown[]; parents?: unknown[] };
+              const data = usersRes.data as {
+                students?: unknown[];
+                teachers?: unknown[];
+                parents?: unknown[];
+              };
               totalStudents = data.students?.length || 0;
               totalTeachers = data.teachers?.length || 0;
               totalParents = data.parents?.length || 0;
             }
           }
-
-          const totalRevenue = feesRes.success
-            ? feesRes.data?.reduce(
-              (sum: number, fee: { amount?: number }) => sum + (fee.amount || 0),
+          const totalRevenue = feesRes.success && Array.isArray(feesRes.data)
+            ? feesRes.data.reduce(
+              (sum: number, fee: { amount?: number }) =>
+                sum + (fee.amount || 0),
               0
-            ) || 0
+            )
             : 0;
-
           setStats({
             totalStudents,
             totalTeachers,
             totalParents,
-            totalCourses: coursesRes.success ? coursesRes.data?.length || 0 : 0,
+            totalCourses: coursesRes.success && Array.isArray(coursesRes.data) ? coursesRes.data.length : 0,
             totalRevenue,
             recentActivity: [],
           });
@@ -142,7 +146,7 @@ const AdminDashboard = () => {
 
 export default function ProtectedAdminDashboard() {
   return (
-    <ProtectedRoute allowedRoles={['Admin']}>
+    <ProtectedRoute roles={['Admin']}>
       <AdminDashboard />
     </ProtectedRoute>
   );

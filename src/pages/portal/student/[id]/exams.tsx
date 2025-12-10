@@ -155,14 +155,14 @@ const StudentExams = () => {
                         exam.status === 'completed'
                           ? '#d1fae5'
                           : exam.status === 'ongoing'
-                            ? '#fef3c7'
-                            : '#dbeafe',
+                          ? '#fef3c7'
+                          : '#dbeafe',
                       color:
                         exam.status === 'completed'
                           ? '#059669'
                           : exam.status === 'ongoing'
-                            ? '#d97706'
-                            : '#2563eb',
+                          ? '#d97706'
+                          : '#2563eb',
                     }}
                   >
                     {exam.status === 'completed' && (

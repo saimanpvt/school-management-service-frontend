@@ -35,6 +35,8 @@ const AdminClasses = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [showAddForm, setShowAddForm] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [editingClassId, setEditingClassId] = useState<string | null>(null);
     const [formData, setFormData] = useState<ClassFormData>({
         className: '',
         classCode: '',
@@ -48,16 +50,24 @@ const AdminClasses = () => {
         }
     }, [id]);
 
+    interface ClassesApiResponse {
+        success: boolean;
+        ongoing?: ClassData[];
+        completed?: ClassData[];
+        inactive?: ClassData[];
+    }
+
     const fetchClasses = async () => {
         try {
-            const response = await apiServices.classes.getAll();
+            const response: ClassesApiResponse = await apiServices.classes.getAll();
+            console.log('Classes API Response:', response);
             if (response.success) {
-                // Handle the actual API response structure
-                const apiResponse = response as {
-                    success: boolean;
-                    classes: ClassData[];
-                };
-                setClasses(apiResponse.classes || []);
+                // Handle the API response structure: { success: true, ongoing: [...], completed: [...], inactive: [...] }
+                let allClasses: ClassData[] = [];
+                const { ongoing = [], completed = [], inactive = [] } = response;
+                // Combine all classes from different status arrays
+                allClasses = [...ongoing, ...completed, ...inactive];
+                setClasses(allClasses);
             }
         } catch (error) {
             console.error('Error fetching classes:', error);
@@ -73,11 +83,24 @@ const AdminClasses = () => {
             cls.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const handleEdit = (classItem: ClassData) => {
+        setFormData({
+            className: classItem.className || '',
+            classCode: classItem.classCode || '',
+            description: classItem.description || '',
+            year: classItem.year || 0,
+        });
+        setIsEditMode(true);
+        setEditingClassId(classItem._id);
+        setShowAddForm(true);
+    };
+
     const handleDelete = async (classId: string) => {
         if (confirm('Are you sure you want to delete this class?')) {
             try {
                 await apiServices.classes.delete(classId);
                 setClasses(classes.filter((c) => c._id !== classId));
+                alert('Class deleted successfully!');
             } catch (error) {
                 console.error('Error deleting class:', error);
                 alert('Failed to delete class');
@@ -90,25 +113,48 @@ const AdminClasses = () => {
         setLoading(true);
 
         try {
-            const response = await apiServices.classes.create(formData);
+            let response;
+            if (isEditMode && editingClassId) {
+                // Update existing class
+                response = await apiServices.classes.update(editingClassId, formData);
+                if (response.success) {
+                    alert('Class updated successfully!');
+                    // Update the classes list with the updated data
+                    setClasses(classes.map(cls =>
+                        cls._id === editingClassId
+                            ? { ...cls, ...formData }
+                            : cls
+                    ));
+                } else {
+                    alert('Failed to update class');
+                }
+            } else {
+                // Create new class
+                response = await apiServices.classes.create(formData);
+                if (response.success) {
+                    alert('Class created successfully!');
+                    // Refresh classes list
+                    fetchClasses();
+                } else {
+                    alert('Failed to create class');
+                }
+            }
+
             if (response.success) {
-                alert('Class created successfully!');
                 setShowAddForm(false);
-                // Reset form
+                // Reset form and edit state
                 setFormData({
                     className: '',
                     classCode: '',
                     description: '',
                     year: 0,
                 });
-                // Refresh classes list
-                fetchClasses();
-            } else {
-                alert('Failed to create class');
+                setIsEditMode(false);
+                setEditingClassId(null);
             }
         } catch (error) {
-            console.error('Error creating class:', error);
-            alert('Error creating class');
+            console.error('Error saving class:', error);
+            alert('Error saving class');
         } finally {
             setLoading(false);
         }
@@ -144,7 +190,17 @@ const AdminClasses = () => {
                     </div>
                     <button
                         className={styles.createBtn}
-                        onClick={() => setShowAddForm(true)}
+                        onClick={() => {
+                            setIsEditMode(false);
+                            setEditingClassId(null);
+                            setFormData({
+                                className: '',
+                                classCode: '',
+                                description: '',
+                                year: 0,
+                            });
+                            setShowAddForm(true);
+                        }}
                     >
                         <Plus size={18} />
                         Add Class
@@ -183,7 +239,7 @@ const AdminClasses = () => {
                             <th>Year</th>
                             <th>Students</th>
                             <th>Courses</th>
-                            <th>Description</th>
+
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -211,10 +267,13 @@ const AdminClasses = () => {
                                             {cls.courses?.length || 0}
                                         </span>
                                     </td>
-                                    <td>{cls.description || 'N/A'}</td>
+
                                     <td>
                                         <div className={styles.actionButtons}>
-                                            <button className={styles.editBtn}>
+                                            <button
+                                                className={styles.editBtn}
+                                                onClick={() => handleEdit(cls)}
+                                            >
                                                 <Edit size={16} />
                                             </button>
                                             <button
@@ -249,10 +308,20 @@ const AdminClasses = () => {
                 <div className={styles.modalOverlay}>
                     <div className={styles.modal}>
                         <div className={styles.modalHeader}>
-                            <h2>Add New Class</h2>
+                            <h2>{isEditMode ? 'Edit Class' : 'Add New Class'}</h2>
                             <button
                                 className={styles.closeBtn}
-                                onClick={() => setShowAddForm(false)}
+                                onClick={() => {
+                                    setShowAddForm(false);
+                                    setIsEditMode(false);
+                                    setEditingClassId(null);
+                                    setFormData({
+                                        className: '',
+                                        classCode: '',
+                                        description: '',
+                                        year: 0,
+                                    });
+                                }}
                             >
                                 <X size={20} />
                             </button>
@@ -308,24 +377,21 @@ const AdminClasses = () => {
                                         </select>
                                     </div>
                                 </div>
-
-                                <div className={styles.formGroup}>
-                                    <label>Description</label>
-                                    <textarea
-                                        value={formData.description}
-                                        onChange={(e) =>
-                                            setFormData({ ...formData, description: e.target.value })
-                                        }
-                                        placeholder="Enter class description (optional)"
-                                        rows={3}
-                                    />
-                                </div>
-
                                 <div className={styles.modalActions}>
                                     <button
                                         type="button"
                                         className={styles.cancelBtn}
-                                        onClick={() => setShowAddForm(false)}
+                                        onClick={() => {
+                                            setShowAddForm(false);
+                                            setIsEditMode(false);
+                                            setEditingClassId(null);
+                                            setFormData({
+                                                className: '',
+                                                classCode: '',
+                                                description: '',
+                                                year: 0,
+                                            });
+                                        }}
                                     >
                                         Cancel
                                     </button>
@@ -334,7 +400,10 @@ const AdminClasses = () => {
                                         className={styles.createBtn}
                                         disabled={loading}
                                     >
-                                        {loading ? 'Creating...' : 'Create Class'}
+                                        {loading
+                                            ? (isEditMode ? 'Updating...' : 'Creating...')
+                                            : (isEditMode ? 'Update Class' : 'Create Class')
+                                        }
                                     </button>
                                 </div>
                             </form>

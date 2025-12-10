@@ -265,8 +265,9 @@ const StudentAttendance = () => {
                   {formatDate(record.date)}
                 </div>
                 <span
-                  className={`${styles.attendanceStatus} ${styles[record.status]
-                    }`}
+                  className={`${styles.attendanceStatus} ${
+                    styles[record.status]
+                  }`}
                 >
                   {getStatusIcon(record.status)}
                   {record.status.charAt(0).toUpperCase() +

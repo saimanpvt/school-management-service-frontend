@@ -10,14 +10,36 @@ export const USER_ROLES = {
 export const ROLE_FIELDS = {
   [USER_ROLES.ADMIN]: {
     // Admin can see/edit everything
-    basic: ['email', 'firstName', 'lastName', 'userID', 'phone', 'address', 'dob', 'gender', 'bloodGroup', 'profileImage', 'role', 'isActive'],
+    basic: [
+      'email',
+      'firstName',
+      'lastName',
+      'userID',
+      'phone',
+      'address',
+      'dob',
+      'gender',
+      'bloodGroup',
+      'profileImage',
+      'role',
+      'isActive',
+    ],
     student: ['admissionDate', 'studentId', 'classId', 'parentId'],
     teacher: ['employeeId', 'experience', 'DOJ', 'emergencyContact'],
     parent: ['childrenId'],
   },
   [USER_ROLES.TEACHER]: {
     // Teacher can only see/edit limited fields
-    basic: ['firstName', 'lastName', 'phone', 'address', 'dob', 'gender', 'bloodGroup', 'profileImage'],
+    basic: [
+      'firstName',
+      'lastName',
+      'phone',
+      'address',
+      'dob',
+      'gender',
+      'bloodGroup',
+      'profileImage',
+    ],
     teacher: ['emergencyContact', 'bio'],
     student: [], // No student-specific fields
     parent: [], // No parent-specific fields
@@ -31,7 +53,15 @@ export const ROLE_FIELDS = {
   },
   [USER_ROLES.PARENT]: {
     // Parent can see their info and limited child info
-    basic: ['firstName', 'lastName', 'phone', 'address', 'dob', 'gender', 'profileImage'],
+    basic: [
+      'firstName',
+      'lastName',
+      'phone',
+      'address',
+      'dob',
+      'gender',
+      'profileImage',
+    ],
     parent: ['emergencyContact'],
     student: [], // Limited child access through specific endpoints
     teacher: [], // No teacher-specific fields
@@ -46,30 +76,37 @@ export const filterUserDataByRole = (
 ): any => {
   if (!userData) return null;
 
-  const allowedFields = ROLE_FIELDS[currentUserRole as keyof typeof ROLE_FIELDS];
+  const allowedFields =
+    ROLE_FIELDS[currentUserRole as keyof typeof ROLE_FIELDS];
   if (!allowedFields) return null;
 
   // Start with basic fields
   const filtered: any = {};
-  
+
   // Add basic fields
-  allowedFields.basic.forEach(field => {
+  allowedFields.basic.forEach((field) => {
     if (userData[field] !== undefined) {
       filtered[field] = userData[field];
     }
   });
 
   // Add role-specific fields based on target user's role
-  if (targetUserRole === USER_ROLES.STUDENT && allowedFields.student.length > 0) {
-    allowedFields.student.forEach(field => {
+  if (
+    targetUserRole === USER_ROLES.STUDENT &&
+    allowedFields.student.length > 0
+  ) {
+    allowedFields.student.forEach((field) => {
       if (userData[field] !== undefined) {
         filtered[field] = userData[field];
       }
     });
   }
 
-  if (targetUserRole === USER_ROLES.TEACHER && allowedFields.teacher.length > 0) {
-    allowedFields.teacher.forEach(field => {
+  if (
+    targetUserRole === USER_ROLES.TEACHER &&
+    allowedFields.teacher.length > 0
+  ) {
+    allowedFields.teacher.forEach((field) => {
       if (userData[field] !== undefined) {
         filtered[field] = userData[field];
       }
@@ -77,7 +114,7 @@ export const filterUserDataByRole = (
   }
 
   if (targetUserRole === USER_ROLES.PARENT && allowedFields.parent.length > 0) {
-    allowedFields.parent.forEach(field => {
+    allowedFields.parent.forEach((field) => {
       if (userData[field] !== undefined) {
         filtered[field] = userData[field];
       }
@@ -88,17 +125,21 @@ export const filterUserDataByRole = (
 };
 
 // Get form fields that should be shown for a specific role
-export const getFormFieldsForRole = (currentUserRole: number, targetRole: number): {
+export const getFormFieldsForRole = (
+  currentUserRole: number,
+  targetRole: number
+): {
   basic: string[];
   roleSpecific: string[];
 } => {
-  const allowedFields = ROLE_FIELDS[currentUserRole as keyof typeof ROLE_FIELDS];
+  const allowedFields =
+    ROLE_FIELDS[currentUserRole as keyof typeof ROLE_FIELDS];
   if (!allowedFields) {
     return { basic: [], roleSpecific: [] };
   }
 
   let roleSpecific: string[] = [];
-  
+
   switch (targetRole) {
     case USER_ROLES.STUDENT:
       roleSpecific = allowedFields.student;
@@ -125,11 +166,14 @@ export const filterFormDataForSubmission = (
   currentUserRole: number,
   targetRole: number
 ): any => {
-  const { basic, roleSpecific } = getFormFieldsForRole(currentUserRole, targetRole);
+  const { basic, roleSpecific } = getFormFieldsForRole(
+    currentUserRole,
+    targetRole
+  );
   const allowedFields = [...basic, ...roleSpecific];
-  
+
   const filtered: any = {};
-  allowedFields.forEach(field => {
+  allowedFields.forEach((field) => {
     if (formData[field] !== undefined && formData[field] !== '') {
       filtered[field] = formData[field];
     }

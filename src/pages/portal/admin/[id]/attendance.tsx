@@ -66,17 +66,20 @@ const AdminAttendance = () => {
       // Fetch all users and filter by role
       const usersResponse = await apiServices.users.getAll();
 
-      let studentsResponse = { success: false, data: [] };
-      let teachersResponse = { success: false, data: [] };
-
+      let studentsResponse: { success: boolean; data: AttendanceRecord[] } = { success: false, data: [] };
+      let teachersResponse: { success: boolean; data: AttendanceRecord[] } = { success: false, data: [] };
       if (usersResponse.success && Array.isArray(usersResponse.data)) {
         studentsResponse = {
           success: true,
-          data: usersResponse.data.filter((user: { role: number }) => user.role === 3)
+          data: usersResponse.data.filter(
+            (user: { role: number }) => user.role === 3
+          ),
         };
         teachersResponse = {
           success: true,
-          data: usersResponse.data.filter((user: { role: number }) => user.role === 2)
+          data: usersResponse.data.filter(
+            (user: { role: number }) => user.role === 2
+          ),
         };
       }
 
@@ -150,14 +153,19 @@ const AdminAttendance = () => {
 
   const filteredData = getCurrentData().filter((record) => {
     const matchesSearch =
-      (record.firstName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (record.lastName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (record.firstName?.toLowerCase() || '').includes(
+        searchTerm.toLowerCase()
+      ) ||
+      (record.lastName?.toLowerCase() || '').includes(
+        searchTerm.toLowerCase()
+      ) ||
       (record.userID?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (record.email?.toLowerCase() || '').includes(searchTerm.toLowerCase());
 
     const matchesFilter =
       filterStatus === 'all' ||
-      (filterStatus === 'present' && (record.attendance?.percentage || 0) >= 90) ||
+      (filterStatus === 'present' &&
+        (record.attendance?.percentage || 0) >= 90) ||
       (filterStatus === 'absent' &&
         record.recentAttendance?.[0]?.status === 'absent') ||
       (filterStatus === 'low' && (record.attendance?.percentage || 0) < 75);
@@ -431,7 +439,8 @@ const AdminAttendance = () => {
                         </span>
                       </td>
                       <td>
-                        {record.attendance?.present || 0}/{record.attendance?.total || 0}
+                        {record.attendance?.present || 0}/
+                        {record.attendance?.total || 0}
                       </td>
                       <td>
                         <span className={styles.streak}>
@@ -445,9 +454,12 @@ const AdminAttendance = () => {
                               key={index}
                               className={styles.attendanceDay}
                               style={{
-                                backgroundColor: getStatusColor(day?.status || 'unknown'),
+                                backgroundColor: getStatusColor(
+                                  day?.status || 'unknown'
+                                ),
                               }}
-                              title={`${day?.date || 'N/A'}: ${day?.status || 'unknown'}`}
+                              title={`${day?.date || 'N/A'}: ${day?.status || 'unknown'
+                                }`}
                             />
                           ))}
                         </div>
@@ -456,7 +468,7 @@ const AdminAttendance = () => {
                         <span
                           className={`${styles.statusBadge} ${styles[
                             record.recentAttendance?.[0]?.status || 'unknown'
-                          ]
+                            ]
                             }`}
                         >
                           {record.recentAttendance?.[0]?.status || 'Not marked'}

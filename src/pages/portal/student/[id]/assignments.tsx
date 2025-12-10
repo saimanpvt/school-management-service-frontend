@@ -107,8 +107,9 @@ const StudentAssignments = () => {
                   </div>
                   <div>
                     <span
-                      className={`${styles.statusBadge} ${styles[getStatusBadge(assignment.status)]
-                        }`}
+                      className={`${styles.statusBadge} ${
+                        styles[getStatusBadge(assignment.status)]
+                      }`}
                     >
                       {assignment.status === 'pending' && <Clock size={14} />}
                       {assignment.status === 'submitted' && (

@@ -177,8 +177,9 @@ const StudentDetailsPage = () => {
                 </h1>
                 <p className={styles.subtitle}>Student ID: {student.userID}</p>
                 <span
-                  className={`${styles.statusBadge} ${student.isActive ? styles.active : styles.inactive
-                    }`}
+                  className={`${styles.statusBadge} ${
+                    student.isActive ? styles.active : styles.inactive
+                  }`}
                 >
                   {student.isActive ? 'Active' : 'Inactive'}
                 </span>
@@ -360,14 +361,14 @@ const StudentDetailsPage = () => {
                             student.feeStatus.status === 'paid'
                               ? '#dcfce7'
                               : student.feeStatus.status === 'pending'
-                                ? '#fef3c7'
-                                : '#fee2e2',
+                              ? '#fef3c7'
+                              : '#fee2e2',
                           color:
                             student.feeStatus.status === 'paid'
                               ? '#166534'
                               : student.feeStatus.status === 'pending'
-                                ? '#92400e'
-                                : '#991b1b',
+                              ? '#92400e'
+                              : '#991b1b',
                         }}
                       >
                         {student.feeStatus.status.toUpperCase()}

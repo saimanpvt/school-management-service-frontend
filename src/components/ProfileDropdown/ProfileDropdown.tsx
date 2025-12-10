@@ -75,12 +75,8 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ name, role }) => {
                 {name ? name.charAt(0).toUpperCase() : 'U'}
               </div>
               <div className={styles.profileDetails}>
-                <p className={styles.userName}>
-                  {name || 'User'}
-                </p>
-                <p
-                  className={`${styles.userRole} ${getRoleColor(role)}`}
-                >
+                <p className={styles.userName}>{name || 'User'}</p>
+                <p className={`${styles.userRole} ${getRoleColor(role)}`}>
                   {role || 'User'}
                 </p>
               </div>
@@ -113,10 +109,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ name, role }) => {
 
             <div className={styles.menuDivider}></div>
 
-            <button
-              onClick={handleLogout}
-              className={styles.logoutItem}
-            >
+            <button onClick={handleLogout} className={styles.logoutItem}>
               <LogOut size={16} />
               <span>Sign Out</span>
             </button>

@@ -32,8 +32,9 @@ const TeacherStudents = () => {
           const studentsResponse = await apiServices.users.getAll();
           if (studentsResponse.success && studentsResponse.data) {
             // Filter students (role 3) from the response
-            const allStudents = Array.isArray(studentsResponse.data) ?
-              studentsResponse.data.filter((user: any) => user.role === 3) : [];
+            const allStudents = Array.isArray(studentsResponse.data)
+              ? studentsResponse.data.filter((user: any) => user.role === 3)
+              : [];
             setStudents(allStudents);
           } else {
             setStudents([]);

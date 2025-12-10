@@ -69,7 +69,7 @@ const FeeForm: React.FC<FeeFormProps> = ({
   const handleComponentChange = (
     index: number,
     field: keyof FeeComponent,
-    value: any,
+    value: any
   ) => {
     const updatedComponents = [...formData.feeComponents];
     updatedComponents[index] = {
@@ -514,7 +514,8 @@ const FeeForm: React.FC<FeeFormProps> = ({
                   textAlign: 'center',
                   padding: '2rem',
                 }}
-              >No fee components added. Click "Add Component" to add fee
+              >
+                No fee components added. Click "Add Component" to add fee
                 components.
               </p>
             )}

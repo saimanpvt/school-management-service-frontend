@@ -226,16 +226,16 @@
     margin: 0.5rem;
     max-height: 95vh;
   }
-  
+
   .extraLargeForm {
     max-width: calc(100vw - 1rem);
   }
-  
+
   .formRow {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .feeComponentItem {
     flex-direction: column;
     align-items: stretch;

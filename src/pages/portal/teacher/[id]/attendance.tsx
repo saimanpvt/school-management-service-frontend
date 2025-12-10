@@ -189,28 +189,31 @@ const TeacherAttendance = () => {
                   </div>
                   <div className={styles.attendanceButtons}>
                     <button
-                      className={`${styles.attendanceBtn} ${attendanceRecord?.status === 'present'
-                        ? styles.active
-                        : ''
-                        }`}
+                      className={`${styles.attendanceBtn} ${
+                        attendanceRecord?.status === 'present'
+                          ? styles.active
+                          : ''
+                      }`}
                       onClick={() => updateAttendance(student.id, 'present')}
                     >
                       <CheckCircle size={16} />
                       Present
                     </button>
                     <button
-                      className={`${styles.attendanceBtn} ${attendanceRecord?.status === 'late' ? styles.active : ''
-                        }`}
+                      className={`${styles.attendanceBtn} ${
+                        attendanceRecord?.status === 'late' ? styles.active : ''
+                      }`}
                       onClick={() => updateAttendance(student.id, 'late')}
                     >
                       <Clock size={16} />
                       Late
                     </button>
                     <button
-                      className={`${styles.attendanceBtn} ${attendanceRecord?.status === 'absent'
-                        ? styles.active
-                        : ''
-                        }`}
+                      className={`${styles.attendanceBtn} ${
+                        attendanceRecord?.status === 'absent'
+                          ? styles.active
+                          : ''
+                      }`}
                       onClick={() => updateAttendance(student.id, 'absent')}
                     >
                       <XCircle size={16} />

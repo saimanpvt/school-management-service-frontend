@@ -48,48 +48,73 @@ export const makeHttpRequest = async <T = unknown>(
   data?: unknown,
   config?: AxiosRequestConfig
 ): Promise<ApiResponse<T>> => {
-  const response = await httpClient[method](url, ...(data ? [data] : []), config);
+  const response = await httpClient[method](
+    url,
+    ...(data ? [data] : []),
+    config
+  );
   return response.data;
 };
 
 // Common HTTP methods that return ApiResponse (kept for backward compatibility)
 export const httpMethods = {
-  get: async <T = unknown>(endpoint: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> => {
+  get: async <T = unknown>(
+    endpoint: string,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> => {
     const response = await httpClient.get(endpoint, config);
     return response.data;
   },
 
-  post: async <T = unknown>(endpoint: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> => {
+  post: async <T = unknown>(
+    endpoint: string,
+    data?: unknown,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> => {
     const response = await httpClient.post(endpoint, data, config);
     return response.data;
   },
 
-  put: async <T = unknown>(endpoint: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> => {
+  put: async <T = unknown>(
+    endpoint: string,
+    data?: unknown,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> => {
     const response = await httpClient.put(endpoint, data, config);
     return response.data;
   },
 
-  delete: async <T = unknown>(endpoint: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> => {
+  delete: async <T = unknown>(
+    endpoint: string,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> => {
     const response = await httpClient.delete(endpoint, config);
     return response.data;
   },
 
-  patch: async <T = unknown>(endpoint: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> => {
+  patch: async <T = unknown>(
+    endpoint: string,
+    data?: unknown,
+    config?: AxiosRequestConfig
+  ): Promise<ApiResponse<T>> => {
     const response = await httpClient.patch(endpoint, data, config);
     return response.data;
   },
 };
 
 // Generic CRUD operations for any resource
-export const createCrudApi = <T = Record<string, unknown>>(basePath: string) => ({
+export const createCrudApi = <T = Record<string, unknown>>(
+  basePath: string
+) => ({
   getAll: () => httpMethods.get<T[]>(`/${basePath}`),
-  
+
   getById: (id: string) => httpMethods.get<T>(`/${basePath}/${id}`),
-  
+
   create: (data: Partial<T>) => httpMethods.post<T>(`/${basePath}`, data),
-  
-  update: (id: string, data: Partial<T>) => httpMethods.put<T>(`/${basePath}/${id}`, data),
-  
+
+  update: (id: string, data: Partial<T>) =>
+    httpMethods.put<T>(`/${basePath}/${id}`, data),
+
   delete: (id: string) => httpMethods.delete(`/${basePath}/${id}`),
 });
 
