@@ -41,8 +41,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Set Authorization header for future requests
       if (typeof window !== 'undefined') {
-        const api = (await import('../services/api')).api;
-        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        const { httpClient } = await import('../lib/httpClient');
+        httpClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       }
 
       setUser(userData);
