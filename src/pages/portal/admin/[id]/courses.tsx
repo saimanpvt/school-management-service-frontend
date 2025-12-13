@@ -4,7 +4,11 @@ import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
 import { BookOpen, Plus, Search, Edit, Trash2 } from 'lucide-react';
 import CourseForm from '../../../../components/CourseForm/CourseForm';
+import AlertModal from '../../../../components/AlertModal';
+import { useNotification } from '../../../../components/Toaster';
 import { ProtectedRoute } from '../../../../lib/auth';
+import { DEFAULT_COURSE_FORM } from '../../../../lib/constants';
+import { resetCourseForm, filterCourses } from '../../../../lib/helpers';
 import styles from './admin.module.css';
 import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 import { CourseFormData } from '../../../../lib/types';
@@ -12,6 +16,7 @@ import { CourseFormData } from '../../../../lib/types';
 const AdminCourses = () => {
     const router = useRouter();
     const { id } = router.query;
+    const { addNotification } = useNotification();
     const [courses, setCourses] = useState<any[]>([]);
     const [teachers, setTeachers] = useState<any[]>([]);
     const [classes, setClasses] = useState<any[]>([]);
@@ -20,15 +25,13 @@ const AdminCourses = () => {
     const [showAddForm, setShowAddForm] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [editingCourseId, setEditingCourseId] = useState<string | null>(null);
-    const [formData, setFormData] = useState<CourseFormData>({
-        courseCode: '',
-        courseName: '',
-        description: '',
-        duration: 1,
-        teacherId: '',
-        classId: '',
-        academicYear: '2024-2025',
-        isActive: true,
+    const [formData, setFormData] = useState<CourseFormData>(DEFAULT_COURSE_FORM);
+
+    // Delete modal state
+    const [deleteModal, setDeleteModal] = useState({
+        isOpen: false,
+        courseId: '',
+        courseName: ''
     });
 
     useEffect(() => {
@@ -43,7 +46,8 @@ const AdminCourses = () => {
                     console.log('API Responses:', { coursesRes, usersRes, classesRes });
 
                     // Filter teachers from users response
-                    let teachersRes = { success: false, data: [] };
+
+                    let teachersRes = { success: false, data: [] as any[] };
                     if (usersRes.success && usersRes.data) {
                         console.log('Users response:', usersRes.data);
                         // Handle different user response structures
@@ -69,14 +73,14 @@ const AdminCourses = () => {
 
                         // Check if data has nested structure: { data: { Active: [...], Completed: [...], Inactive: [...] } }
                         if (
-                            coursesRes.data.data &&
-                            typeof coursesRes.data.data === 'object'
+                            (coursesRes.data as any).data &&
+                            typeof (coursesRes.data as any).data === 'object'
                         ) {
                             const {
                                 Active = [],
                                 Completed = [],
                                 Inactive = [],
-                            } = coursesRes.data.data;
+                            } = (coursesRes.data as any).data;
                             allCourses = [...Active, ...Completed, ...Inactive];
                         }
                         // Check if data is directly the courses object: { Active: [...], Completed: [...], Inactive: [...] }
@@ -133,11 +137,7 @@ const AdminCourses = () => {
         }
     }, [id]);
 
-    const filteredCourses = (Array.isArray(courses) ? courses : [])?.filter(
-        (course) =>
-            course.courseName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            course.courseCode?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredCourses = filterCourses(courses, searchTerm);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -153,9 +153,17 @@ const AdminCourses = () => {
                             ? { ...course, ...formData, _id: course._id || course.id }
                             : course
                     ));
-                    alert('Course updated successfully!');
+                    addNotification({
+                        type: 'success',
+                        title: 'Course updated successfully!',
+                        message: `${formData.courseName} has been updated.`
+                    });
                 } else {
-                    alert('Failed to update course: ' + (response.error || 'Unknown error'));
+                    addNotification({
+                        type: 'error',
+                        title: 'Failed to update course',
+                        message: response.error || 'Please try again later.'
+                    });
                 }
             } else {
                 // Create new course
@@ -163,9 +171,17 @@ const AdminCourses = () => {
                 if (response.success) {
                     const currentCourses = Array.isArray(courses) ? courses : [];
                     setCourses([...currentCourses, response.data]);
-                    alert('Course created successfully!');
+                    addNotification({
+                        type: 'success',
+                        title: 'Course created successfully!',
+                        message: `${formData.courseName} has been created.`
+                    });
                 } else {
-                    alert('Failed to create course: ' + (response.error || 'Unknown error'));
+                    addNotification({
+                        type: 'error',
+                        title: 'Failed to create course',
+                        message: response.error || 'Please try again later.'
+                    });
                 }
             }
 
@@ -187,7 +203,11 @@ const AdminCourses = () => {
             }
         } catch (error) {
             console.error('Error saving course:', error);
-            alert('Failed to save course');
+            addNotification({
+                type: 'error',
+                title: 'Error saving course',
+                message: 'An unexpected error occurred. Please try again.'
+            });
         }
     };
 
@@ -207,16 +227,33 @@ const AdminCourses = () => {
         setShowAddForm(true);
     };
 
-    const handleDelete = async (courseId: string) => {
-        if (confirm('Are you sure you want to delete this course?')) {
-            try {
-                await apiServices.courses.delete(courseId);
-                const currentCourses = Array.isArray(courses) ? courses : [];
-                setCourses(currentCourses.filter((c) => c._id !== courseId));
-            } catch (error) {
-                console.error('Error deleting course:', error);
-                alert('Failed to delete course');
-            }
+    const openDeleteModal = (courseId: string, courseName: string) => {
+        setDeleteModal({ isOpen: true, courseId, courseName });
+    };
+
+    const closeDeleteModal = () => {
+        setDeleteModal({ isOpen: false, courseId: '', courseName: '' });
+    };
+
+    const confirmDelete = async () => {
+        try {
+            await apiServices.courses.delete(deleteModal.courseId);
+            const currentCourses = Array.isArray(courses) ? courses : [];
+            setCourses(currentCourses.filter((c) => c._id !== deleteModal.courseId));
+            addNotification({
+                type: 'success',
+                title: 'Course deleted successfully!',
+                message: `${deleteModal.courseName} has been removed.`
+            });
+        } catch (error) {
+            console.error('Error deleting course:', error);
+            addNotification({
+                type: 'error',
+                title: 'Failed to delete course',
+                message: 'Please try again later.'
+            });
+        } finally {
+            closeDeleteModal();
         }
     };
 
@@ -281,16 +318,7 @@ const AdminCourses = () => {
                         setShowAddForm(false);
                         setIsEditMode(false);
                         setEditingCourseId(null);
-                        setFormData({
-                            courseCode: '',
-                            courseName: '',
-                            description: '',
-                            duration: 1,
-                            teacherId: '',
-                            classId: '',
-                            academicYear: '2024-2025',
-                            isActive: true,
-                        });
+                        setFormData(resetCourseForm());
                     }}
                     isEdit={isEditMode}
                 />
@@ -343,8 +371,8 @@ const AdminCourses = () => {
                                         <td>
                                             <span
                                                 className={`${styles.statusBadge} ${course.status === 'Active' || course.isActive
-                                                        ? styles.active
-                                                        : styles.inactive
+                                                    ? styles.active
+                                                    : styles.inactive
                                                     }`}
                                             >
                                                 {course.status ||
@@ -361,7 +389,10 @@ const AdminCourses = () => {
                                                 </button>
                                                 <button
                                                     className={styles.deleteBtn}
-                                                    onClick={() => handleDelete(course._id || course.id)}
+                                                    onClick={() => openDeleteModal(
+                                                        course.courseCode,
+                                                        course.courseName || course.name
+                                                    )}
                                                 >
                                                     <Trash2 size={16} />
                                                 </button>
@@ -386,6 +417,19 @@ const AdminCourses = () => {
                     </tbody>
                 </table>
             </div>
+            {/* Delete Confirmation Modal */}
+            {deleteModal.isOpen && (
+                <AlertModal
+                    usage="delete"
+                    mainText="Delete Course"
+                    subText={`Are you sure you want to delete "${deleteModal.courseName}"? This action cannot be undone.`}
+                    confirmText="Delete"
+                    cancelText="Cancel"
+                    onConfirm={confirmDelete}
+                    onCancel={closeDeleteModal}
+                    onClose={closeDeleteModal}
+                />
+            )}
         </PortalLayout>
     );
 };

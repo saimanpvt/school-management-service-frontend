@@ -4,7 +4,6 @@ import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
 import {
   Users,
-  Calendar,
   CheckCircle,
   XCircle,
   Clock,
@@ -12,31 +11,27 @@ import {
 } from 'lucide-react';
 import styles from './teacher.module.css';
 import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
-
-interface Student {
-  id: string;
-  name: string;
-  rollNumber: string;
-  profileImage?: string;
-}
-
-interface AttendanceRecord {
-  studentId: string;
-  status: 'present' | 'absent' | 'late';
-}
+import {
+  TEACHER_ATTENDANCE_STATUS,
+} from '../../../../lib/constants';
+import {
+  TeacherAttendanceStudent,
+} from '../../../../lib/types';
+import { useNotification } from '../../../../components/Toaster';
 
 const TeacherAttendance = () => {
   const router = useRouter();
   const { id } = router.query;
   const [classes, setClasses] = useState<any[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>('');
-  const [students, setStudents] = useState<Student[]>([]);
-  const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
+  const [students, setStudents] = useState<TeacherAttendanceStudent[]>([]);
+  const [attendance, setAttendance] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split('T')[0]
   );
+  const { addNotification } = useNotification();
 
   useEffect(() => {
     const loadClasses = async () => {
@@ -71,7 +66,7 @@ const TeacherAttendance = () => {
             // Initialize attendance records
             const initialAttendance = response.data.map((student: Student) => ({
               studentId: student.id,
-              status: 'present' as const,
+              status: 'PRESENT' as keyof typeof TEACHER_ATTENDANCE_STATUS,
             }));
             setAttendance(initialAttendance);
           }
@@ -85,7 +80,7 @@ const TeacherAttendance = () => {
 
   const updateAttendance = (
     studentId: string,
-    status: 'present' | 'absent' | 'late'
+    status: keyof typeof TEACHER_ATTENDANCE_STATUS
   ) => {
     setAttendance((prev) =>
       prev.map((record) =>
@@ -104,10 +99,10 @@ const TeacherAttendance = () => {
         date: selectedDate,
         attendance,
       });
-      alert('Attendance saved successfully!');
+      addNotification('Attendance saved successfully!', 'success');
     } catch (error) {
       console.error('Error saving attendance:', error);
-      alert('Failed to save attendance. Please try again.');
+      addNotification('Failed to save attendance. Please try again.', 'error');
     } finally {
       setSaving(false);
     }
@@ -189,31 +184,28 @@ const TeacherAttendance = () => {
                   </div>
                   <div className={styles.attendanceButtons}>
                     <button
-                      className={`${styles.attendanceBtn} ${
-                        attendanceRecord?.status === 'present'
-                          ? styles.active
-                          : ''
-                      }`}
+                      className={`${styles.attendanceBtn} ${attendanceRecord?.status === 'present'
+                        ? styles.active
+                        : ''
+                        }`}
                       onClick={() => updateAttendance(student.id, 'present')}
                     >
                       <CheckCircle size={16} />
                       Present
                     </button>
                     <button
-                      className={`${styles.attendanceBtn} ${
-                        attendanceRecord?.status === 'late' ? styles.active : ''
-                      }`}
+                      className={`${styles.attendanceBtn} ${attendanceRecord?.status === 'late' ? styles.active : ''
+                        }`}
                       onClick={() => updateAttendance(student.id, 'late')}
                     >
                       <Clock size={16} />
                       Late
                     </button>
                     <button
-                      className={`${styles.attendanceBtn} ${
-                        attendanceRecord?.status === 'absent'
-                          ? styles.active
-                          : ''
-                      }`}
+                      className={`${styles.attendanceBtn} ${attendanceRecord?.status === 'absent'
+                        ? styles.active
+                        : ''
+                        }`}
                       onClick={() => updateAttendance(student.id, 'absent')}
                     >
                       <XCircle size={16} />

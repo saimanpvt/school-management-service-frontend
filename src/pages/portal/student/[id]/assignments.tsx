@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
-import { apiServices, Assignment } from '../../../../services/api';
+import { apiServices } from '../../../../services/api';
 import {
   FileText,
   Calendar,
@@ -11,11 +11,24 @@ import {
 } from 'lucide-react';
 import styles from './student.module.css';
 import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
+import { useNotification } from '../../../../components/Toaster/Toaster';
+// import {
+//   STUDENT_ASSIGNMENT_STATUS,
+// } from '../../../../lib/constants';
+import {
+  formatDateForStudent,
+  getAssignmentStatusClass,
+  isAssignmentOverdue,
+} from '../../../../lib/helpers';
+import {
+  StudentAssignment,
+} from '../../../../lib/types';
 
 const StudentAssignments = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [assignments, setAssignments] = useState<StudentAssignment[]>([]);
+  const { addNotification } = useNotification();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,29 +50,7 @@ const StudentAssignments = () => {
     loadAssignments();
   }, [id]);
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'graded':
-        return 'graded';
-      case 'submitted':
-        return 'submitted';
-      default:
-        return 'pending';
-    }
-  };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
-  const isOverdue = (dueDate: string, status: string) => {
-    if (status !== 'pending') return false;
-    return new Date(dueDate) < new Date();
-  };
 
   if (loading) {
     return (
@@ -81,7 +72,7 @@ const StudentAssignments = () => {
       <div className={styles.assignmentsGrid}>
         {assignments.length > 0 ? (
           assignments.map((assignment) => {
-            const overdue = isOverdue(assignment.dueDate, assignment.status);
+            const overdue = isAssignmentOverdue(assignment.dueDate);
             return (
               <div key={assignment.id} className={styles.assignmentCard}>
                 <div className={styles.assignmentHeader}>
@@ -98,18 +89,17 @@ const StudentAssignments = () => {
                 <div className={styles.assignmentMeta}>
                   <div className={styles.dueDate}>
                     <Calendar size={14} />
-                    Due: {formatDate(assignment.dueDate)}
+                    Due: {formatDateForStudent(assignment.dueDate)}
                     {overdue && (
-                      <span style={{ color: '#dc2626', marginLeft: '0.5rem' }}>
+                      <span className={styles.overdueText}>
                         <AlertCircle size={14} /> Overdue
                       </span>
                     )}
                   </div>
                   <div>
                     <span
-                      className={`${styles.statusBadge} ${
-                        styles[getStatusBadge(assignment.status)]
-                      }`}
+                      className={`${styles.statusBadge} ${styles[getAssignmentStatusClass(assignment.status)]
+                        }`}
                     >
                       {assignment.status === 'pending' && <Clock size={14} />}
                       {assignment.status === 'submitted' && (
@@ -123,7 +113,7 @@ const StudentAssignments = () => {
                     </span>
                   </div>
                   {assignment.grade && (
-                    <div style={{ fontWeight: 600, color: '#6366f1' }}>
+                    <div className={styles.assignmentGrade}>
                       Grade: {assignment.grade}
                     </div>
                   )}

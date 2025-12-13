@@ -153,7 +153,7 @@ const UserForm: React.FC<UserFormProps> = ({
           </button>
         </div>
         {formError && <div className={styles.errorMessage}>{formError}</div>}
-        <form onSubmit={handleFormSubmit} className={styles.form}>
+        <form id="userForm" onSubmit={handleFormSubmit} className={styles.form}>
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
               <label>First Name *</label>
@@ -216,8 +216,8 @@ const UserForm: React.FC<UserFormProps> = ({
             </div>
             {/* User ID field: editable and required for teacher, student, and parent, readOnly for admin */}
             {formData.role === 'teacher' ||
-            formData.role === 'student' ||
-            formData.role === 'parent' ? (
+              formData.role === 'student' ||
+              formData.role === 'parent' ? (
               <div className={styles.formGroup}>
                 <label>User ID *</label>
                 <input
@@ -475,23 +475,25 @@ const UserForm: React.FC<UserFormProps> = ({
             </p>
           </div>
 
-          <div className={styles.formButtons}>
-            <button
-              type="button"
-              className={styles.cancelButton}
-              onClick={onClose}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className={styles.submitButton}
-              disabled={!generatedPassword && !isEdit}
-            >
-              {isEdit ? 'Update User' : 'Create User & Send Credentials'}
-            </button>
-          </div>
         </form>
+
+        <div className={styles.formButtons}>
+          <button
+            type="button"
+            className={styles.cancelButton}
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className={styles.submitButton}
+            disabled={!generatedPassword && !isEdit}
+            form="userForm"
+          >
+            {isEdit ? 'Update User' : 'Create User & Send Credentials'}
+          </button>
+        </div>
       </div>
     </div>
   );

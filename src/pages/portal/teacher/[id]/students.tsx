@@ -5,24 +5,16 @@ import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 import { apiServices } from '../../../../services/api';
 import { Users, Mail, Phone, Search } from 'lucide-react';
 import styles from './teacher.module.css';
-
-interface Student {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  grade: string;
-  rollNumber: string;
-  attendance: number;
-  averageGrade: number;
-}
+import { useNotification } from '../../../../components/Toaster/Toaster';
+import { TeacherStudent } from '../../../../lib/types';
 
 const TeacherStudents = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [students, setStudents] = useState<Student[]>([]);
+  const [students, setStudents] = useState<TeacherStudent[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const { addNotification } = useNotification();
 
   useEffect(() => {
     const loadStudents = async () => {
@@ -38,10 +30,12 @@ const TeacherStudents = () => {
             setStudents(allStudents);
           } else {
             setStudents([]);
+            addNotification('No students found', 'info');
           }
         } catch (error) {
           console.error('Error fetching students:', error);
           setStudents([]);
+          addNotification('Failed to load students', 'error');
         } finally {
           setLoading(false);
         }

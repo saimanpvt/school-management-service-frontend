@@ -16,6 +16,12 @@ import {
   User,
 } from 'lucide-react';
 import { ProtectedRoute } from '../../../../lib/auth';
+import {
+  generateMockAttendanceData,
+  filterAttendanceData,
+  calculateAttendanceStats
+} from '../../../../lib/helpers';
+import { useNotification } from '../../../../components/Toaster';
 import styles from './admin.module.css';
 import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
@@ -43,6 +49,7 @@ interface AttendanceRecord {
 const AdminAttendance = () => {
   const router = useRouter();
   const { id } = router.query;
+  const { addNotification } = useNotification();
   const [activeTab, setActiveTab] = useState<'students' | 'teachers'>(
     'students'
   );
@@ -85,119 +92,40 @@ const AdminAttendance = () => {
 
       if (studentsResponse.success) {
         // Transform student data to include mock attendance
-        const studentsWithAttendance = studentsResponse.data.map(
-          (student: AttendanceRecord) => ({
-            ...student,
-            attendance: {
-              present: Math.floor(Math.random() * 80) + 120,
-              total: Math.floor(Math.random() * 20) + 150,
-              percentage: Math.floor(Math.random() * 30) + 70,
-              lastPresent: new Date(
-                Date.now() - Math.floor(Math.random() * 7) * 24 * 60 * 60 * 1000
-              )
-                .toISOString()
-                .split('T')[0],
-              streak: Math.floor(Math.random() * 10) + 1,
-            },
-            recentAttendance: generateRecentAttendance(),
-          })
-        );
+        const studentsWithAttendance = studentsResponse.data.map(generateMockAttendanceData);
         setStudents(studentsWithAttendance);
       }
 
       if (teachersResponse.success) {
-        // Transform teacher data to include mock attendance
-        const teachersWithAttendance = teachersResponse.data.map(
-          (teacher: AttendanceRecord) => ({
-            ...teacher,
-            attendance: {
-              present: Math.floor(Math.random() * 80) + 120,
-              total: Math.floor(Math.random() * 20) + 150,
-              percentage: Math.floor(Math.random() * 20) + 80,
-              lastPresent: new Date(
-                Date.now() - Math.floor(Math.random() * 7) * 24 * 60 * 60 * 1000
-              )
-                .toISOString()
-                .split('T')[0],
-              streak: Math.floor(Math.random() * 15) + 5,
-            },
-            recentAttendance: generateRecentAttendance(),
-          })
-        );
+        // Transform teacher data to include mock attendance  
+        const teachersWithAttendance = teachersResponse.data.map(generateMockAttendanceData);
         setTeachers(teachersWithAttendance);
       }
     } catch (error) {
       console.error('Error fetching attendance data:', error);
+      addNotification({
+        type: 'error',
+        title: 'Failed to fetch attendance data',
+        message: 'Please try refreshing the page.'
+      });
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, addNotification]);
 
   useEffect(() => {
     fetchAttendanceData();
   }, [fetchAttendanceData, selectedDate]);
 
-  const generateRecentAttendance = () => {
-    const statuses = ['present', 'absent', 'late'] as const;
-    return Array.from({ length: 7 }, (_, i) => ({
-      date: new Date(Date.now() - i * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split('T')[0],
-      status: statuses[Math.floor(Math.random() * (i === 0 ? 2 : 3))], // Today can't be late (not finished yet)
-    }));
-  };
+
 
   const getCurrentData = () => {
     return activeTab === 'students' ? students : teachers;
   };
 
-  const filteredData = getCurrentData().filter((record) => {
-    const matchesSearch =
-      (record.firstName?.toLowerCase() || '').includes(
-        searchTerm.toLowerCase()
-      ) ||
-      (record.lastName?.toLowerCase() || '').includes(
-        searchTerm.toLowerCase()
-      ) ||
-      (record.userID?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (record.email?.toLowerCase() || '').includes(searchTerm.toLowerCase());
+  const filteredData = filterAttendanceData(getCurrentData(), searchTerm, filterStatus);
 
-    const matchesFilter =
-      filterStatus === 'all' ||
-      (filterStatus === 'present' &&
-        (record.attendance?.percentage || 0) >= 90) ||
-      (filterStatus === 'absent' &&
-        record.recentAttendance?.[0]?.status === 'absent') ||
-      (filterStatus === 'low' && (record.attendance?.percentage || 0) < 75);
-
-    return matchesSearch && matchesFilter;
-  });
-
-  const getAttendanceStats = () => {
-    const data = getCurrentData();
-    const totalUsers = data.length;
-    const presentToday = data.filter(
-      (r) => r.recentAttendance[0]?.status === 'present'
-    ).length;
-    const absentToday = data.filter(
-      (r) => r.recentAttendance[0]?.status === 'absent'
-    ).length;
-    const lowAttendance = data.filter(
-      (r) => r.attendance.percentage < 75
-    ).length;
-    const avgAttendance =
-      data.reduce((sum, r) => sum + r.attendance.percentage, 0) / totalUsers;
-
-    return {
-      totalUsers,
-      presentToday,
-      absentToday,
-      lowAttendance,
-      avgAttendance,
-    };
-  };
-
-  const stats = getAttendanceStats();
+  const stats = calculateAttendanceStats(getCurrentData());
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -449,7 +377,7 @@ const AdminAttendance = () => {
                       </td>
                       <td>
                         <div className={styles.recentAttendance}>
-                          {(record.recentAttendance || []).map((day, index) => (
+                          {(record.recentAttendance || []).map((day: { date: string; status: string }, index: number) => (
                             <div
                               key={index}
                               className={styles.attendanceDay}
@@ -468,7 +396,7 @@ const AdminAttendance = () => {
                         <span
                           className={`${styles.statusBadge} ${styles[
                             record.recentAttendance?.[0]?.status || 'unknown'
-                            ]
+                          ]
                             }`}
                         >
                           {record.recentAttendance?.[0]?.status || 'Not marked'}

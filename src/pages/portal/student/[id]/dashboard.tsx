@@ -2,41 +2,66 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import Link from 'next/link';
-import { apiServices, StudentDashboardStats } from '../../../../services/api';
+import { apiServices } from '../../../../services/api';
 import { ProtectedRoute } from '../../../../lib/auth';
 import styles from '../../../../styles/Dashboard.module.css';
 import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
+import { useNotification } from '../../../../components/Toaster/Toaster';
+import {
+  STUDENT_DASHBOARD_CONSTANTS,
+} from '../../../../lib/constants';
+import {
+  formatDateForStudent,
+  getAssignmentStatusClass,
+} from '../../../../lib/helpers';
+import {
+  StudentDashboardStats,
+  StudentAssignment,
+} from '../../../../lib/types';
 
 const StudentDashboard = () => {
   const router = useRouter();
   const { id } = router.query;
   const [stats, setStats] = useState<StudentDashboardStats | null>(null);
+  const [recentAssignments, setRecentAssignments] = useState<StudentAssignment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState('Student');
+  const { addNotification } = useNotification();
 
   useEffect(() => {
-    const loadDashboardStats = async () => {
+    const loadDashboardData = async () => {
       if (id) {
         try {
-          // Use unified dashboard API - backend filters for student
-          const response = await apiServices.dashboard.getStats();
-          if (response.success && response.data) {
-            setStats(response.data);
-          } else {
-            console.error('Failed to load dashboard stats');
+          // Load dashboard stats
+          const statsResponse = await apiServices.dashboard?.getStats?.() || { success: false, data: null };
+          if (statsResponse.success && statsResponse.data) {
+            setStats(statsResponse.data as StudentDashboardStats);
           }
+
+          // Load recent assignments
+          const assignmentsResponse = await apiServices.assignments.getAll();
+          if (assignmentsResponse.success && assignmentsResponse.data) {
+            const assignments = Array.isArray(assignmentsResponse.data)
+              ? assignmentsResponse.data.slice(0, STUDENT_DASHBOARD_CONSTANTS.MAX_RECENT_ASSIGNMENTS)
+              : [];
+            setRecentAssignments(assignments);
+          }
+          // Set user name (will be loaded from profile when auth API is available)
+          setUserName('Student');
         } catch (error) {
-          console.error('Error fetching dashboard stats:', error);
+          console.error('Error fetching dashboard data:', error);
+          addNotification({ type: 'error', title: 'Error loading dashboard. Please try again.' });
         } finally {
           setLoading(false);
         }
       }
     };
-    loadDashboardStats();
-  }, [id]);
+    loadDashboardData();
+  }, [id, addNotification]);
 
   if (loading) {
     return (
-      <PortalLayout userName="Alex Johnson" userRole="student">
+      <PortalLayout userName={userName} userRole="student">
         <div className={styles.loading_spinner}>
           <LoadingDots />
         </div>
@@ -45,40 +70,28 @@ const StudentDashboard = () => {
   }
 
   return (
-    <PortalLayout userName="Alex Johnson" userRole="student">
+    <PortalLayout userName={userName} userRole="student">
       <header className={styles.dashboard_header}>
-        <h2>Welcome back, Alex! 👋</h2>
+        <h2>Welcome back, {userName}! 👋</h2>
         <p>Track your academic progress and upcoming tasks</p>
       </header>
 
       <section className={styles.stats_grid}>
         <div className={styles.stat_card}>
           <h3>Courses Enrolled</h3>
-          <p>{stats?.coursesEnrolled || 6}</p>
-          <div className={`${styles.trend} ${styles.up}`}>
-            <span>↑ 2 new this semester</span>
-          </div>
+          <p>{stats?.coursesEnrolled || 0}</p>
         </div>
         <div className={styles.stat_card}>
           <h3>Assignments Due</h3>
-          <p>{stats?.pendingAssignments || 3}</p>
-          <div className={`${styles.trend} ${styles.warning}`}>
-            <span>Due within 48 hours</span>
-          </div>
+          <p>{stats?.pendingAssignments || 0}</p>
         </div>
         <div className={styles.stat_card}>
           <h3>Average Grade</h3>
-          <p>{stats?.averageGrade || 'A-'}</p>
-          <div className={`${styles.trend} ${styles.up}`}>
-            <span>↑ 5% improvement</span>
-          </div>
+          <p>{stats?.averageGrade || 'N/A'}</p>
         </div>
         <div className={styles.stat_card}>
           <h3>Attendance</h3>
-          <p>{stats?.attendance || 95}%</p>
-          <div className={`${styles.trend} ${styles.up}`}>
-            <span>Above class average</span>
-          </div>
+          <p>{stats?.attendance || 0}%</p>
         </div>
       </section>
 
@@ -95,104 +108,28 @@ const StudentDashboard = () => {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>Mathematics</td>
-                <td>Linear Algebra Quiz</td>
-                <td>Oct 26, 2025</td>
-                <td>
-                  <span className={`${styles.status_badge} ${styles.warning}`}>
-                    Pending
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td>Physics</td>
-                <td>Lab Report</td>
-                <td>Oct 28, 2025</td>
-                <td>
-                  <span className={`${styles.status_badge} ${styles.danger}`}>
-                    Overdue
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td>Chemistry</td>
-                <td>Molecular Structure</td>
-                <td>Oct 25, 2025</td>
-                <td>
-                  <span className={`${styles.status_badge} ${styles.success}`}>
-                    Submitted
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td>Physics</td>
-                <td>Lab Report</td>
-                <td>Oct 28, 2025</td>
-                <td>
-                  <span className={`${styles.status_badge} ${styles.danger}`}>
-                    Overdue
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td>Chemistry</td>
-                <td>Molecular Structure</td>
-                <td>Oct 25, 2025</td>
-                <td>
-                  <span className={`${styles.status_badge} ${styles.success}`}>
-                    Submitted
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-      </div>
-
-      <div className={styles.grid_layout}>
-        <section className={styles.table_section}>
-          <h3 className={styles.section_title}>Upcoming Assignments</h3>
-          <table className={styles.data_table}>
-            <thead>
-              <tr>
-                <th>Subject</th>
-                <th>Assignment</th>
-                <th>Due Date</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Mathematics</td>
-                <td>Linear Algebra Quiz</td>
-                <td>Oct 26, 2025</td>
-                <td>
-                  <span className={`${styles.status_badge} ${styles.warning}`}>
-                    Pending
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td>Physics</td>
-                <td>Lab Report</td>
-                <td>Oct 28, 2025</td>
-                <td>
-                  <span className={`${styles.status_badge} ${styles.danger}`}>
-                    Overdue
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td>Chemistry</td>
-                <td>Molecular Structure</td>
-                <td>Oct 25, 2025</td>
-                <td>
-                  <span className={`${styles.status_badge} ${styles.success}`}>
-                    Submitted
-                  </span>
-                </td>
-              </tr>
+              {recentAssignments.length > 0 ? (
+                recentAssignments.map((assignment) => (
+                  <tr key={assignment.id}>
+                    <td>{assignment.subject}</td>
+                    <td>{assignment.title}</td>
+                    <td>{formatDateForStudent(assignment.dueDate)}</td>
+                    <td>
+                      <span
+                        className={`${styles.status_badge} ${styles[getAssignmentStatusClass(assignment.status)]}`}
+                      >
+                        {assignment.status.charAt(0).toUpperCase() + assignment.status.slice(1)}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className={styles.emptyTableCell}>
+                    No assignments found
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </section>
@@ -201,28 +138,28 @@ const StudentDashboard = () => {
       <section className={styles.quick_links}>
         <h3>Quick Links</h3>
         <div className={styles.links_grid}>
-          <Link href={`/dashboard/student/${id}/courses`}>
+          <Link href={`/portal/student/${id}/courses`}>
             <div className={styles.link_card}>
               <h4>My Courses</h4>
               <p>View your enrolled courses</p>
             </div>
           </Link>
-          <Link href={`/dashboard/student/${id}/assignments`}>
+          <Link href={`/portal/student/${id}/assignments`}>
             <div className={styles.link_card}>
               <h4>Assignments</h4>
               <p>Check pending assignments</p>
             </div>
           </Link>
-          <Link href={`/dashboard/student/${id}/grades`}>
+          <Link href={`/portal/student/${id}/grades`}>
             <div className={styles.link_card}>
               <h4>Grades</h4>
               <p>View your academic performance</p>
             </div>
           </Link>
-          <Link href={`/dashboard/student/${id}/schedule`}>
+          <Link href={`/portal/student/${id}/attendance`}>
             <div className={styles.link_card}>
-              <h4>Schedule</h4>
-              <p>Check your class timetable</p>
+              <h4>Attendance</h4>
+              <p>Check your attendance records</p>
             </div>
           </Link>
         </div>
@@ -268,9 +205,8 @@ const StudentDashboard = () => {
             {Array.from({ length: 7 }, (_, i) => (
               <div
                 key={i}
-                className={`${styles.calendar_day} ${
-                  i === 3 ? styles.active : ''
-                }`}
+                className={`${styles.calendar_day} ${i === 3 ? styles.active : ''
+                  }`}
               >
                 {24 + i}
               </div>
@@ -299,20 +235,17 @@ const StudentDashboard = () => {
           <div className={styles.chart_legend}>
             <div className={styles.legend_item}>
               <span
-                className={styles.legend_color}
-                style={{ background: '#3b82f6' }}
+                className={`${styles.legend_color} ${styles.legendColorPrimary}`}
               ></span>
               <span>Current Semester</span>
             </div>
             <div className={styles.legend_item}>
               <span
-                className={styles.legend_color}
-                style={{ background: '#e2e8f0' }}
+                className={`${styles.legend_color} ${styles.legendColorSecondary}`}
               ></span>
               <span>Class Average</span>
             </div>
           </div>
-          {/* Chart will be integrated with a charting library like Chart.js or Recharts */}
         </div>
       </section>
     </PortalLayout>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { X } from 'lucide-react';
 import { CourseFormData } from '../../lib/types';
 import styles from './CourseForm.module.css';
 
@@ -54,14 +55,18 @@ const CourseForm: React.FC<CourseFormProps> = ({
       <div className={`${styles.formContainer} ${styles.largeForm}`}>
         <div className={styles.formHeader}>
           <h2>{isEdit ? 'Edit Course' : 'Add New Course'}</h2>
-          <button className={styles.closeButton} onClick={onClose}>
-            ×
+          <button
+            className={styles.closeButton}
+            onClick={onClose}
+            type="button"
+          >
+            <X size={20} />
           </button>
         </div>
         {formError && (
           <div style={{ color: 'red', marginBottom: 8 }}>{formError}</div>
         )}
-        <form onSubmit={handleFormSubmit} className={styles.form}>
+        <form id="courseForm" onSubmit={handleFormSubmit} className={styles.form}>
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
               <label>Course Code *</label>
@@ -156,20 +161,24 @@ const CourseForm: React.FC<CourseFormProps> = ({
               Active
             </label>
           </div>
-
-          <div className={styles.formButtons}>
-            <button
-              type="button"
-              className={styles.cancelButton}
-              onClick={onClose}
-            >
-              Cancel
-            </button>
-            <button type="submit" className={styles.submitButton}>
-              {isEdit ? 'Update Course' : 'Create Course'}
-            </button>
-          </div>
         </form>
+
+        <div className={styles.buttonGroup}>
+          <button
+            type="button"
+            className={styles.cancelButton}
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className={styles.submitButton}
+            form="courseForm"
+          >
+            {isEdit ? 'Update Course' : 'Create Course'}
+          </button>
+        </div>
       </div>
     </div>
   );

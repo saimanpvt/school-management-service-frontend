@@ -3,6 +3,8 @@ import { useRouter } from 'next/router';
 import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
 import { FileText, Plus, Calendar } from 'lucide-react';
+import { EXAM_CONSTANTS } from '../../../../lib/constants';
+import { resetFormData } from '../../../../lib/helpers';
 import styles from './admin.module.css';
 import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 import ExamForm from '../../../../components/ExamForm/ExamForm';
@@ -18,24 +20,7 @@ const AdminExams = () => {
   const [classes, setClasses] = useState<any[]>([]);
 
   // Exam form data state
-  const [examFormData, setExamFormData] = useState<ExamFormData>({
-    examName: '',
-    examType: 'Quiz',
-    course: '',
-    classId: '',
-    academicYear: '',
-    totalMarks: 0,
-    passingMarks: 0,
-    examDate: '',
-    startTime: '',
-    endTime: '',
-    duration: 0,
-    venue: '',
-    instructions: '',
-    isActive: true,
-    isCompleted: false,
-    resultsPublished: false,
-  });
+  const [examFormData, setExamFormData] = useState<ExamFormData>(EXAM_CONSTANTS.DEFAULT_FORM);
 
   useEffect(() => {
     if (id) {
@@ -47,13 +32,28 @@ const AdminExams = () => {
       ])
         .then(([examsResponse, coursesResponse, classesResponse]) => {
           if (examsResponse.success) {
-            setExams(examsResponse.data || []);
+            setExams(Array.isArray(examsResponse.data) ? examsResponse.data : []);
           }
           if (coursesResponse.success) {
-            setCourses(coursesResponse.data || []);
+            setCourses(Array.isArray(coursesResponse.data) ? coursesResponse.data : []);
           }
           if (classesResponse.success) {
-            setClasses(classesResponse.data || []);
+            let allClasses: any[] = [];
+            if (Array.isArray(classesResponse.data)) {
+              allClasses = classesResponse.data;
+            } else if (
+              classesResponse.data &&
+              typeof classesResponse.data === 'object'
+            ) {
+              // Handle possible structure: { ongoing: [...], completed: [...], inactive: [...] }
+              const { ongoing = [], completed = [], inactive = [] } = classesResponse.data as {
+                ongoing?: any[];
+                completed?: any[];
+                inactive?: any[];
+              };
+              allClasses = [...ongoing, ...completed, ...inactive];
+            }
+            setClasses(allClasses);
           }
           setLoading(false);
         })
@@ -73,28 +73,11 @@ const AdminExams = () => {
         alert('Exam created successfully!');
         setShowExamModal(false);
         // Reset form
-        setExamFormData({
-          examName: '',
-          examType: 'Quiz',
-          course: '',
-          classId: '',
-          academicYear: '',
-          totalMarks: 0,
-          passingMarks: 0,
-          examDate: '',
-          startTime: '',
-          endTime: '',
-          duration: 0,
-          venue: '',
-          instructions: '',
-          isActive: true,
-          isCompleted: false,
-          resultsPublished: false,
-        });
+        setExamFormData(resetFormData(EXAM_CONSTANTS.DEFAULT_FORM));
         // Refresh exams list
-        const examsResponse = await apiServices.exams.getAll();
-        if (examsResponse.success) {
-          setExams(examsResponse.data || []);
+        const refreshResponse = await apiServices.exams.getAll();
+        if (refreshResponse.success) {
+          setExams(Array.isArray(refreshResponse.data) ? refreshResponse.data : []);
         }
       } else {
         alert('Failed to create exam: ' + (response.error || 'Unknown error'));

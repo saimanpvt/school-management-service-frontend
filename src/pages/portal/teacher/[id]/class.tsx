@@ -5,34 +5,19 @@ import { apiServices } from '../../../../services/api';
 import {
   Users,
   Clock,
-  TrendingUp,
   ArrowRight,
-  BookOpen,
-  GraduationCap,
 } from 'lucide-react';
 import styles from './teacher.module.css';
 import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
-
-interface TeacherClass {
-  id: string;
-  name: string;
-  code: string;
-  studentsCount: number;
-  courseName: string;
-  schedule: {
-    day: string;
-    startTime: string;
-    endTime: string;
-  }[];
-  averagePerformance: number;
-  recentActivity: string;
-}
+import { useNotification } from '../../../../components/Toaster/Toaster';
+import type { TeacherClass } from '../../../../lib/types';
 
 const TeacherClass = () => {
   const router = useRouter();
   const { id } = router.query;
   const [classes, setClasses] = useState<TeacherClass[]>([]);
   const [loading, setLoading] = useState(true);
+  const { addNotification } = useNotification();
 
   useEffect(() => {
     const loadClasses = async () => {
@@ -42,9 +27,12 @@ const TeacherClass = () => {
           const response = await apiServices.classes.getAll();
           if (response.success && response.data) {
             setClasses(response.data);
+          } else {
+            addNotification('Failed to load classes', 'error');
           }
         } catch (error) {
           console.error('Error fetching classes:', error);
+          addNotification('Failed to load classes', 'error');
         } finally {
           setLoading(false);
         }

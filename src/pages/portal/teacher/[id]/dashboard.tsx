@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import styles from './teacher.module.css';
 import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
-import { apiServices, TeacherDashboardStats } from '../../../../services/api';
+import { apiServices } from '../../../../services/api';
 import {
   LineChart,
   Line,
@@ -13,11 +13,13 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
+import { useNotification } from '../../../../components/Toaster/Toaster';
 
 const TeacherDashboard = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [stats, setStats] = useState<TeacherDashboardStats | null>(null);
+  const { addNotification } = useNotification();
+  const [stats, setStats] = useState<null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -35,10 +37,12 @@ const TeacherDashboard = () => {
         setStats(response.data);
       } else {
         setError('Failed to load dashboard data');
+        addNotification('Failed to load dashboard data', 'error');
       }
     } catch (err) {
       console.error('Error loading dashboard stats:', err);
       setError('Failed to load dashboard data');
+      addNotification('Failed to load dashboard data', 'error');
     } finally {
       setLoading(false);
     }

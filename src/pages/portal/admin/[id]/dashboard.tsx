@@ -4,6 +4,8 @@ import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
 import { Users, BookOpen, GraduationCap } from 'lucide-react';
 import { ProtectedRoute } from '../../../../lib/auth';
+import { DASHBOARD_CONSTANTS } from '../../../../lib/constants';
+import { processUsersData, calculateTotalRevenue } from '../../../../lib/helpers';
 import styles from './admin.module.css';
 import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
@@ -29,42 +31,15 @@ const AdminDashboard = () => {
         apiServices.fees.getAll(),
       ])
         .then(([usersRes, coursesRes, feesRes]) => {
-          // Count users by role from the API response
-          let totalStudents = 0;
-          let totalTeachers = 0;
-          let totalParents = 0;
-          if (usersRes.success && usersRes.data) {
-            // Handle different API response structures
-            if (Array.isArray(usersRes.data)) {
-              // If data is a direct array of users
-              totalStudents = usersRes.data.filter(
-                (user: { role: number }) => user.role === 3
-              ).length;
-              totalTeachers = usersRes.data.filter(
-                (user: { role: number }) => user.role === 2
-              ).length;
-              totalParents = usersRes.data.filter(
-                (user: { role: number }) => user.role === 4
-              ).length;
-            } else if (typeof usersRes.data === 'object') {
-              // If data is nested (students, teachers, parents arrays)
-              const data = usersRes.data as {
-                students?: unknown[];
-                teachers?: unknown[];
-                parents?: unknown[];
-              };
-              totalStudents = data.students?.length || 0;
-              totalTeachers = data.teachers?.length || 0;
-              totalParents = data.parents?.length || 0;
-            }
-          }
-          const totalRevenue = feesRes.success && Array.isArray(feesRes.data)
-            ? feesRes.data.reduce(
-              (sum: number, fee: { amount?: number }) =>
-                sum + (fee.amount || 0),
-              0
-            )
-            : 0;
+          // Process users data using helper function
+          const { totalStudents, totalTeachers, totalParents } = processUsersData(
+            usersRes.success ? usersRes.data : null
+          );
+
+          // Calculate total revenue using helper function
+          const totalRevenue = calculateTotalRevenue(
+            feesRes.success ? feesRes.data : null
+          );
           setStats({
             totalStudents,
             totalTeachers,

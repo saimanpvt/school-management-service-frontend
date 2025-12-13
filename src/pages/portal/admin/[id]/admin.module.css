@@ -1211,20 +1211,22 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  backdrop-filter: blur(4px);
 }
 
 .modal {
   background: white;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   width: 90%;
-  max-width: 800px;
+  max-width: 48rem;
   max-height: 90vh;
   overflow-y: auto;
+  margin: 1rem;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
@@ -1232,16 +1234,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 2rem;
+  padding: 1.5rem;
   border-bottom: 1px solid #e5e7eb;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  border-radius: 12px 12px 0 0;
+  background-color: #f0fdf4;
 }
 
 .modalHeader h2 {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  color: #111827;
+  color: #059669;
   margin: 0;
 }
 
@@ -1261,7 +1262,7 @@
 }
 
 .modalContent {
-  padding: 2rem;
+  padding: 1.5rem;
 }
 
 .modalActions {
@@ -1285,7 +1286,8 @@
 }
 
 .cancelBtn:hover {
-  background: #f3f4f6;
+  background-color: #e5e7eb;
+  border-color: #9ca3af;
 }
 
 /* Class Management Styles */
@@ -1686,5 +1688,309 @@
   .submitButton,
   .cancelButton {
     width: 100%;
+  }
+}
+
+/* User Profile Styles */
+.profileHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 24px;
+  border: 1px solid #e5e7eb;
+}
+
+.profileTitleSection {
+  display: flex;
+  align-items: center;
+}
+
+.backButton {
+  background: #2563eb;
+  border: none;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 10px 20px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+}
+
+.backButton:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.profileTitle {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.userAvatar {
+  width: 60px;
+  height: 60px;
+  background: #f3f4f6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #e5e7eb;
+}
+
+.profileTitle h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px 0;
+}
+
+.roleTag {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.profileActions {
+  display: flex;
+  gap: 12px;
+}
+
+.editBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editBtn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.saveBtn {
+  padding: 0.75rem 1.5rem;
+  background-color: #059669;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.saveBtn:hover {
+  background-color: #047857;
+}
+
+.cancelBtn {
+  padding: 0.75rem 1.5rem;
+  background-color: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelBtn:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.profileContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.profileSection {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+}
+
+.profileSection h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 20px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.profileGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.profileField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profileField label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.profileField span {
+  font-size: 16px;
+  color: #111827;
+  padding: 12px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.editInput {
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.editInput:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.editInput textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.statCard {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+}
+
+.statCard h4 {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+}
+
+.statValue {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px 0;
+}
+
+.statDetail {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  gap: 16px;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.errorState h2 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.errorState p {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+.backBtn {
+  padding: 10px 20px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.backBtn:hover {
+  background: #1d4ed8;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .profileHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  
+  .profileActions {
+    justify-content: center;
+  }
+  
+  .profileGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .profileTitle {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
   }
 }

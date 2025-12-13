@@ -2,7 +2,7 @@ import { makeHttpRequest, httpClient } from '../lib/httpClient';
 import { ExamFormData, FeeStructureFormData } from '../lib/types';
 
 export const getUserById = async (id: string) =>
-  makeHttpRequest('get', `/users/${id}`);
+  makeHttpRequest('get', `/auth/profile/${id}`);
 
 export const createUser = async (userData: any) =>
   makeHttpRequest('post', '/auth/register', userData);
@@ -11,7 +11,7 @@ export const updateUserProfile = async (id: string, data: any) =>
   makeHttpRequest('put', `/users/${id}`, data);
 
 export const deleteUser = async (id: string) =>
-  makeHttpRequest('delete', `api/auth/users/delete/${id}`);
+  makeHttpRequest('delete', `/api/auth/users/delete/${id}`);
 
 export const getAllCourses = async () => makeHttpRequest('get', '/courses');
 
@@ -37,16 +37,16 @@ export const getAdminsList = async () =>
 
 // Get role-specific user details
 export const getUserProfile = async (id: string) =>
-  makeHttpRequest('get', `/users/${id}`);
+  makeHttpRequest('get', `/auth/${id}`);
 
 export const registerUser = async (userData: any) =>
   makeHttpRequest('post', '/auth/register', userData);
 
 export const updateUser = async (id: string, data: any) =>
-  makeHttpRequest('put', `/users/${id}`, data);
+  makeHttpRequest('put', `/auth/update/${id}`, data);
 
 export const removeUser = async (id: string) =>
-  makeHttpRequest('delete', `auth/delete/${id}`);
+  makeHttpRequest('delete', `/auth/delete/${id}`);
 
 // Courses APIs
 export const listCourses = async () => makeHttpRequest('get', '/courses');

@@ -16,32 +16,22 @@ import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 import AssignmentForm, {
   AssignmentFormData,
 } from '../../../../components/AssignmentForm/AssignmentForm';
-
-interface Assignment {
-  id: string;
-  title: string;
-  description: string;
-  dueDate: string;
-  dueTime?: string;
-  className: string;
-  courseName: string;
-  submissionsCount: number;
-  totalStudents: number;
-  maxMarks: number;
-  instructions?: string;
-  status: 'active' | 'completed' | 'overdue';
-}
-
-interface TeacherClass {
-  id: string;
-  name: string;
-  code: string;
-}
+import { useNotification } from '../../../../components/Toaster/Toaster';
+import {
+  TEACHER_ASSIGNMENT_CONSTANTS,
+} from '../../../../lib/constants';
+import {
+  formatDateForTeacher,
+} from '../../../../lib/helpers';
+import {
+  TeacherAssignment,
+  TeacherClass,
+} from '../../../../lib/types';
 
 const TeacherAssignments = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [assignments, setAssignments] = useState<TeacherAssignment[]>([]);
   const [classes, setClasses] = useState<TeacherClass[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAssignmentForm, setShowAssignmentForm] = useState(false);
@@ -58,6 +48,14 @@ const TeacherAssignments = () => {
     maxMarks: 100,
     instructions: '',
   });
+  const [alertConfig, setAlertConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'delete' | 'warning' | 'info';
+    onConfirm: () => void;
+  }>({ isOpen: false, title: '', message: '', type: 'delete', onConfirm: () => { } });
+  const { addNotification } = useNotification();
 
   useEffect(() => {
     const loadData = async () => {
@@ -85,13 +83,7 @@ const TeacherAssignments = () => {
     loadData();
   }, [id]);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
+
 
   const handleSubmitAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,7 +91,7 @@ const TeacherAssignments = () => {
       if (isEditMode && editingAssignmentId) {
         // Update existing assignment
         // const response = await apiServices.teacher.updateAssignment(editingAssignmentId, formData);
-        alert('Assignment updated successfully!');
+        addNotification('Assignment updated successfully!', 'success');
       } else {
         // Create new assignment
         const response = await apiServices.assignments?.create({
@@ -111,20 +103,20 @@ const TeacherAssignments = () => {
         });
 
         if (response.success) {
-          alert('Assignment created successfully!');
+          addNotification('Assignment created successfully!', 'success');
           // Reload assignments using unified API
           const assignmentsResponse = await apiServices.assignments.getAll();
           if (assignmentsResponse.success && assignmentsResponse.data) {
             setAssignments(assignmentsResponse.data);
           }
         } else {
-          alert('Failed to create assignment. Please try again.');
+          addNotification('Failed to create assignment. Please try again.', 'error');
         }
       }
       setShowAssignmentForm(false);
     } catch (error) {
       console.error('Error submitting assignment:', error);
-      alert('Failed to submit assignment. Please try again.');
+      addNotification('Failed to submit assignment. Please try again.', 'error');
     }
   };
 
@@ -132,7 +124,7 @@ const TeacherAssignments = () => {
     setFormData({
       title: assignment.title,
       description: assignment.description,
-      classId: '', // Would need to get this from assignment data
+      classId: '',
       dueDate: assignment.dueDate.split('T')[0],
       dueTime: assignment.dueTime || '',
       maxMarks: assignment.maxMarks,
@@ -143,17 +135,27 @@ const TeacherAssignments = () => {
     setShowAssignmentForm(true);
   };
 
-  const handleDeleteAssignment = async (assignmentId: string) => {
-    if (confirm('Are you sure you want to delete this assignment?')) {
-      try {
-        // await apiServices.teacher.deleteAssignment(assignmentId);
-        setAssignments(assignments.filter((a) => a.id !== assignmentId));
-        alert('Assignment deleted successfully!');
-      } catch (error) {
-        console.error('Error deleting assignment:', error);
-        alert('Failed to delete assignment.');
-      }
+  const handleDeleteAssignment = (assignmentId: string) => {
+    const assignment = assignments.find(a => a.id === assignmentId);
+    setAlertConfig({
+      isOpen: true,
+      title: 'Delete Assignment',
+      message: `Are you sure you want to delete "${assignment?.title}"? This action cannot be undone.`,
+      type: 'delete',
+      onConfirm: () => confirmDeleteAssignment(assignmentId)
+    });
+  };
+
+  const confirmDeleteAssignment = async (assignmentId: string) => {
+    try {
+      // await apiServices.teacher.deleteAssignment(assignmentId);
+      setAssignments(assignments.filter((a) => a.id !== assignmentId));
+      addNotification('Assignment deleted successfully!', 'success');
+    } catch (error) {
+      console.error('Error deleting assignment:', error);
+      addNotification('Failed to delete assignment.', 'error');
     }
+    setAlertConfig(prev => ({ ...prev, isOpen: false }));
   };
 
   if (loading) {
@@ -179,13 +181,9 @@ const TeacherAssignments = () => {
             setIsEditMode(false);
             setEditingAssignmentId(null);
             setFormData({
-              title: '',
-              description: '',
-              classId: '',
-              dueDate: '',
-              dueTime: '',
-              maxMarks: 100,
-              instructions: '',
+              ...TEACHER_ASSIGNMENT_CONSTANTS.DEFAULT_FORM,
+              classId: '', // Keep UI-specific field
+              dueTime: '', // Keep UI-specific field
             });
             setShowAssignmentForm(true);
           }}
@@ -213,9 +211,9 @@ const TeacherAssignments = () => {
                       <Users size={14} />
                       {assignment.className}
                     </span>
-                    <span className={styles.dateInfo}>
+                    <span className={styles.dueDateInfo}>
                       <Calendar size={14} />
-                      Due: {formatDate(assignment.dueDate)}
+                      Due: {formatDateForTeacher(assignment.dueDate)}
                     </span>
                     <span className={styles.scoreInfo}>
                       Max Marks: {assignment.maxMarks}
@@ -259,9 +257,16 @@ const TeacherAssignments = () => {
             <p>Create your first assignment to get started</p>
             <button
               className={styles.createBtn}
-              onClick={() =>
-                router.push(`/portal/teacher/${id}/assignments/create`)
-              }
+              onClick={() => {
+                setIsEditMode(false);
+                setEditingAssignmentId(null);
+                setFormData({
+                  ...TEACHER_ASSIGNMENT_CONSTANTS.DEFAULT_FORM,
+                  classId: '',
+                  dueTime: '',
+                });
+                setShowAssignmentForm(true);
+              }}
             >
               <Plus size={18} />
               Create Assignment

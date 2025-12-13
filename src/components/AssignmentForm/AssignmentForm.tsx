@@ -92,19 +92,19 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   };
 
   return (
-    <div className={styles.modalOverlay}>
+    <div className={styles.overlay}>
       <div className={styles.modal}>
-        <div className={styles.modalHeader}>
-          <h2>{isEdit ? 'Edit Assignment' : 'Create New Assignment'}</h2>
-          <button onClick={onClose} className={styles.closeBtn}>
+        <div className={styles.header}>
+          <h2 className={styles.title}>{isEdit ? 'Edit Assignment' : 'Create New Assignment'}</h2>
+          <button onClick={onClose} className={styles.closeButton}>
             <X size={20} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.formRow}>
+        <form id="assignmentForm" onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.formGrid}>
             <div className={styles.formGroup}>
-              <label htmlFor="title">
+              <label htmlFor="title" className={styles.label}>
                 <FileText size={16} />
                 Assignment Title *
               </label>
@@ -114,7 +114,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
                 value={formData.title}
                 onChange={(e) => handleInputChange('title', e.target.value)}
                 placeholder="Enter assignment title"
-                className={errors.title ? styles.errorInput : ''}
+                className={`${styles.input} ${errors.title ? styles.errorInput : ''}`}
               />
               {errors.title && (
                 <span className={styles.errorText}>{errors.title}</span>
@@ -122,7 +122,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="classId">
+              <label htmlFor="classId" className={styles.label}>
                 <Users size={16} />
                 Select Class *
               </label>
@@ -130,7 +130,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
                 id="classId"
                 value={formData.classId}
                 onChange={(e) => handleInputChange('classId', e.target.value)}
-                className={errors.classId ? styles.errorInput : ''}
+                className={`${styles.select} ${errors.classId ? styles.errorInput : ''}`}
               >
                 <option value="">Choose a class</option>
                 {classes.map((cls) => (
@@ -145,9 +145,9 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
             </div>
           </div>
 
-          <div className={styles.formRow}>
+          <div className={styles.formGrid}>
             <div className={styles.formGroup}>
-              <label htmlFor="dueDate">
+              <label htmlFor="dueDate" className={styles.label}>
                 <Calendar size={16} />
                 Due Date *
               </label>
@@ -165,7 +165,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="dueTime">
+              <label htmlFor="dueTime" className={styles.label}>
                 <Clock size={16} />
                 Due Time *
               </label>
@@ -174,7 +174,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
                 id="dueTime"
                 value={formData.dueTime}
                 onChange={(e) => handleInputChange('dueTime', e.target.value)}
-                className={errors.dueTime ? styles.errorInput : ''}
+                className={`${styles.input} ${errors.dueTime ? styles.errorInput : ''}`}
               />
               {errors.dueTime && (
                 <span className={styles.errorText}>{errors.dueTime}</span>
@@ -182,17 +182,17 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="maxMarks">Maximum Marks *</label>
+              <label htmlFor="maxMarks" className={styles.label}>Maximum Marks *</label>
               <input
                 type="number"
                 id="maxMarks"
-                value={formData.maxMarks || ''}
+                value={formData.maxMarks}
                 onChange={(e) =>
                   handleInputChange('maxMarks', parseInt(e.target.value) || 0)
                 }
                 placeholder="100"
                 min="1"
-                className={errors.maxMarks ? styles.errorInput : ''}
+                className={`${styles.input} ${errors.maxMarks ? styles.errorInput : ''}`}
               />
               {errors.maxMarks && (
                 <span className={styles.errorText}>{errors.maxMarks}</span>
@@ -200,23 +200,23 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
             </div>
           </div>
 
-          <div className={styles.formGroup}>
-            <label htmlFor="description">Description *</label>
+          <div className={`${styles.formGroup} ${styles.formGroupFull}`}>
+            <label htmlFor="description" className={styles.label}>Description *</label>
             <textarea
               id="description"
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
               placeholder="Describe the assignment objectives and requirements..."
               rows={4}
-              className={errors.description ? styles.errorInput : ''}
+              className={`${styles.textarea} ${errors.description ? styles.errorInput : ''}`}
             />
             {errors.description && (
               <span className={styles.errorText}>{errors.description}</span>
             )}
           </div>
 
-          <div className={styles.formGroup}>
-            <label htmlFor="instructions">Additional Instructions</label>
+          <div className={`${styles.formGroup} ${styles.formGroupFull}`}>
+            <label htmlFor="instructions" className={styles.label}>Additional Instructions</label>
             <textarea
               id="instructions"
               value={formData.instructions}
@@ -225,22 +225,28 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
               }
               placeholder="Provide additional instructions, submission format, etc..."
               rows={3}
+              className={styles.textarea}
             />
           </div>
 
-          <div className={styles.formActions}>
-            <button
-              type="button"
-              onClick={onClose}
-              className={styles.cancelBtn}
-            >
-              Cancel
-            </button>
-            <button type="submit" className={styles.submitBtn}>
-              {isEdit ? 'Update Assignment' : 'Create Assignment'}
-            </button>
-          </div>
         </form>
+
+        <div className={styles.buttonGroup}>
+          <button
+            type="button"
+            onClick={onClose}
+            className={styles.cancelButton}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className={styles.submitButton}
+            form="assignmentForm"
+          >
+            {isEdit ? 'Update Assignment' : 'Create Assignment'}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -137,25 +137,22 @@ export const getFormFieldsForRole = (
   if (!allowedFields) {
     return { basic: [], roleSpecific: [] };
   }
-
   let roleSpecific: string[] = [];
-
   switch (targetRole) {
     case USER_ROLES.STUDENT:
-      roleSpecific = allowedFields.student;
+      roleSpecific = Array.from(allowedFields.student);
       break;
     case USER_ROLES.TEACHER:
-      roleSpecific = allowedFields.teacher;
+      roleSpecific = Array.from(allowedFields.teacher);
       break;
     case USER_ROLES.PARENT:
-      roleSpecific = allowedFields.parent;
+      roleSpecific = Array.from(allowedFields.parent);
       break;
     default:
       roleSpecific = [];
   }
-
   return {
-    basic: allowedFields.basic,
+    basic: Array.from(allowedFields.basic),
     roleSpecific,
   };
 };

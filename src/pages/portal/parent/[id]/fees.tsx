@@ -10,6 +10,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 import styles from './parent.module.css';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
 interface Fee {
   id: string;

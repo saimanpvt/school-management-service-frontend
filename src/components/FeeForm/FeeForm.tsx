@@ -171,13 +171,13 @@ const FeeForm: React.FC<FeeFormProps> = ({
         </div>
 
         {formError && (
-          <div style={{ color: 'red', marginBottom: '1rem' }}>{formError}</div>
+          <div className={styles.errorMessage}>{formError}</div>
         )}
 
         <form
+          id="feeForm"
           onSubmit={handleFormSubmit}
           className={styles.form}
-          style={{ maxHeight: '80vh', overflowY: 'auto' }}
         >
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
@@ -531,19 +531,24 @@ const FeeForm: React.FC<FeeFormProps> = ({
               Active
             </label>
           </div>
-          <div className={styles.formActions}>
-            <button
-              type="button"
-              className={styles.cancelButton}
-              onClick={onClose}
-            >
-              Cancel
-            </button>
-            <button type="submit" className={styles.submitButton}>
-              {isEdit ? 'Update Fee Structure' : 'Create Fee Structure'}
-            </button>
-          </div>
         </form>
+
+        <div className={styles.formActions}>
+          <button
+            type="button"
+            className={styles.cancelButton}
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className={styles.submitButton}
+            form="feeForm"
+          >
+            {isEdit ? 'Update Fee Structure' : 'Create Fee Structure'}
+          </button>
+        </div>
       </div>
     </div>
   );

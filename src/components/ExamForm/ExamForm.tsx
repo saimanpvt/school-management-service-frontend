@@ -128,7 +128,7 @@ const ExamForm: React.FC<ExamFormProps> = ({
           <div style={{ color: 'red', marginBottom: '1rem' }}>{formError}</div>
         )}
 
-        <form onSubmit={handleFormSubmit} className={styles.form}>
+        <form id="examForm" onSubmit={handleFormSubmit} className={styles.form}>
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
               <label>Exam Name *</label>
@@ -348,19 +348,24 @@ const ExamForm: React.FC<ExamFormProps> = ({
             </div>
           </div>
 
-          <div className={styles.formActions}>
-            <button
-              type="button"
-              className={styles.cancelButton}
-              onClick={onClose}
-            >
-              Cancel
-            </button>
-            <button type="submit" className={styles.submitButton}>
-              {isEdit ? 'Update Exam' : 'Create Exam'}
-            </button>
-          </div>
         </form>
+
+        <div className={styles.formActions}>
+          <button
+            type="button"
+            className={styles.cancelButton}
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className={styles.submitButton}
+            form="examForm"
+          >
+            {isEdit ? 'Update Exam' : 'Create Exam'}
+          </button>
+        </div>
       </div>
     </div>
   );

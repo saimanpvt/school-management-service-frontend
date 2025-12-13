@@ -4,78 +4,93 @@ import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { FileText, Plus, Calendar, Clock, MapPin, Users } from 'lucide-react';
 import styles from './teacher.module.css';
 import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
-
-interface Exam {
-  id: string;
-  title: string;
-  subject: string;
-  classId: string;
-  className: string;
-  date: string;
-  time: string;
-  duration: string;
-  location: string;
-  totalStudents: number;
-  status: 'upcoming' | 'completed' | 'ongoing';
-}
+import ExamForm from '../../../../components/ExamForm/ExamForm';
+import { useNotification } from '../../../../components/Toaster/Toaster';
+import {
+  TEACHER_EXAM_CONSTANTS,
+} from '../../../../lib/constants';
+import {
+  formatDateForTeacher,
+} from '../../../../lib/helpers';
+import { ExamFormData, TeacherExam } from '../../../../lib/types';
 
 const TeacherExams = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [exams, setExams] = useState<Exam[]>([]);
+  const [exams, setExams] = useState<TeacherExam[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showExamForm, setShowExamForm] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingExamId, setEditingExamId] = useState<string | null>(null);
+  const [classes, setClasses] = useState<{ id: string; name: string; code: string }[]>([]);
+  const [examFormData, setExamFormData] = useState<ExamFormData>(TEACHER_EXAM_CONSTANTS.DEFAULT_FORM);
+  const { addNotification } = useNotification();
+
+  const loadExams = async () => {
+    if (id) {
+      try {
+        setLoading(true);
+        // Use real API call to get exams
+        const response = await apiServices.exams.getAll();
+        if (response.success && response.data) {
+          // Transform API data to match TeacherExam interface if needed
+          const examsData = Array.isArray(response.data) ? response.data : [];
+          setExams(examsData);
+        } else {
+          setExams([]);
+          addNotification('Failed to load exams', 'error');
+        }
+      } catch (error) {
+        console.error('Error fetching exams:', error);
+        addNotification('Error loading exams. Please try again.', 'error');
+        setExams([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
 
   useEffect(() => {
-    const loadExams = async () => {
-      if (id) {
-        try {
-          // Mock data for now - replace with actual API call when available
-          const mockData: Exam[] = [
-            {
-              id: '1',
-              title: 'Mid-term Mathematics Exam',
-              subject: 'Mathematics',
-              classId: 'class1',
-              className: 'Grade 10A',
-              date: '2025-01-15',
-              time: '09:00 AM',
-              duration: '2 hours',
-              location: 'Room 101',
-              totalStudents: 30,
-              status: 'upcoming',
-            },
-            {
-              id: '2',
-              title: 'Science Quiz',
-              subject: 'Science',
-              classId: 'class2',
-              className: 'Grade 10B',
-              date: '2025-01-20',
-              time: '11:00 AM',
-              duration: '1 hour',
-              location: 'Lab 2',
-              totalStudents: 25,
-              status: 'upcoming',
-            },
-          ];
-          setExams(mockData);
-        } catch (error) {
-          console.error('Error fetching exams:', error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
     loadExams();
   }, [id]);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
+  const handleSubmitExam = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (isEditMode && editingExamId) {
+        // Update existing exam via API
+        const response = await apiServices.exams.update(editingExamId, examFormData);
+        if (response.success) {
+          addNotification('Exam updated successfully!', 'success');
+          // Reload exams to get fresh data
+          await loadExams();
+        } else {
+          addNotification('Failed to update exam. Please try again.', 'error');
+        }
+      } else {
+        // Create new exam via API
+        const response = await apiServices.exams.create(examFormData);
+        if (response.success) {
+          addNotification('Exam created successfully!', 'success');
+          // Reload exams to get fresh data
+          await loadExams();
+        } else {
+          addNotification('Failed to create exam. Please try again.', 'error');
+        }
+      }
+
+      // Reset form state on success
+      setShowExamForm(false);
+      setIsEditMode(false);
+      setEditingExamId(null);
+      setExamFormData(TEACHER_EXAM_CONSTANTS.DEFAULT_FORM);
+    } catch (error) {
+      console.error('Error submitting exam:', error);
+      addNotification('Failed to submit exam. Please try again.', 'error');
+    }
   };
+
+
 
   if (loading) {
     return (
@@ -96,7 +111,12 @@ const TeacherExams = () => {
         </div>
         <button
           className={styles.createBtn}
-          onClick={() => router.push(`/portal/teacher/${id}/exams/create`)}
+          onClick={() => {
+            setIsEditMode(false);
+            setEditingExamId(null);
+            setExamFormData(TEACHER_EXAM_CONSTANTS.DEFAULT_FORM);
+            setShowExamForm(true);
+          }}
         >
           <Plus size={18} />
           Create Exam
@@ -132,7 +152,7 @@ const TeacherExams = () => {
               <div className={styles.examDetails}>
                 <div className={styles.examDetailItem}>
                   <Calendar size={16} />
-                  <span>{formatDate(exam.date)}</span>
+                  <span>{formatDateForTeacher(exam.date)}</span>
                 </div>
                 <div className={styles.examDetailItem}>
                   <Clock size={16} />
@@ -186,6 +206,22 @@ const TeacherExams = () => {
           </div>
         )}
       </div>
+      {/* Exam Form Modal */}
+      {showExamForm && (
+        <ExamForm
+          formData={examFormData}
+          setFormData={setExamFormData}
+          onSubmit={handleSubmitExam}
+          onClose={() => {
+            setShowExamForm(false);
+            setIsEditMode(false);
+            setEditingExamId(null);
+          }}
+          courseOptions={[]}
+          classOptions={classes.map(c => ({ value: c.id, label: c.name }))}
+          isEdit={isEditMode}
+        />
+      )}
     </PortalLayout>
   );
 };
