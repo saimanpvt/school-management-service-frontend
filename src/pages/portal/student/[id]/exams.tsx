@@ -5,7 +5,6 @@ import {
   FileText,
   Calendar,
   Clock,
-  MapPin,
   CheckCircle,
   AlertCircle,
 } from 'lucide-react';
@@ -20,9 +19,7 @@ import {
   formatDateForStudent,
   getExamStatusClass,
 } from '../../../../lib/helpers';
-import {
-  StudentExam,
-} from '../../../../lib/types';
+import { StudentExam } from '../../../../lib/types';
 
 const StudentExams = () => {
   const router = useRouter();
@@ -42,11 +39,18 @@ const StudentExams = () => {
             setExams(examsData);
           } else {
             setExams([]);
-            addNotification('Failed to load exams', 'error');
+            addNotification({
+              type: 'error',
+              title: 'Failed to load exams',
+              message: 'Please try again later.',
+            });
           }
         } catch (error) {
-          console.error('Error fetching exams:', error);
-          addNotification('Error loading exams. Please try again.', 'error');
+          addNotification({
+            type: 'error',
+            title: 'Error loading exams',
+            message: 'Please try again later.',
+          });
           setExams([]);
         } finally {
           setLoading(false);
@@ -56,7 +60,10 @@ const StudentExams = () => {
     loadExams();
   }, [id]);
 
-  const filteredExams = filterType === 'all' ? exams : exams.filter(exam => exam.status === filterType);
+  const filteredExams =
+    filterType === 'all'
+      ? exams
+      : exams.filter((exam) => exam.status === filterType);
 
   if (loading) {
     return (
@@ -98,8 +105,9 @@ const StudentExams = () => {
                   <span className={styles.subjectBadge}>{exam.subject}</span>
                 </div>
                 <span
-                  className={`${styles.statusBadge} ${styles[getExamStatusClass(exam.status)]
-                    }`}
+                  className={`${styles.statusBadge} ${
+                    styles[getExamStatusClass(exam.status)]
+                  }`}
                 >
                   {exam.status === 'upcoming' && <Clock size={14} />}
                   {exam.status === 'completed' && <CheckCircle size={14} />}
@@ -132,8 +140,9 @@ const StudentExams = () => {
                   <strong>Grade: {exam.grade}</strong>
                   {exam.result && (
                     <span
-                      className={`${styles.resultBadge} ${exam.result === 'pass' ? styles.pass : styles.fail
-                        }`}
+                      className={`${styles.resultBadge} ${
+                        exam.result === 'pass' ? styles.pass : styles.fail
+                      }`}
                     >
                       {exam.result.toUpperCase()}
                     </span>

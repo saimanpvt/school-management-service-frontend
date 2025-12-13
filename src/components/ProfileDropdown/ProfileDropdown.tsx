@@ -88,7 +88,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ name, role }) => {
             <button
               onClick={() => {
                 setIsOpen(false);
-                router.push('/settings');
+                router.push('/portal/settings');
               }}
               className={styles.menuItem}
             >
@@ -99,7 +99,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ name, role }) => {
             <button
               onClick={() => {
                 setIsOpen(false);
-                router.push('/change-password');
+                router.push('/portal/change-password');
               }}
               className={styles.menuItem}
             >

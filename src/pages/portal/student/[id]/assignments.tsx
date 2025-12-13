@@ -12,17 +12,12 @@ import {
 import styles from './student.module.css';
 import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 import { useNotification } from '../../../../components/Toaster/Toaster';
-// import {
-//   STUDENT_ASSIGNMENT_STATUS,
-// } from '../../../../lib/constants';
 import {
   formatDateForStudent,
   getAssignmentStatusClass,
   isAssignmentOverdue,
 } from '../../../../lib/helpers';
-import {
-  StudentAssignment,
-} from '../../../../lib/types';
+import { StudentAssignment } from '../../../../lib/types';
 
 const StudentAssignments = () => {
   const router = useRouter();
@@ -41,7 +36,11 @@ const StudentAssignments = () => {
             setAssignments(response.data);
           }
         } catch (error) {
-          console.error('Error fetching assignments:', error);
+          addNotification({
+            type: 'error',
+            title: 'Error fetching assignments:',
+            message: 'Please try again later.',
+          });
         } finally {
           setLoading(false);
         }
@@ -49,8 +48,6 @@ const StudentAssignments = () => {
     };
     loadAssignments();
   }, [id]);
-
-
 
   if (loading) {
     return (
@@ -98,8 +95,9 @@ const StudentAssignments = () => {
                   </div>
                   <div>
                     <span
-                      className={`${styles.statusBadge} ${styles[getAssignmentStatusClass(assignment.status)]
-                        }`}
+                      className={`${styles.statusBadge} ${
+                        styles[getAssignmentStatusClass(assignment.status)]
+                      }`}
                     >
                       {assignment.status === 'pending' && <Clock size={14} />}
                       {assignment.status === 'submitted' && (

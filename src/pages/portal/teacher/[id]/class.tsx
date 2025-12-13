@@ -2,11 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
-import {
-  Users,
-  Clock,
-  ArrowRight,
-} from 'lucide-react';
+import { Users, Clock, ArrowRight } from 'lucide-react';
 import styles from './teacher.module.css';
 import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 import { useNotification } from '../../../../components/Toaster/Toaster';
@@ -28,11 +24,19 @@ const TeacherClass = () => {
           if (response.success && response.data) {
             setClasses(response.data);
           } else {
-            addNotification('Failed to load classes', 'error');
+            addNotification({
+              type: 'error',
+              title: 'Failed to load classes',
+              message: 'Please try again later.',
+            });
           }
         } catch (error) {
           console.error('Error fetching classes:', error);
-          addNotification('Failed to load classes', 'error');
+          addNotification({
+            type: 'error',
+            title: 'Failed to load classes',
+            message: 'Please try again later.',
+          });
         } finally {
           setLoading(false);
         }

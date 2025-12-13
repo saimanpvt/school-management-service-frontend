@@ -17,7 +17,9 @@ const StudentCourses = () => {
     const loadCourses = async () => {
       if (id) {
         try {
-          const response = await apiServices.courses.getStudentCourses(id as string);
+          const response = await apiServices.courses.getStudentCourses(
+            id as string
+          );
           if (response.success && response.data) {
             setCourses(response.data);
           }

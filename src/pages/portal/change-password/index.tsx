@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useAuth } from '../../lib/auth';
-import { authApi } from '../../services/authApi';
+import { useAuth } from '../../../lib/auth';
+import { authApi } from '../../../services/authApi';
 import {
   ArrowLeft,
   Lock,
@@ -10,7 +10,7 @@ import {
   CheckCircle,
   AlertCircle,
 } from 'lucide-react';
-import LoadingDots from '../../components/LoadingDots/LoadingDots';
+import LoadingDots from '../../../components/LoadingDots/LoadingDots';
 import styles from './change-password.module.css';
 
 interface PasswordForm {
@@ -154,16 +154,6 @@ const ChangePassword = () => {
   return (
     <div className={styles['password-container']}>
       <div className={styles['password-card']}>
-        <div style={{ textAlign: 'left', marginBottom: '1rem' }}>
-          <button
-            onClick={() => router.back()}
-            className={styles['back-button']}
-          >
-            <ArrowLeft size={20} className={styles['back-icon']} />
-            Back
-          </button>
-        </div>
-
         <div className={styles['password-icon']}>🔒</div>
         <h2 className={styles['password-title']}>Change Password</h2>
         <p className={styles['password-subtitle']}>

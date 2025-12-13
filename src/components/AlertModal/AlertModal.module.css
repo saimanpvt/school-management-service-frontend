@@ -26,7 +26,8 @@
 .modal {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   max-width: 400px;
   width: 90%;
   max-height: 90vh;
@@ -199,11 +200,11 @@
     width: 95%;
     margin: 20px;
   }
-  
+
   .actions {
     flex-direction: column-reverse;
   }
-  
+
   .cancelButton,
   .confirmButton {
     width: 100%;

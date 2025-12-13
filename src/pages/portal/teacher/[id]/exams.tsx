@@ -6,12 +6,8 @@ import styles from './teacher.module.css';
 import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 import ExamForm from '../../../../components/ExamForm/ExamForm';
 import { useNotification } from '../../../../components/Toaster/Toaster';
-import {
-  TEACHER_EXAM_CONSTANTS,
-} from '../../../../lib/constants';
-import {
-  formatDateForTeacher,
-} from '../../../../lib/helpers';
+import { TEACHER_EXAM_CONSTANTS } from '../../../../lib/constants';
+import { formatDateForTeacher } from '../../../../lib/helpers';
 import { ExamFormData, TeacherExam } from '../../../../lib/types';
 
 const TeacherExams = () => {
@@ -22,8 +18,12 @@ const TeacherExams = () => {
   const [showExamForm, setShowExamForm] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingExamId, setEditingExamId] = useState<string | null>(null);
-  const [classes, setClasses] = useState<{ id: string; name: string; code: string }[]>([]);
-  const [examFormData, setExamFormData] = useState<ExamFormData>(TEACHER_EXAM_CONSTANTS.DEFAULT_FORM);
+  const [classes, setClasses] = useState<
+    { id: string; name: string; code: string }[]
+  >([]);
+  const [examFormData, setExamFormData] = useState<ExamFormData>(
+    TEACHER_EXAM_CONSTANTS.DEFAULT_FORM
+  );
   const { addNotification } = useNotification();
 
   const loadExams = async () => {
@@ -38,11 +38,19 @@ const TeacherExams = () => {
           setExams(examsData);
         } else {
           setExams([]);
-          addNotification('Failed to load exams', 'error');
+          addNotification({
+            type: 'error',
+            title: 'Failed to load exams',
+            message: 'Please try again later.',
+          });
         }
       } catch (error) {
         console.error('Error fetching exams:', error);
-        addNotification('Error loading exams. Please try again.', 'error');
+        addNotification({
+          type: 'error',
+          title: 'Error loading exams',
+          message: 'Please try again later.',
+        });
         setExams([]);
       } finally {
         setLoading(false);
@@ -59,23 +67,42 @@ const TeacherExams = () => {
     try {
       if (isEditMode && editingExamId) {
         // Update existing exam via API
-        const response = await apiServices.exams.update(editingExamId, examFormData);
+        const response = await apiServices.exams.update(
+          editingExamId,
+          examFormData
+        );
         if (response.success) {
-          addNotification('Exam updated successfully!', 'success');
+          addNotification({
+            type: 'success',
+            title: 'Exam updated successfully!',
+            message: 'The exam has been updated.',
+          });
           // Reload exams to get fresh data
           await loadExams();
         } else {
-          addNotification('Failed to update exam. Please try again.', 'error');
+          addNotification({
+            type: 'error',
+            title: 'Failed to update exam',
+            message: 'Please try again later.',
+          });
         }
       } else {
         // Create new exam via API
         const response = await apiServices.exams.create(examFormData);
         if (response.success) {
-          addNotification('Exam created successfully!', 'success');
+          addNotification({
+            type: 'success',
+            title: 'Exam created successfully!',
+            message: 'The exam has been created and is now available.',
+          });
           // Reload exams to get fresh data
           await loadExams();
         } else {
-          addNotification('Failed to create exam. Please try again.', 'error');
+          addNotification({
+            type: 'error',
+            title: 'Failed to create exam',
+            message: 'Please try again later.',
+          });
         }
       }
 
@@ -86,11 +113,13 @@ const TeacherExams = () => {
       setExamFormData(TEACHER_EXAM_CONSTANTS.DEFAULT_FORM);
     } catch (error) {
       console.error('Error submitting exam:', error);
-      addNotification('Failed to submit exam. Please try again.', 'error');
+      addNotification({
+        type: 'error',
+        title: 'Failed to submit exam',
+        message: 'Please try again later.',
+      });
     }
   };
-
-
 
   if (loading) {
     return (
@@ -105,22 +134,24 @@ const TeacherExams = () => {
   return (
     <PortalLayout userName="Teacher" userRole="teacher">
       <header className={styles.header}>
-        <div>
-          <h1>Manage Exams</h1>
-          <p>Schedule and manage exams for your classes</p>
+        <div className={styles.examHeader}>
+          <div>
+            <h1>Manage Exams</h1>
+            <p>Schedule and manage exams for your classes</p>
+          </div>
+          <button
+            className={styles.createBtn}
+            onClick={() => {
+              setIsEditMode(false);
+              setEditingExamId(null);
+              setExamFormData(TEACHER_EXAM_CONSTANTS.DEFAULT_FORM);
+              setShowExamForm(true);
+            }}
+          >
+            <Plus size={18} />
+            Create Exam
+          </button>
         </div>
-        <button
-          className={styles.createBtn}
-          onClick={() => {
-            setIsEditMode(false);
-            setEditingExamId(null);
-            setExamFormData(TEACHER_EXAM_CONSTANTS.DEFAULT_FORM);
-            setShowExamForm(true);
-          }}
-        >
-          <Plus size={18} />
-          Create Exam
-        </button>
       </header>
 
       <div className={styles.examsContainer}>
@@ -196,13 +227,6 @@ const TeacherExams = () => {
             <FileText size={48} />
             <h3>No exams scheduled</h3>
             <p>Create your first exam to get started</p>
-            <button
-              className={styles.createBtn}
-              onClick={() => router.push(`/portal/teacher/${id}/exams/create`)}
-            >
-              <Plus size={18} />
-              Create Exam
-            </button>
           </div>
         )}
       </div>
@@ -218,7 +242,7 @@ const TeacherExams = () => {
             setEditingExamId(null);
           }}
           courseOptions={[]}
-          classOptions={classes.map(c => ({ value: c.id, label: c.name }))}
+          classOptions={classes.map((c) => ({ value: c.id, label: c.name }))}
           isEdit={isEditMode}
         />
       )}

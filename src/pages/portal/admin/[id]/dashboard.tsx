@@ -4,8 +4,10 @@ import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
 import { Users, BookOpen, GraduationCap } from 'lucide-react';
 import { ProtectedRoute } from '../../../../lib/auth';
-import { DASHBOARD_CONSTANTS } from '../../../../lib/constants';
-import { processUsersData, calculateTotalRevenue } from '../../../../lib/helpers';
+import {
+  processUsersData,
+  calculateTotalRevenue,
+} from '../../../../lib/helpers';
 import styles from './admin.module.css';
 import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
@@ -32,9 +34,8 @@ const AdminDashboard = () => {
       ])
         .then(([usersRes, coursesRes, feesRes]) => {
           // Process users data using helper function
-          const { totalStudents, totalTeachers, totalParents } = processUsersData(
-            usersRes.success ? usersRes.data : null
-          );
+          const { totalStudents, totalTeachers, totalParents } =
+            processUsersData(usersRes.success ? usersRes.data : null);
 
           // Calculate total revenue using helper function
           const totalRevenue = calculateTotalRevenue(
@@ -44,7 +45,10 @@ const AdminDashboard = () => {
             totalStudents,
             totalTeachers,
             totalParents,
-            totalCourses: coursesRes.success && Array.isArray(coursesRes.data) ? coursesRes.data.length : 0,
+            totalCourses:
+              coursesRes.success && Array.isArray(coursesRes.data)
+                ? coursesRes.data.length
+                : 0,
             totalRevenue,
             recentActivity: [],
           });

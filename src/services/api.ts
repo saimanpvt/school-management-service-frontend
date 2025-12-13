@@ -1,41 +1,9 @@
 import { makeHttpRequest, httpClient } from '../lib/httpClient';
 import { ExamFormData, FeeStructureFormData } from '../lib/types';
 
-export const getUserById = async (id: string) =>
-  makeHttpRequest('get', `/auth/profile/${id}`);
-
-export const createUser = async (userData: any) =>
-  makeHttpRequest('post', '/auth/register', userData);
-
-export const updateUserProfile = async (id: string, data: any) =>
-  makeHttpRequest('put', `/users/${id}`, data);
-
-export const deleteUser = async (id: string) =>
-  makeHttpRequest('delete', `/api/auth/users/delete/${id}`);
-
-export const getAllCourses = async () => makeHttpRequest('get', '/courses');
-
-export const createCourse = async (courseData: any) =>
-  makeHttpRequest('post', '/courses/add', courseData);
-
-// Users APIs - Role-based data fetching
-
+// Users APIs
 export const getAllUsers = async () => makeHttpRequest('get', '/auth/users');
 
-// Role-specific user lists (only returns necessary fields)
-export const getStudentsList = async () =>
-  makeHttpRequest('get', '/api/users/list?role=Student');
-
-export const getTeachersList = async () =>
-  makeHttpRequest('get', '/api/users/list?role=Teacher');
-
-export const getParentsList = async () =>
-  makeHttpRequest('get', '/api/users/list?role=Parent');
-
-export const getAdminsList = async () =>
-  makeHttpRequest('get', '/api/users/list?role=Admin');
-
-// Get role-specific user details
 export const getUserProfile = async (id: string) =>
   makeHttpRequest('get', `/auth/${id}`);
 
@@ -47,6 +15,8 @@ export const updateUser = async (id: string, data: any) =>
 
 export const removeUser = async (id: string) =>
   makeHttpRequest('delete', `/auth/delete/${id}`);
+
+
 
 // Courses APIs
 export const listCourses = async () => makeHttpRequest('get', '/courses');
@@ -63,6 +33,8 @@ export const updateCourse = async (id: string, data: any) =>
 export const deleteCourse = async (id: string) =>
   makeHttpRequest('delete', `/courses/${id}`);
 
+
+
 // Classes APIs
 export const getAllClasses = async () => makeHttpRequest('get', '/classes');
 
@@ -78,6 +50,8 @@ export const editClass = async (id: string, data: any) =>
 export const removeClass = async (id: string) =>
   makeHttpRequest('delete', `/classes/${id}`);
 
+
+
 // Exams APIs
 export const getAllExams = async () => makeHttpRequest('get', '/exams');
 
@@ -92,6 +66,8 @@ export const updateExam = async (id: string, data: Partial<ExamFormData>) =>
 
 export const deleteExam = async (id: string) =>
   makeHttpRequest('delete', `/exams/${id}`);
+
+
 
 // Fees APIs
 export const getAllFees = async () => makeHttpRequest('get', '/fees');
@@ -110,6 +86,8 @@ export const updateFee = async (
 export const deleteFee = async (id: string) =>
   makeHttpRequest('delete', `/fees/${id}`);
 
+
+
 // Marks APIs
 export const getAllMarks = async () => makeHttpRequest('get', '/marks');
 
@@ -127,6 +105,8 @@ export const updateMark = async (id: string, data: any) =>
 export const deleteMark = async (id: string) =>
   makeHttpRequest('delete', `/marks/${id}`);
 
+
+
 // References APIs
 export const getAllReferences = async () =>
   makeHttpRequest('get', '/references');
@@ -143,9 +123,7 @@ export const updateReference = async (id: string, data: any) =>
 export const deleteReference = async (id: string) =>
   makeHttpRequest('delete', `/references/${id}`);
 
-// Dashboard APIs
-export const getDashboardStats = async () =>
-  makeHttpRequest('get', '/dashboard/stats');
+
 
 // Attendance APIs
 export const markAttendance = async (attendanceData: {
@@ -156,6 +134,8 @@ export const markAttendance = async (attendanceData: {
     status: 'present' | 'absent' | 'late';
   }>;
 }) => makeHttpRequest('post', '/attendance', attendanceData);
+
+
 
 // Assignment APIs
 export const getAllAssignments = async () =>
@@ -169,7 +149,7 @@ export const createAssignment = async (assignmentData: {
   maxMarks: number;
 }) => makeHttpRequest('post', '/assignments', assignmentData);
 
-// Export all APIs -
+// Export all APIs -insead of this we can directly import functions where needed
 export const apiServices = {
   users: {
     getAll: getAllUsers,
@@ -177,11 +157,6 @@ export const apiServices = {
     create: registerUser,
     update: updateUser,
     delete: removeUser,
-    // Role-specific lists
-    getStudents: getStudentsList,
-    getTeachers: getTeachersList,
-    getParents: getParentsList,
-    getAdmins: getAdminsList,
   },
   courses: {
     getAll: listCourses,
@@ -226,9 +201,7 @@ export const apiServices = {
     update: updateReference,
     delete: deleteReference,
   },
-  dashboard: {
-    getStats: getDashboardStats,
-  },
+  
   attendance: {
     mark: markAttendance,
   },

@@ -1,83 +1,84 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
-import { FileText, Calendar, Clock, TrendingUp } from 'lucide-react';
+import { FileText, Calendar, Clock, TrendingUp, MapPin } from 'lucide-react';
 import styles from './parent.module.css';
 import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
-
-interface Exam {
-  id: string;
-  title: string;
-  subject: string;
-  childId: string;
-  childName: string;
-  date: string;
-  time: string;
-  duration: string;
-  location: string;
-  status: 'upcoming' | 'completed';
-  grade?: string;
-}
+import { useNotification } from '../../../../components/Toaster/Toaster';
+import { apiServices } from '../../../../services/api';
+import { PARENT_FILTER_OPTIONS } from '../../../../lib/constants';
+import { formatDateForParent } from '../../../../lib/helpers';
+import { ParentChild, ParentExam } from '../../../../lib/types';
 
 const ParentExams = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [exams, setExams] = useState<Exam[]>([]);
+  const [exams, setExams] = useState<ParentExam[]>([]);
+  const [children, setChildren] = useState<ParentChild[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedChild, setSelectedChild] = useState<string>('all');
+  const [selectedChild, setSelectedChild] = useState<string>(
+    PARENT_FILTER_OPTIONS.ALL_CHILDREN
+  );
+  const { addNotification } = useNotification();
 
   useEffect(() => {
-    if (id) {
-      // Mock data - replace with actual API call
-      setTimeout(() => {
-        const mockData: Exam[] = [
-          {
-            id: '1',
-            title: 'Mathematics Midterm',
-            subject: 'Mathematics',
-            childId: 'c1',
-            childName: 'John Doe',
-            date: '2024-02-15',
-            time: '09:00 AM',
-            duration: '2 hours',
-            location: 'Hall A',
-            status: 'upcoming',
-          },
-          {
-            id: '2',
-            title: 'Science Final',
-            subject: 'Science',
-            childId: 'c1',
-            childName: 'John Doe',
-            date: '2024-01-20',
-            time: '10:00 AM',
-            duration: '3 hours',
-            location: 'Hall B',
-            status: 'completed',
-            grade: 'A',
-          },
-        ];
-        setExams(mockData);
-        setLoading(false);
-      }, 1000);
-    }
-  }, [id]);
+    const loadExamsData = async () => {
+      if (id) {
+        try {
+          setLoading(true);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
+          // Load children data
+          const childrenResponse = {
+            success: false,
+            data: null,
+          };
+          if (childrenResponse?.success && childrenResponse.data) {
+            setChildren(childrenResponse.data);
+          }
 
-  const children = Array.from(
+          // Load exams data
+          const examsResponse = {
+            success: false,
+            data: null,
+          };
+          if (examsResponse?.success && examsResponse.data) {
+            setExams(examsResponse.data);
+          } else {
+            setExams([]);
+            addNotification({
+              type: 'info',
+              title: 'No exam data found',
+              message: 'Exam schedules will appear here once available.',
+            });
+          }
+        } catch (error) {
+          console.error('Error loading exams data:', error);
+          addNotification({
+            type: 'error',
+            title: 'Failed to load exam data',
+            message: 'Please try again later.',
+          });
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadExamsData();
+  }, [id, addNotification]);
+
+  // Get unique children from exams data for filtering
+  const childrenFromExams = Array.from(
     new Set(exams.map((e) => ({ id: e.childId, name: e.childName })))
   );
+
   const filteredExams =
-    selectedChild === 'all'
+    selectedChild === PARENT_FILTER_OPTIONS.ALL_CHILDREN
       ? exams
       : exams.filter((e) => e.childId === selectedChild);
+
+  // Use all children (from state) or fallback to children from exams
+  const availableChildren = children.length > 0 ? children : childrenFromExams;
 
   if (loading) {
     return (
@@ -97,14 +98,16 @@ const ParentExams = () => {
             <h1>Children&apos;s Exams</h1>
             <p>View exam schedules and results for your children</p>
           </div>
-          {children.length > 1 && (
+          {availableChildren.length > 1 && (
             <select
               value={selectedChild}
               onChange={(e) => setSelectedChild(e.target.value)}
               className={styles.childSelect}
             >
-              <option value="all">All Children</option>
-              {children.map((child) => (
+              <option value={PARENT_FILTER_OPTIONS.ALL_CHILDREN}>
+                All Children
+              </option>
+              {availableChildren.map((child) => (
                 <option key={child.id} value={child.id}>
                   {child.name}
                 </option>
@@ -142,7 +145,7 @@ const ParentExams = () => {
                 <div className={styles.examDetails}>
                   <div className={styles.examDetailItem}>
                     <Calendar size={16} />
-                    <span>{formatDate(exam.date)}</span>
+                    <span>{formatDateForParent(exam.date)}</span>
                   </div>
                   <div className={styles.examDetailItem}>
                     <Clock size={16} />
@@ -170,9 +173,9 @@ const ParentExams = () => {
               <FileText size={48} />
               <h3>No exams found</h3>
               <p>
-                {selectedChild !== 'all'
-                  ? 'No exams for this child'
-                  : 'No exams scheduled'}
+                {selectedChild !== PARENT_FILTER_OPTIONS.ALL_CHILDREN
+                  ? 'No exams scheduled for this child'
+                  : 'No exams scheduled for any children'}
               </p>
             </div>
           )}

@@ -66,8 +66,8 @@ export const FEE_STATUS_COLORS = {
 // Attendance percentage colors
 export const ATTENDANCE_COLORS = {
   EXCELLENT: '#059669', // >= 90%
-  GOOD: '#f59e0b',      // >= 75%
-  POOR: '#dc2626',      // < 75%
+  GOOD: '#f59e0b', // >= 75%
+  POOR: '#dc2626', // < 75%
 } as const;
 
 // Default form data
@@ -163,7 +163,14 @@ export const ALERT_TYPES = {
 
 // Blood groups
 export const BLOOD_GROUPS = [
-  'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'
+  'A+',
+  'A-',
+  'B+',
+  'B-',
+  'AB+',
+  'AB-',
+  'O+',
+  'O-',
 ] as const;
 
 // // Gender options
@@ -173,12 +180,16 @@ export const BLOOD_GROUPS = [
 
 // Experience options for teachers
 export const EXPERIENCE_OPTIONS = [
-  '0-1 years', '1-3 years', '3-5 years', '5-10 years', '10+ years'
+  '0-1 years',
+  '1-3 years',
+  '3-5 years',
+  '5-10 years',
+  '10+ years',
 ] as const;
 
 // Class year options
 export const CLASS_YEARS = [
-  2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030
+  2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030,
 ] as const;
 
 // User type filters for tabs
@@ -221,15 +232,24 @@ export const ROLE_OPTIONS = {
 export const GENDER_OPTIONS: string[] = ['Male', 'Female', 'Other'];
 
 export const BLOOD_GROUP_OPTIONS: string[] = [
-  'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'
+  'A+',
+  'A-',
+  'B+',
+  'B-',
+  'AB+',
+  'AB-',
+  'O+',
+  'O-',
 ];
 
 // Alert messages
 export const ALERT_MESSAGES = {
-  DELETE_CONFIRM: (userName: string) => `Are you sure you want to delete "${userName}"? This action cannot be undone.`,
+  DELETE_CONFIRM: (userName: string) =>
+    `Are you sure you want to delete "${userName}"? This action cannot be undone.`,
   USER_DELETED: 'User deleted successfully!',
   DELETE_FAILED: 'Failed to delete user. Please try again.',
-  USER_CREATED: (password: string) => `User created successfully! Password: ${password}`,
+  USER_CREATED: (password: string) =>
+    `User created successfully! Password: ${password}`,
   USER_UPDATED: 'User updated successfully!',
   CREATE_FAILED: 'Failed to create user. Please try again.',
   UPDATE_FAILED: 'Failed to update user. Please try again.',
@@ -312,7 +332,7 @@ export const DASHBOARD_CONSTANTS = {
     },
     {
       key: 'teachers',
-      title: 'Total Teachers', 
+      title: 'Total Teachers',
       icon: 'Users',
       color: '#059669',
       background: '#dcfce7',
@@ -390,7 +410,7 @@ export const TEACHER_ASSIGNMENT_CONSTANTS = {
 // Teacher function - Attendance status constants
 export const TEACHER_ATTENDANCE_STATUS = {
   PRESENT: 'present',
-  ABSENT: 'absent',  
+  ABSENT: 'absent',
   LATE: 'late',
   EXCUSED: 'excused',
 } as const;
@@ -416,8 +436,18 @@ export const TEACHER_EXAM_CONSTANTS = {
 // Teacher function - Class management constants
 export const TEACHER_CLASS_CONSTANTS = {
   STUDENT_STATUS: ['active', 'inactive', 'transferred'] as const,
-  PERFORMANCE_CATEGORIES: ['excellent', 'good', 'average', 'needs_improvement'] as const,
-  BEHAVIOR_RATINGS: ['excellent', 'good', 'satisfactory', 'needs_attention'] as const,
+  PERFORMANCE_CATEGORIES: [
+    'excellent',
+    'good',
+    'average',
+    'needs_improvement',
+  ] as const,
+  BEHAVIOR_RATINGS: [
+    'excellent',
+    'good',
+    'satisfactory',
+    'needs_attention',
+  ] as const,
 } as const;
 
 // Teacher function - Mock data for development
@@ -463,10 +493,10 @@ export const TEACHER_MOCK_DATA = {
       status: 'upcoming' as const,
     },
   ],
-} as const;// Student Portal Constants
+} as const; // Student Portal Constants
 export const STUDENT_ASSIGNMENT_STATUS = {
   PENDING: 'pending',
-  SUBMITTED: 'submitted', 
+  SUBMITTED: 'submitted',
   GRADED: 'graded',
   OVERDUE: 'overdue',
 } as const;
@@ -513,4 +543,28 @@ export const STUDENT_DASHBOARD_CONSTANTS = {
   MAX_UPCOMING_EVENTS: 3,
   MAX_RECENT_ACTIVITIES: 4,
   DASHBOARD_REFRESH_INTERVAL: 300000, // 5 minutes
+} as const;
+
+// Parent Constants
+export const PARENT_ATTENDANCE_STATUS = {
+  PRESENT: 'present',
+  ABSENT: 'absent',
+  LATE: 'late',
+  EXCUSED: 'excused',
+} as const;
+
+export const PARENT_DASHBOARD_CONSTANTS = {
+  MAX_RECENT_ACTIVITIES: 6,
+  MAX_UPCOMING_EVENTS: 4,
+  MAX_CHILDREN_DISPLAY: 10,
+  DASHBOARD_REFRESH_INTERVAL: 300000, // 5 minutes
+} as const;
+
+export const PARENT_FILTER_OPTIONS = {
+  ALL_CHILDREN: 'all',
+  TIME_PERIODS: {
+    WEEK: 'week',
+    MONTH: 'month',
+    SEMESTER: 'semester',
+  },
 } as const;

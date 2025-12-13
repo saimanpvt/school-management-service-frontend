@@ -17,16 +17,9 @@ import AssignmentForm, {
   AssignmentFormData,
 } from '../../../../components/AssignmentForm/AssignmentForm';
 import { useNotification } from '../../../../components/Toaster/Toaster';
-import {
-  TEACHER_ASSIGNMENT_CONSTANTS,
-} from '../../../../lib/constants';
-import {
-  formatDateForTeacher,
-} from '../../../../lib/helpers';
-import {
-  TeacherAssignment,
-  TeacherClass,
-} from '../../../../lib/types';
+import { TEACHER_ASSIGNMENT_CONSTANTS } from '../../../../lib/constants';
+import { formatDateForTeacher } from '../../../../lib/helpers';
+import { TeacherAssignment, TeacherClass } from '../../../../lib/types';
 
 const TeacherAssignments = () => {
   const router = useRouter();
@@ -48,13 +41,6 @@ const TeacherAssignments = () => {
     maxMarks: 100,
     instructions: '',
   });
-  const [alertConfig, setAlertConfig] = useState<{
-    isOpen: boolean;
-    title: string;
-    message: string;
-    type: 'delete' | 'warning' | 'info';
-    onConfirm: () => void;
-  }>({ isOpen: false, title: '', message: '', type: 'delete', onConfirm: () => { } });
   const { addNotification } = useNotification();
 
   useEffect(() => {
@@ -83,15 +69,15 @@ const TeacherAssignments = () => {
     loadData();
   }, [id]);
 
-
-
   const handleSubmitAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       if (isEditMode && editingAssignmentId) {
-        // Update existing assignment
-        // const response = await apiServices.teacher.updateAssignment(editingAssignmentId, formData);
-        addNotification('Assignment updated successfully!', 'success');
+        addNotification({
+          type: 'success',
+          title: 'Assignment updated successfully!',
+          message: 'The assignment has been updated.',
+        });
       } else {
         // Create new assignment
         const response = await apiServices.assignments?.create({
@@ -103,20 +89,33 @@ const TeacherAssignments = () => {
         });
 
         if (response.success) {
-          addNotification('Assignment created successfully!', 'success');
+          addNotification({
+            type: 'success',
+            title: 'Assignment created successfully!',
+            message:
+              'The assignment has been created and is now available to students.',
+          });
           // Reload assignments using unified API
           const assignmentsResponse = await apiServices.assignments.getAll();
-          if (assignmentsResponse.success && assignmentsResponse.data) {
+          if (assignmentsĪResponse.success && assignmentsResponse.data) {
             setAssignments(assignmentsResponse.data);
           }
         } else {
-          addNotification('Failed to create assignment. Please try again.', 'error');
+          addNotification({
+            type: 'error',
+            title: 'Failed to create assignment',
+            message: 'Please try again later.',
+          });
         }
       }
       setShowAssignmentForm(false);
     } catch (error) {
       console.error('Error submitting assignment:', error);
-      addNotification('Failed to submit assignment. Please try again.', 'error');
+      addNotification({
+        type: 'error',
+        title: 'Failed to submit assignment',
+        message: 'Please try again later.',
+      });
     }
   };
 
@@ -136,26 +135,33 @@ const TeacherAssignments = () => {
   };
 
   const handleDeleteAssignment = (assignmentId: string) => {
-    const assignment = assignments.find(a => a.id === assignmentId);
-    setAlertConfig({
-      isOpen: true,
-      title: 'Delete Assignment',
-      message: `Are you sure you want to delete "${assignment?.title}"? This action cannot be undone.`,
-      type: 'delete',
-      onConfirm: () => confirmDeleteAssignment(assignmentId)
-    });
+    const assignment = assignments.find((a) => a.id === assignmentId);
+    // setAlertConfig({
+    //   isOpen: true,
+    //   title: 'Delete Assignment',
+    //   message: `Are you sure you want to delete "${assignment?.title}"? This action cannot be undone.`,
+    //   type: 'delete',
+    //   onConfirm: () => confirmDeleteAssignment(assignmentId)
+    // });
+    confirmDeleteAssignment(assignmentId);
   };
 
   const confirmDeleteAssignment = async (assignmentId: string) => {
     try {
       // await apiServices.teacher.deleteAssignment(assignmentId);
       setAssignments(assignments.filter((a) => a.id !== assignmentId));
-      addNotification('Assignment deleted successfully!', 'success');
+      addNotification({
+        type: 'success',
+        title: 'Assignment deleted successfully!',
+        message: 'The assignment has been removed.',
+      });
     } catch (error) {
-      console.error('Error deleting assignment:', error);
-      addNotification('Failed to delete assignment.', 'error');
+      addNotification({
+        type: 'error',
+        title: 'Failed to delete assignment',
+        message: 'Please try again later.',
+      });
     }
-    setAlertConfig(prev => ({ ...prev, isOpen: false }));
   };
 
   if (loading) {
@@ -171,26 +177,28 @@ const TeacherAssignments = () => {
   return (
     <PortalLayout userName="Teacher" userRole="teacher">
       <header className={styles.header}>
-        <div>
-          <h1>Manage Assignments</h1>
-          <p>Create and manage assignments for your classes</p>
+        <div className={styles.assignmentHeader}>
+          <div>
+            <h1>Manage Assignments</h1>
+            <p>Create and manage assignments for your classes</p>
+          </div>
+          <button
+            className={styles.createBtn}
+            onClick={() => {
+              setIsEditMode(false);
+              setEditingAssignmentId(null);
+              setFormData({
+                ...TEACHER_ASSIGNMENT_CONSTANTS.DEFAULT_FORM,
+                classId: '',
+                dueTime: '',
+              });
+              setShowAssignmentForm(true);
+            }}
+          >
+            <Plus size={18} />
+            Create Assignment
+          </button>
         </div>
-        <button
-          className={styles.createBtn}
-          onClick={() => {
-            setIsEditMode(false);
-            setEditingAssignmentId(null);
-            setFormData({
-              ...TEACHER_ASSIGNMENT_CONSTANTS.DEFAULT_FORM,
-              classId: '', // Keep UI-specific field
-              dueTime: '', // Keep UI-specific field
-            });
-            setShowAssignmentForm(true);
-          }}
-        >
-          <Plus size={18} />
-          Create Assignment
-        </button>
       </header>
 
       <div className={styles.assignmentsContainer}>
@@ -255,26 +263,9 @@ const TeacherAssignments = () => {
             <ClipboardList size={48} />
             <h3>No assignments</h3>
             <p>Create your first assignment to get started</p>
-            <button
-              className={styles.createBtn}
-              onClick={() => {
-                setIsEditMode(false);
-                setEditingAssignmentId(null);
-                setFormData({
-                  ...TEACHER_ASSIGNMENT_CONSTANTS.DEFAULT_FORM,
-                  classId: '',
-                  dueTime: '',
-                });
-                setShowAssignmentForm(true);
-              }}
-            >
-              <Plus size={18} />
-              Create Assignment
-            </button>
           </div>
         )}
       </div>
-
       {/* Assignment Form Modal */}
       {showAssignmentForm && (
         <AssignmentForm

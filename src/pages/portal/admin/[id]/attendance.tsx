@@ -19,7 +19,7 @@ import { ProtectedRoute } from '../../../../lib/auth';
 import {
   generateMockAttendanceData,
   filterAttendanceData,
-  calculateAttendanceStats
+  calculateAttendanceStats,
 } from '../../../../lib/helpers';
 import { useNotification } from '../../../../components/Toaster';
 import styles from './admin.module.css';
@@ -73,8 +73,14 @@ const AdminAttendance = () => {
       // Fetch all users and filter by role
       const usersResponse = await apiServices.users.getAll();
 
-      let studentsResponse: { success: boolean; data: AttendanceRecord[] } = { success: false, data: [] };
-      let teachersResponse: { success: boolean; data: AttendanceRecord[] } = { success: false, data: [] };
+      let studentsResponse: { success: boolean; data: AttendanceRecord[] } = {
+        success: false,
+        data: [],
+      };
+      let teachersResponse: { success: boolean; data: AttendanceRecord[] } = {
+        success: false,
+        data: [],
+      };
       if (usersResponse.success && Array.isArray(usersResponse.data)) {
         studentsResponse = {
           success: true,
@@ -92,13 +98,17 @@ const AdminAttendance = () => {
 
       if (studentsResponse.success) {
         // Transform student data to include mock attendance
-        const studentsWithAttendance = studentsResponse.data.map(generateMockAttendanceData);
+        const studentsWithAttendance = studentsResponse.data.map(
+          generateMockAttendanceData
+        );
         setStudents(studentsWithAttendance);
       }
 
       if (teachersResponse.success) {
-        // Transform teacher data to include mock attendance  
-        const teachersWithAttendance = teachersResponse.data.map(generateMockAttendanceData);
+        // Transform teacher data to include mock attendance
+        const teachersWithAttendance = teachersResponse.data.map(
+          generateMockAttendanceData
+        );
         setTeachers(teachersWithAttendance);
       }
     } catch (error) {
@@ -106,7 +116,7 @@ const AdminAttendance = () => {
       addNotification({
         type: 'error',
         title: 'Failed to fetch attendance data',
-        message: 'Please try refreshing the page.'
+        message: 'Please try refreshing the page.',
       });
     } finally {
       setLoading(false);
@@ -117,13 +127,15 @@ const AdminAttendance = () => {
     fetchAttendanceData();
   }, [fetchAttendanceData, selectedDate]);
 
-
-
   const getCurrentData = () => {
     return activeTab === 'students' ? students : teachers;
   };
 
-  const filteredData = filterAttendanceData(getCurrentData(), searchTerm, filterStatus);
+  const filteredData = filterAttendanceData(
+    getCurrentData(),
+    searchTerm,
+    filterStatus
+  );
 
   const stats = calculateAttendanceStats(getCurrentData());
 
@@ -159,12 +171,12 @@ const AdminAttendance = () => {
       prev.map((record) =>
         record._id === userId
           ? {
-            ...record,
-            recentAttendance: [
-              { date: selectedDate, status },
-              ...(record.recentAttendance || []).slice(1),
-            ],
-          }
+              ...record,
+              recentAttendance: [
+                { date: selectedDate, status },
+                ...(record.recentAttendance || []).slice(1),
+              ],
+            }
           : record
       )
     );
@@ -261,8 +273,9 @@ const AdminAttendance = () => {
         <div className={styles.tabsContainer}>
           <div className={styles.tabsHeader}>
             <button
-              className={`${styles.tabBtn} ${activeTab === 'students' ? styles.tabBtnActive : ''
-                }`}
+              className={`${styles.tabBtn} ${
+                activeTab === 'students' ? styles.tabBtnActive : ''
+              }`}
               onClick={() => {
                 setActiveTab('students');
                 setSearchTerm(''); // Reset search when switching tabs
@@ -273,8 +286,9 @@ const AdminAttendance = () => {
               Students ({students.length})
             </button>
             <button
-              className={`${styles.tabBtn} ${activeTab === 'teachers' ? styles.tabBtnActive : ''
-                }`}
+              className={`${styles.tabBtn} ${
+                activeTab === 'teachers' ? styles.tabBtnActive : ''
+              }`}
               onClick={() => {
                 setActiveTab('teachers');
                 setSearchTerm(''); // Reset search when switching tabs
@@ -377,27 +391,34 @@ const AdminAttendance = () => {
                       </td>
                       <td>
                         <div className={styles.recentAttendance}>
-                          {(record.recentAttendance || []).map((day: { date: string; status: string }, index: number) => (
-                            <div
-                              key={index}
-                              className={styles.attendanceDay}
-                              style={{
-                                backgroundColor: getStatusColor(
+                          {(record.recentAttendance || []).map(
+                            (
+                              day: { date: string; status: string },
+                              index: number
+                            ) => (
+                              <div
+                                key={index}
+                                className={styles.attendanceDay}
+                                style={{
+                                  backgroundColor: getStatusColor(
+                                    day?.status || 'unknown'
+                                  ),
+                                }}
+                                title={`${day?.date || 'N/A'}: ${
                                   day?.status || 'unknown'
-                                ),
-                              }}
-                              title={`${day?.date || 'N/A'}: ${day?.status || 'unknown'
                                 }`}
-                            />
-                          ))}
+                              />
+                            )
+                          )}
                         </div>
                       </td>
                       <td>
                         <span
-                          className={`${styles.statusBadge} ${styles[
-                            record.recentAttendance?.[0]?.status || 'unknown'
-                          ]
-                            }`}
+                          className={`${styles.statusBadge} ${
+                            styles[
+                              record.recentAttendance?.[0]?.status || 'unknown'
+                            ]
+                          }`}
                         >
                           {record.recentAttendance?.[0]?.status || 'Not marked'}
                         </span>

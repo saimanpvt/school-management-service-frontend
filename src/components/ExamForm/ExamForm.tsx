@@ -347,7 +347,6 @@ const ExamForm: React.FC<ExamFormProps> = ({
               </label>
             </div>
           </div>
-
         </form>
 
         <div className={styles.formActions}>
@@ -358,11 +357,7 @@ const ExamForm: React.FC<ExamFormProps> = ({
           >
             Cancel
           </button>
-          <button
-            type="submit"
-            className={styles.submitButton}
-            form="examForm"
-          >
+          <button type="submit" className={styles.submitButton} form="examForm">
             {isEdit ? 'Update Exam' : 'Create Exam'}
           </button>
         </div>

@@ -2,12 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
-import {
-  Users,
-  Plus,
-  Search,
-  Trash2,
-} from 'lucide-react';
+import { Users, Plus, Search, Trash2 } from 'lucide-react';
 import UserForm, {
   UserFormData,
 } from '../../../../components/UserForm/UserForm';
@@ -20,7 +15,7 @@ import {
   GENDER_OPTIONS,
   BLOOD_GROUP_OPTIONS,
   ALERT_MESSAGES,
-  UI_CONSTANTS
+  UI_CONSTANTS,
 } from '../../../../lib/constants';
 import {
   filterUsers,
@@ -29,7 +24,7 @@ import {
   getPercentageColor,
   getUserRoleOptions,
   getRoleBasedCount,
-  capitalizeFirstLetter
+  capitalizeFirstLetter,
 } from '../../../../lib/helpers';
 import { User, IUserType } from '../../../../lib/types';
 import styles from './admin.module.css';
@@ -53,7 +48,7 @@ const UserManagement = () => {
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
     userId: '',
-    userName: ''
+    userName: '',
   });
   const [formData, setFormData] = useState<UserFormData>(DEFAULT_USER_FORM);
 
@@ -79,11 +74,12 @@ const UserManagement = () => {
             const students = data.students.map((student) => ({
               _id: student._id || '',
               email: student?.email || '',
-              firstName: student.fullName || '',
-              lastName: student.fullName || '',
-              userID: student.userRefId,
+              firstName: student.fullName || '-',
+              userID:
+                student.userRefId || student.userId || student.userID || '',
               role: 3,
-              isActive: student.isActive !== undefined ? student.isActive : true,
+              isActive:
+                student.isActive !== undefined ? student.isActive : true,
             }));
             userData = [...students];
           }
@@ -92,29 +88,30 @@ const UserManagement = () => {
             const teachers = data.teachers.map((teacher) => ({
               _id: teacher._id || '',
               email: teacher?.email || '',
-              firstName: teacher.fullName?.split(' ')[0] || '',
+              firstName: teacher.fullName?.split(' ')[0] || 'Unknown',
               lastName: teacher.fullName?.split(' ').slice(1).join(' ') || '',
-              userID: teacher.userId,
+              userID:
+                teacher.userId || teacher.userRefId || teacher.userID || '',
               role: 2,
-              isActive: teacher.isActive !== undefined ? teacher.isActive : true,
+              isActive:
+                teacher.isActive !== undefined ? teacher.isActive : true,
             }));
             userData = [...userData, ...teachers];
           }
           // Parse parent array (note: it's 'parent' not 'parents' in your API)
           if (data.parent && Array.isArray(data.parent)) {
             const parents = data.parent.map((parent) => ({
-              _id: parent._id,
+              _id: parent._id || '',
               email: parent.email || '',
-              firstName: parent.firstName || '',
+              firstName: parent.firstName || 'Unknown',
               lastName: parent.lastName || '',
-              userID: parent.userID,
+              userID: parent.userID || parent.userId || parent.userRefId || '',
               role: 4,
               isActive: parent.isActive !== undefined ? parent.isActive : true,
             }));
             userData = [...userData, ...parents];
           }
         }
-
         setUsers(userData || []);
       } else {
         setUsers([]);
@@ -130,11 +127,15 @@ const UserManagement = () => {
     if (id) {
       fetchUsers();
     }
-  }, [id, activeUserType, fetchUsers]);
+  }, [id, fetchUsers]);
+
+  // Clear search term when switching user types
+  useEffect(() => {
+    setSearchTerm('');
+  }, [activeUserType]);
 
   const filteredUsers = filterUsers(users, searchTerm, activeUserType);
   const openDeleteModal = (userId: string, userName: string) => {
-    console.log("userId", userId);
     setDeleteModal({ isOpen: true, userId, userName });
   };
 
@@ -149,13 +150,13 @@ const UserManagement = () => {
       addNotification({
         type: 'success',
         title: 'User deleted successfully!',
-        message: `${deleteModal.userName} has been removed.`
+        message: `${deleteModal.userName} has been removed.`,
       });
     } catch {
       addNotification({
         type: 'error',
         title: 'Failed to delete user',
-        message: 'Please try again later.'
+        message: 'Please try again later.',
       });
     } finally {
       closeDeleteModal();
@@ -170,7 +171,7 @@ const UserManagement = () => {
       addNotification({
         type: 'error',
         title: 'Password Required',
-        message: ALERT_MESSAGES.GENERATE_PASSWORD_REQUIRED
+        message: ALERT_MESSAGES.GENERATE_PASSWORD_REQUIRED,
       });
       return;
     }
@@ -230,12 +231,15 @@ const UserManagement = () => {
       let response: { success?: boolean; message?: string; data?: User };
       if (isEditMode && editingUserId) {
         // Update existing user
-        response = (await apiServices.users.update(editingUserId, userData)) as { success?: boolean; message?: string; data?: User };
+        response = (await apiServices.users.update(
+          editingUserId,
+          userData
+        )) as { success?: boolean; message?: string; data?: User };
         if (response.success) {
           addNotification({
             type: 'success',
             title: 'User updated successfully!',
-            message: `${formData.firstName} ${formData.lastName} has been updated.`
+            message: `${formData.firstName} ${formData.lastName} has been updated.`,
           });
           // Refresh the user list after update
           fetchUsers();
@@ -244,12 +248,16 @@ const UserManagement = () => {
         }
       } else {
         // Create new user
-        response = (await apiServices.users.create(userData)) as { success?: boolean; message?: string; data?: User };
+        response = (await apiServices.users.create(userData)) as {
+          success?: boolean;
+          message?: string;
+          data?: User;
+        };
         if (response.success) {
           addNotification({
             type: 'success',
             title: 'User created successfully!',
-            message: `${formData.firstName} ${formData.lastName} has been created. Password: ${generatedPassword}`
+            message: `${formData.firstName} ${formData.lastName} has been created. Password: ${generatedPassword}`,
           });
           // Refresh the user list after creation
           fetchUsers();
@@ -262,7 +270,9 @@ const UserManagement = () => {
       addNotification({
         type: 'error',
         title: isEditMode ? 'Failed to update user' : 'Failed to create user',
-        message: isEditMode ? ALERT_MESSAGES.UPDATE_FAILED : ALERT_MESSAGES.CREATE_FAILED
+        message: isEditMode
+          ? ALERT_MESSAGES.UPDATE_FAILED
+          : ALERT_MESSAGES.CREATE_FAILED,
       });
     }
   };
@@ -347,7 +357,10 @@ const UserManagement = () => {
             <button
               key={filter.key}
               className={`${styles.filterTab} ${isActive ? styles.active : ''}`}
-              onClick={() => setActiveUserType(filter.key)}
+              onClick={() => {
+                setActiveUserType(filter.key);
+                setSearchTerm('');
+              }}
               style={{
                 borderColor: isActive ? filter.color : '#e5e7eb',
                 color: isActive ? filter.color : '#6b7280',
@@ -389,8 +402,8 @@ const UserManagement = () => {
         </div>
       </div>
 
-      <div className={styles.tableContainer}>
-        <table className={styles.dataTable}>
+      <div className={styles.userTableContainer}>
+        <table className={styles.userDataTable}>
           <thead>
             <tr>
               {UI_CONSTANTS.TABLE_COLUMNS.map((col) => (
@@ -425,7 +438,12 @@ const UserManagement = () => {
                         <span style={{ fontWeight: '600' }}>
                           {user.firstName} {user.lastName}
                         </span>
-                        <small style={{ color: UI_CONSTANTS.TEXT_STYLES.SECONDARY, display: 'block' }}>
+                        <small
+                          style={{
+                            color: UI_CONSTANTS.TEXT_STYLES.SECONDARY,
+                            display: 'block',
+                          }}
+                        >
                           {user.email}
                         </small>
                       </div>
@@ -448,7 +466,9 @@ const UserManagement = () => {
                               : null
                           )}
                         </div>
-                        <small style={{ color: UI_CONSTANTS.TEXT_STYLES.SECONDARY }}>
+                        <small
+                          style={{ color: UI_CONSTANTS.TEXT_STYLES.SECONDARY }}
+                        >
                           {user.attendance?.present && user.attendance?.total
                             ? `${user.attendance.present}/${user.attendance.total}`
                             : '-/-'}
@@ -466,14 +486,14 @@ const UserManagement = () => {
                               user.feeStatus?.status === 'paid'
                                 ? '#dcfce7'
                                 : user.feeStatus?.status === 'pending'
-                                  ? '#fef3c7'
-                                  : '#fee2e2',
+                                ? '#fef3c7'
+                                : '#fee2e2',
                             color:
                               user.feeStatus?.status === 'paid'
                                 ? '#166534'
                                 : user.feeStatus?.status === 'pending'
-                                  ? '#92400e'
-                                  : '#991b1b',
+                                ? '#92400e'
+                                : '#991b1b',
                             padding: '2px 8px',
                             borderRadius: '12px',
                             fontSize: '0.75rem',
@@ -483,9 +503,7 @@ const UserManagement = () => {
                           {getDisplayValue(user.feeStatus?.status, 'N/A')}
                         </span>
                         {user.feeStatus?.amount && (
-                          <div
-                            style={UI_CONSTANTS.TEXT_STYLES.SMALL_TEXT}
-                          >
+                          <div style={UI_CONSTANTS.TEXT_STYLES.SMALL_TEXT}>
                             ${user.feeStatus.amount}
                           </div>
                         )}
@@ -518,7 +536,9 @@ const UserManagement = () => {
                   <p>
                     {searchTerm
                       ? 'Try a different search term'
-                      : `No ${capitalizeFirstLetter(activeUserType)}s in the system`}
+                      : `No ${capitalizeFirstLetter(
+                          activeUserType
+                        )}s in the system`}
                   </p>
                 </td>
               </tr>

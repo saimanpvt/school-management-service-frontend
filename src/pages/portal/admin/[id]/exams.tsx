@@ -20,7 +20,9 @@ const AdminExams = () => {
   const [classes, setClasses] = useState<any[]>([]);
 
   // Exam form data state
-  const [examFormData, setExamFormData] = useState<ExamFormData>(EXAM_CONSTANTS.DEFAULT_FORM);
+  const [examFormData, setExamFormData] = useState<ExamFormData>(
+    EXAM_CONSTANTS.DEFAULT_FORM
+  );
 
   useEffect(() => {
     if (id) {
@@ -32,10 +34,14 @@ const AdminExams = () => {
       ])
         .then(([examsResponse, coursesResponse, classesResponse]) => {
           if (examsResponse.success) {
-            setExams(Array.isArray(examsResponse.data) ? examsResponse.data : []);
+            setExams(
+              Array.isArray(examsResponse.data) ? examsResponse.data : []
+            );
           }
           if (coursesResponse.success) {
-            setCourses(Array.isArray(coursesResponse.data) ? coursesResponse.data : []);
+            setCourses(
+              Array.isArray(coursesResponse.data) ? coursesResponse.data : []
+            );
           }
           if (classesResponse.success) {
             let allClasses: any[] = [];
@@ -46,7 +52,11 @@ const AdminExams = () => {
               typeof classesResponse.data === 'object'
             ) {
               // Handle possible structure: { ongoing: [...], completed: [...], inactive: [...] }
-              const { ongoing = [], completed = [], inactive = [] } = classesResponse.data as {
+              const {
+                ongoing = [],
+                completed = [],
+                inactive = [],
+              } = classesResponse.data as {
                 ongoing?: any[];
                 completed?: any[];
                 inactive?: any[];
@@ -77,7 +87,9 @@ const AdminExams = () => {
         // Refresh exams list
         const refreshResponse = await apiServices.exams.getAll();
         if (refreshResponse.success) {
-          setExams(Array.isArray(refreshResponse.data) ? refreshResponse.data : []);
+          setExams(
+            Array.isArray(refreshResponse.data) ? refreshResponse.data : []
+          );
         }
       } else {
         alert('Failed to create exam: ' + (response.error || 'Unknown error'));

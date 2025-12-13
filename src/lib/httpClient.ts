@@ -31,7 +31,6 @@ httpClient.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-
       // Redirect to landing page if not already there
       if (window.location.pathname !== '/') {
         window.location.href = '/';
@@ -41,7 +40,7 @@ httpClient.interceptors.response.use(
   }
 );
 
-// Super simple HTTP request function - exactly like your example!
+// Super simple HTTP request function
 export const makeHttpRequest = async <T = unknown>(
   method: 'get' | 'post' | 'put' | 'delete' | 'patch',
   url: string,

@@ -37,12 +37,20 @@ const TeacherDashboard = () => {
         setStats(response.data);
       } else {
         setError('Failed to load dashboard data');
-        addNotification('Failed to load dashboard data', 'error');
+        addNotification({
+          type: 'error',
+          title: 'Failed to load dashboard data',
+          message: 'Please try again later.',
+        });
       }
     } catch (err) {
       console.error('Error loading dashboard stats:', err);
       setError('Failed to load dashboard data');
-      addNotification('Failed to load dashboard data', 'error');
+      addNotification({
+        type: 'error',
+        title: 'Failed to load dashboard data',
+        message: 'Please try again later.',
+      });
     } finally {
       setLoading(false);
     }

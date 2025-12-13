@@ -1,4 +1,10 @@
-import { ROLES, ROLE_NAMES, ROLE_COLORS, ATTENDANCE_COLORS, FEE_STATUS_COLORS } from './constants';
+import {
+  ROLES,
+  ROLE_NAMES,
+  ROLE_COLORS,
+  ATTENDANCE_COLORS,
+  FEE_STATUS_COLORS,
+} from './constants';
 
 // Role helper functions
 export const getRoleString = (roleNumber: number): string => {
@@ -20,7 +26,10 @@ export const getRoleLabel = (roleNumber: number): string => {
 };
 
 // Display value helper
-export const getDisplayValue = (value: unknown, defaultValue: string = '-'): string | number => {
+export const getDisplayValue = (
+  value: unknown,
+  defaultValue: string = '-'
+): string | number => {
   if (value === null || value === undefined || value === '') {
     return defaultValue;
   }
@@ -35,7 +44,11 @@ export const getPercentageColor = (percentage: number): string => {
 };
 
 // Navigation helper for user details
-export const getUserDetailRoute = (adminId: string, userId: string, userRole: number): string => {
+export const getUserDetailRoute = (
+  adminId: string,
+  userId: string,
+  userRole: number
+): string => {
   const routeTemplates = {
     1: `/portal/admin/${adminId}/users/${userId}`, // Admin details
     2: `/portal/admin/${adminId}/teacher-details/${userId}`, // Teacher details
@@ -46,10 +59,7 @@ export const getUserDetailRoute = (adminId: string, userId: string, userRole: nu
 };
 
 // Alert configuration helpers
-export const createDeleteAlert = (
-  userName: string,
-  onConfirm: () => void
-) => ({
+export const createDeleteAlert = (userName: string, onConfirm: () => void) => ({
   isOpen: true,
   title: 'Confirm Delete',
   message: `Are you sure you want to delete "${userName}"? This action cannot be undone.`,
@@ -59,7 +69,6 @@ export const createDeleteAlert = (
   showCancel: true,
   onConfirm,
 });
-
 
 // Form data preparation helper
 export const prepareUserData = (
@@ -94,12 +103,14 @@ export const prepareUserData = (
 // Role-based user count helper
 export const getRoleBasedCount = (users: any[], userType: string): number => {
   const roleMap = {
-    admin: 1,
-    teacher: 2,
-    student: 3,
-    parent: 4,
+    admin: ROLES.ADMIN, // 1
+    teacher: ROLES.TEACHER, // 2
+    student: ROLES.STUDENT, // 3
+    parent: ROLES.PARENT, // 4
   };
-  return users.filter(u => u.role === roleMap[userType as keyof typeof roleMap]).length;
+
+  const expectedRole = roleMap[userType as keyof typeof roleMap];
+  return users.filter((u) => u.role === expectedRole).length;
 };
 
 // Capitalize first letter helper
@@ -139,15 +150,21 @@ export const filterAttendanceData = (
 ) => {
   return records.filter((record) => {
     const matchesSearch =
-      (record.firstName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (record.lastName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (record.firstName?.toLowerCase() || '').includes(
+        searchTerm.toLowerCase()
+      ) ||
+      (record.lastName?.toLowerCase() || '').includes(
+        searchTerm.toLowerCase()
+      ) ||
       (record.userID?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (record.email?.toLowerCase() || '').includes(searchTerm.toLowerCase());
 
     const matchesFilter =
       filterStatus === 'all' ||
-      (filterStatus === 'present' && (record.attendance?.percentage || 0) >= 90) ||
-      (filterStatus === 'absent' && record.recentAttendance?.[0]?.status === 'absent') ||
+      (filterStatus === 'present' &&
+        (record.attendance?.percentage || 0) >= 90) ||
+      (filterStatus === 'absent' &&
+        record.recentAttendance?.[0]?.status === 'absent') ||
       (filterStatus === 'low' && (record.attendance?.percentage || 0) < 75);
 
     return matchesSearch && matchesFilter;
@@ -156,10 +173,15 @@ export const filterAttendanceData = (
 
 export const calculateAttendanceStats = (data: any[]) => {
   const totalUsers = data.length;
-  const presentToday = data.filter(r => r.recentAttendance[0]?.status === 'present').length;
-  const absentToday = data.filter(r => r.recentAttendance[0]?.status === 'absent').length;
-  const lowAttendance = data.filter(r => r.attendance.percentage < 75).length;
-  const avgAttendance = data.reduce((sum, r) => sum + r.attendance.percentage, 0) / totalUsers;
+  const presentToday = data.filter(
+    (r) => r.recentAttendance[0]?.status === 'present'
+  ).length;
+  const absentToday = data.filter(
+    (r) => r.recentAttendance[0]?.status === 'absent'
+  ).length;
+  const lowAttendance = data.filter((r) => r.attendance.percentage < 75).length;
+  const avgAttendance =
+    data.reduce((sum, r) => sum + r.attendance.percentage, 0) / totalUsers;
 
   return {
     totalUsers,
@@ -177,9 +199,9 @@ export const processUsersData = (usersData: any) => {
   let totalParents = 0;
 
   if (Array.isArray(usersData)) {
-    totalStudents = usersData.filter(user => user.role === 3).length;
-    totalTeachers = usersData.filter(user => user.role === 2).length;
-    totalParents = usersData.filter(user => user.role === 4).length;
+    totalStudents = usersData.filter((user) => user.role === 3).length;
+    totalTeachers = usersData.filter((user) => user.role === 2).length;
+    totalParents = usersData.filter((user) => user.role === 4).length;
   } else if (typeof usersData === 'object' && usersData) {
     const { students = [], teachers = [], parents = [] } = usersData;
     totalStudents = students.length;
@@ -192,43 +214,53 @@ export const processUsersData = (usersData: any) => {
 
 export const calculateTotalRevenue = (feesData: any) => {
   return Array.isArray(feesData)
-    ? feesData.reduce((sum: number, fee: { amount?: number }) => sum + (fee.amount || 0), 0)
+    ? feesData.reduce(
+        (sum: number, fee: { amount?: number }) => sum + (fee.amount || 0),
+        0
+      )
     : 0;
 };
 
 // Generic form reset helper
-export const resetFormData = <T extends Record<string, any>>(defaultForm: T): T => {
+export const resetFormData = <T extends Record<string, any>>(
+  defaultForm: T
+): T => {
   return { ...defaultForm };
 };
 
 // API response parser for different structures
 export const parseApiResponse = (response: any, key?: string) => {
   if (!response.success) return [];
-  
+
   if (key && response.data?.[key]) {
     return Array.isArray(response.data[key]) ? response.data[key] : [];
   }
-  
+
   return Array.isArray(response.data) ? response.data : [];
 };
 
 // Fee status color helper
-export const getFeeStatusColor = (status: 'paid' | 'pending' | 'overdue'): { background: string; color: string } => {
+export const getFeeStatusColor = (
+  status: 'paid' | 'pending' | 'overdue'
+): { background: string; color: string } => {
   return FEE_STATUS_COLORS[status] || FEE_STATUS_COLORS.overdue;
 };
 
 // Navigation helpers
 export const getDetailRoutes = (adminId: string) => ({
   [ROLES.ADMIN]: (userId: string) => `/portal/admin/${adminId}/users/${userId}`,
-  [ROLES.TEACHER]: (userId: string) => `/portal/admin/${adminId}/teacher-details/${userId}`,
-  [ROLES.STUDENT]: (userId: string) => `/portal/admin/${adminId}/student-details/${userId}`,
-  [ROLES.PARENT]: (userId: string) => `/portal/admin/${adminId}/parent-details/${userId}`,
+  [ROLES.TEACHER]: (userId: string) =>
+    `/portal/admin/${adminId}/teacher-details/${userId}`,
+  [ROLES.STUDENT]: (userId: string) =>
+    `/portal/admin/${adminId}/student-details/${userId}`,
+  [ROLES.PARENT]: (userId: string) =>
+    `/portal/admin/${adminId}/parent-details/${userId}`,
 });
 
-export const getAttendanceRoute = (adminId: string, userId: string) => 
+export const getAttendanceRoute = (adminId: string, userId: string) =>
   `/portal/admin/${adminId}/attendance/${userId}`;
 
-export const getFeesRoute = (adminId: string, userId: string) => 
+export const getFeesRoute = (adminId: string, userId: string) =>
   `/portal/admin/${adminId}/fees/${userId}`;
 
 // Form reset helpers
@@ -278,27 +310,47 @@ export const resetUserForm = () => ({
 });
 
 // Filter helpers
-export const filterUsers = (users: any[], searchTerm: string, activeUserType: string) => {
+export const filterUsers = (
+  users: any[],
+  searchTerm: string,
+  activeUserType: string
+) => {
   const roleMap = {
-    admin: ROLES.ADMIN,
-    teacher: ROLES.TEACHER,
-    student: ROLES.STUDENT,
-    parent: ROLES.PARENT,
+    admin: ROLES.ADMIN, // 1
+    teacher: ROLES.TEACHER, // 2
+    student: ROLES.STUDENT, // 3
+    parent: ROLES.PARENT, // 4
   };
 
-  return Array.isArray(users) ? users.filter((user) => {
-    // Filter by user type
-    const typeMatch = user.role === roleMap[activeUserType as keyof typeof roleMap];
+  if (!Array.isArray(users)) {
+    return [];
+  }
 
-    // Filter by search term
+  const expectedRole = roleMap[activeUserType as keyof typeof roleMap];
+
+  if (!expectedRole) {
+    return [];
+  }
+
+  const filtered = users.filter((user) => {
+    // Ensure user has valid role
+    if (typeof user.role !== 'number') {
+      return false;
+    }
+    // Filter by user type - strict equality check
+    const typeMatch = user.role === expectedRole;
+    // Filter by search term - if searchTerm is empty, show all users
     const searchMatch =
-      user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.userID?.toLowerCase().includes(searchTerm.toLowerCase());
-
+      !searchTerm.trim() ||
+      (user.firstName?.toLowerCase() || '').includes(
+        searchTerm.toLowerCase()
+      ) ||
+      (user.lastName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (user.userID?.toLowerCase() || '').includes(searchTerm.toLowerCase());
     return typeMatch && searchMatch;
-  }) : [];
+  });
+  return filtered;
 };
 
 export const filterCourses = (courses: any[], searchTerm: string) => {
@@ -329,7 +381,7 @@ export const parseUsersResponse = (response: any) => {
 
     // Parse students array
     if (data.students && Array.isArray(data.students)) {
-      const students = data.students.map(student => ({
+      const students = data.students.map((student) => ({
         _id: student.userId || student._id,
         email: student.userId?.email || '',
         firstName: student.fullName?.split(' ')[0] || '',
@@ -340,14 +392,14 @@ export const parseUsersResponse = (response: any) => {
         timeWithUs: student.timeWithUs,
         classes: student.classes,
         parentName: student.parentName,
-        ...student
+        ...student,
       }));
       userData = [...userData, ...students];
     }
 
     // Parse teachers array
     if (data.teachers && Array.isArray(data.teachers)) {
-      const teachers = data.teachers.map(teacher => ({
+      const teachers = data.teachers.map((teacher) => ({
         _id: teacher.dbId || teacher._id,
         email: teacher.userId?.email || '',
         firstName: teacher.fullName?.split(' ')[0] || '',
@@ -356,21 +408,21 @@ export const parseUsersResponse = (response: any) => {
         role: ROLES.TEACHER,
         experience: teacher.experience,
         empId: teacher.empId,
-        ...teacher
+        ...teacher,
       }));
       userData = [...userData, ...teachers];
     }
 
     // Parse parent array
     if (data.parent && Array.isArray(data.parent)) {
-      const parents = data.parent.map(parent => ({
+      const parents = data.parent.map((parent) => ({
         _id: parent._id,
         email: parent.email || '',
         firstName: parent.firstName || '',
         lastName: parent.lastName || '',
         userID: parent.userID || parent.uuid,
         role: ROLES.PARENT,
-        ...parent
+        ...parent,
       }));
       userData = [...userData, ...parents];
     }
@@ -388,7 +440,11 @@ export const parseCoursesResponse = (coursesRes: any) => {
     allCourses = [...Active, ...Completed, ...Inactive];
   }
   // Check if data is directly the courses object: { Active: [...], Completed: [...], Inactive: [...] }
-  else if (coursesRes.data.Active || coursesRes.data.Completed || coursesRes.data.Inactive) {
+  else if (
+    coursesRes.data.Active ||
+    coursesRes.data.Completed ||
+    coursesRes.data.Inactive
+  ) {
     const { Active = [], Completed = [], Inactive = [] } = coursesRes.data;
     allCourses = [...Active, ...Completed, ...Inactive];
   }
@@ -401,7 +457,11 @@ export const parseCoursesResponse = (coursesRes: any) => {
 };
 
 export const parseClassesResponse = (classesRes: any) => {
-  const { ongoing = [], completed = [], inactive = [] } = classesRes.data || classesRes;
+  const {
+    ongoing = [],
+    completed = [],
+    inactive = [],
+  } = classesRes.data || classesRes;
   return [...ongoing, ...completed, ...inactive];
 };
 
@@ -460,7 +520,7 @@ export const validateRequired = (value: string): boolean => {
 
 // Count helpers for user tabs
 export const getUserCount = (users: any[], roleNumber: number): number => {
-  return users.filter(user => user.role === roleNumber).length;
+  return users.filter((user) => user.role === roleNumber).length;
 };
 
 // Get role options for a specific user type
@@ -496,9 +556,12 @@ export const formatTimeForTeacher = (time: string): string => {
 };
 
 // Teacher function - Grade calculation helper
-export const calculateGradeForTeacher = (marks: number, totalMarks: number): string => {
+export const calculateGradeForTeacher = (
+  marks: number,
+  totalMarks: number
+): string => {
   const percentage = (marks / totalMarks) * 100;
-  
+
   if (percentage >= 90) return 'A+';
   if (percentage >= 80) return 'A';
   if (percentage >= 70) return 'B+';
@@ -519,7 +582,10 @@ export const calculateAttendancePercentageForTeacher = (
 };
 
 // Teacher function - Due date checker
-export const isDueSoonForTeacher = (dueDate: string, daysThreshold: number = 3): boolean => {
+export const isDueSoonForTeacher = (
+  dueDate: string,
+  daysThreshold: number = 3
+): boolean => {
   if (!dueDate) return false;
   const due = new Date(dueDate);
   const now = new Date();
@@ -529,17 +595,20 @@ export const isDueSoonForTeacher = (dueDate: string, daysThreshold: number = 3):
 };
 
 // Teacher function - Assignment status helper
-export const getAssignmentStatusForTeacher = (dueDate: string, submittedDate?: string): string => {
+export const getAssignmentStatusForTeacher = (
+  dueDate: string,
+  submittedDate?: string
+): string => {
   if (!dueDate) return 'pending';
-  
+
   const due = new Date(dueDate);
   const now = new Date();
-  
+
   if (submittedDate) {
     const submitted = new Date(submittedDate);
     return submitted > due ? 'late' : 'submitted';
   }
-  
+
   return now > due ? 'overdue' : 'pending';
 };
 
@@ -548,7 +617,7 @@ export const filterStudentsByPerformanceForTeacher = (
   students: any[],
   performanceLevel: string
 ): any[] => {
-  return students.filter(student => {
+  return students.filter((student) => {
     const avgMarks = student.averageMarks || 0;
     switch (performanceLevel) {
       case 'excellent':
@@ -566,7 +635,9 @@ export const filterStudentsByPerformanceForTeacher = (
 };
 
 // Teacher function - Sort assignments by due date
-export const sortAssignmentsByDueDateForTeacher = (assignments: any[]): any[] => {
+export const sortAssignmentsByDueDateForTeacher = (
+  assignments: any[]
+): any[] => {
   return [...assignments].sort((a, b) => {
     const dateA = new Date(a.dueDate).getTime();
     const dateB = new Date(b.dueDate).getTime();
@@ -587,11 +658,16 @@ export const getExamStatisticsForTeacher = (results: any[]) => {
   }
 
   const totalStudents = results.length;
-  const totalMarks = results.reduce((sum, result) => sum + (result.marks || 0), 0);
+  const totalMarks = results.reduce(
+    (sum, result) => sum + (result.marks || 0),
+    0
+  );
   const averageMarks = Math.round(totalMarks / totalStudents);
-  const highestMarks = Math.max(...results.map(r => r.marks || 0));
-  const lowestMarks = Math.min(...results.map(r => r.marks || 0));
-  const passedStudents = results.filter(r => (r.marks || 0) >= (r.passingMarks || 40)).length;
+  const highestMarks = Math.max(...results.map((r) => r.marks || 0));
+  const lowestMarks = Math.min(...results.map((r) => r.marks || 0));
+  const passedStudents = results.filter(
+    (r) => (r.marks || 0) >= (r.passingMarks || 40)
+  ).length;
   const passRate = Math.round((passedStudents / totalStudents) * 100);
 
   return {
@@ -609,10 +685,10 @@ export const getExamStatisticsForTeacher = (results: any[]) => {
  */
 export const getAssignmentStatusClass = (status: string): string => {
   const statusClasses = {
-    'pending': 'warning',
-    'submitted': 'info',
-    'graded': 'success',
-    'overdue': 'danger',
+    pending: 'warning',
+    submitted: 'info',
+    graded: 'success',
+    overdue: 'danger',
   };
   return statusClasses[status as keyof typeof statusClasses] || 'warning';
 };
@@ -622,9 +698,9 @@ export const getAssignmentStatusClass = (status: string): string => {
  */
 export const getExamStatusClass = (status: string): string => {
   const statusClasses = {
-    'upcoming': 'info',
-    'completed': 'success',
-    'missed': 'danger',
+    upcoming: 'info',
+    completed: 'success',
+    missed: 'danger',
   };
   return statusClasses[status as keyof typeof statusClasses] || 'info';
 };
@@ -634,10 +710,10 @@ export const getExamStatusClass = (status: string): string => {
  */
 export const getFeeStatusClass = (status: string): string => {
   const statusClasses = {
-    'paid': 'success',
-    'pending': 'warning',
-    'overdue': 'danger',
-    'partial': 'info',
+    paid: 'success',
+    pending: 'warning',
+    overdue: 'danger',
+    partial: 'info',
   };
   return statusClasses[status as keyof typeof statusClasses] || 'warning';
 };
@@ -647,10 +723,10 @@ export const getFeeStatusClass = (status: string): string => {
  */
 export const getAttendanceStatusClass = (status: string): string => {
   const statusClasses = {
-    'present': 'success',
-    'absent': 'danger',
-    'late': 'warning',
-    'excused': 'info',
+    present: 'success',
+    absent: 'danger',
+    late: 'warning',
+    excused: 'info',
   };
   return statusClasses[status as keyof typeof statusClasses] || 'info';
 };
@@ -658,7 +734,10 @@ export const getAttendanceStatusClass = (status: string): string => {
 /**
  * Calculate grade percentage
  */
-export const calculateGradePercentage = (grade: number, maxMarks: number): number => {
+export const calculateGradePercentage = (
+  grade: number,
+  maxMarks: number
+): number => {
   if (!maxMarks || maxMarks === 0) return 0;
   return Math.round((grade / maxMarks) * 100);
 };
@@ -729,4 +808,152 @@ export const getDaysUntilDue = (dueDate: string): number => {
   const now = new Date();
   const diffTime = due.getTime() - now.getTime();
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+};
+
+// ============================================
+// PARENT-SPECIFIC HELPER FUNCTIONS
+// ============================================
+
+/**
+ * Format date for parent views
+ */
+export const formatDateForParent = (dateString: string): string => {
+  if (!dateString) return 'N/A';
+
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  } catch (error) {
+    return 'Invalid Date';
+  }
+};
+
+/**
+ * Get attendance status class for parent view
+ */
+export const getParentAttendanceStatusClass = (status: string): string => {
+  switch (status?.toLowerCase()) {
+    case 'present':
+      return 'present';
+    case 'absent':
+      return 'absent';
+    case 'late':
+      return 'late';
+    case 'excused':
+      return 'excused';
+    default:
+      return 'unknown';
+  }
+};
+
+/**
+ * Calculate attendance percentage for a child
+ */
+export const calculateChildAttendancePercentage = (
+  attendance: Array<{ status: string }>
+): number => {
+  if (!attendance || attendance.length === 0) return 0;
+
+  const presentCount = attendance.filter(
+    (record) => record.status === 'present'
+  ).length;
+
+  return Math.round((presentCount / attendance.length) * 100);
+};
+
+/**
+ * Get grade trend indicator
+ */
+export const getGradeTrend = (
+  current: number,
+  previous: number
+): 'improving' | 'declining' | 'stable' => {
+  if (current > previous) return 'improving';
+  if (current < previous) return 'declining';
+  return 'stable';
+};
+
+/**
+ * Format child grade for display
+ */
+export const formatChildGrade = (grade: string | number): string => {
+  if (typeof grade === 'number') {
+    return `${grade}%`;
+  }
+  return grade || 'N/A';
+};
+
+/**
+ * Get priority level for parent notifications
+ */
+export const getParentNotificationPriority = (
+  type: string
+): 'high' | 'medium' | 'low' => {
+  switch (type?.toLowerCase()) {
+    case 'absent':
+    case 'fee':
+    case 'emergency':
+      return 'high';
+    case 'grade':
+    case 'assignment':
+      return 'medium';
+    case 'announcement':
+    case 'event':
+    default:
+      return 'low';
+  }
+};
+
+/**
+ * Filter children by active status
+ */
+export const getActiveChildren = (
+  children: Array<{ status: string }>
+): Array<{ status: string }> => {
+  return children.filter((child) => child.status === 'active');
+};
+
+/**
+ * Sort children by name
+ */
+export const sortChildrenByName = (
+  children: Array<{ name: string }>
+): Array<{ name: string }> => {
+  return [...children].sort((a, b) => a.name.localeCompare(b.name));
+};
+
+/**
+ * Calculate parent attendance statistics
+ */
+export const calculateParentAttendanceStats = (
+  attendance: Array<{ status: string }>,
+  statusConstants: any
+) => {
+  const total = attendance.length;
+  const present = attendance.filter(
+    (a) => a.status === statusConstants.PRESENT
+  ).length;
+  const absent = attendance.filter(
+    (a) => a.status === statusConstants.ABSENT
+  ).length;
+  const late = attendance.filter(
+    (a) => a.status === statusConstants.LATE
+  ).length;
+  const excused = attendance.filter(
+    (a) => a.status === statusConstants.EXCUSED
+  ).length;
+
+  return {
+    total,
+    present,
+    absent,
+    late,
+    excused,
+    percentage: calculateChildAttendancePercentage(attendance),
+  };
 };

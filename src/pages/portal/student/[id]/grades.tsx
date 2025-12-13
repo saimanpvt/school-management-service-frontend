@@ -2,17 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
-import { BarChart2, Award } from 'lucide-react';
+import { BarChart2 } from 'lucide-react';
 import styles from './student.module.css';
 import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 import { useNotification } from '../../../../components/Toaster/Toaster';
-import {
-  calculateGradePercentage,
-  getGradeClass,
-} from '../../../../lib/helpers';
-import {
-  StudentGrade,
-} from '../../../../lib/types';
+import { calculateGradePercentage } from '../../../../lib/helpers';
+import { StudentGrade } from '../../../../lib/types';
 
 const StudentGrades = () => {
   const router = useRouter();
@@ -25,17 +20,29 @@ const StudentGrades = () => {
     const loadGrades = async () => {
       if (id) {
         try {
-          const response = await apiServices.grades.getStudentGrades(id as string);
+          const response = await apiServices.grades.getStudentGrades(
+            id as string
+          );
           if (response.success && response.data) {
-            const gradesData = Array.isArray(response.data) ? response.data : [];
+            const gradesData = Array.isArray(response.data)
+              ? response.data
+              : [];
             setGrades(gradesData);
           } else {
             setGrades([]);
-            addNotification({ type: 'error', title: 'Failed to load grade records' });
+            addNotification({
+              type: 'error',
+              title: 'Failed to load grade records',
+              message: 'Please try again later.',
+            });
           }
         } catch (error) {
           console.error('Error fetching grades:', error);
-          addNotification({ type: 'error', title: 'Error loading grades. Please try again.' });
+          addNotification({
+            type: 'error',
+            title: 'Error loading grades',
+            message: 'Please try again later.',
+          });
           setGrades([]);
         } finally {
           setLoading(false);
@@ -44,7 +51,6 @@ const StudentGrades = () => {
     };
     loadGrades();
   }, [id]);
-
 
   if (loading) {
     return (
@@ -70,14 +76,16 @@ const StudentGrades = () => {
               <div className={styles.courseName}>{course.subject}</div>
 
               <div className={styles.gradeSection}>
-                <h4 className={styles.sectionTitle}>
-                  Course Grade
-                </h4>
+                <h4 className={styles.sectionTitle}>Course Grade</h4>
                 <div className={styles.gradeDisplay}>
                   <div className={styles.gradeValue}>
                     {course.score} / {course.maxScore}
                   </div>
-                  <div className={`${styles.gradePercentage} ${styles[getGradeClass(course.score, course.maxScore)]}`}>
+                  <div
+                    className={`${styles.gradePercentage} ${
+                      styles[getGradeClass(course.score, course.maxScore)]
+                    }`}
+                  >
                     {calculateGradePercentage(course.score, course.maxScore)}%
                   </div>
                 </div>
@@ -88,10 +96,6 @@ const StudentGrades = () => {
                   {course.comments && <div>Comments: {course.comments}</div>}
                 </div>
               </div>
-
-
-
-
             </div>
           ))
         ) : (

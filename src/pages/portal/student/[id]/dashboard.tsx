@@ -7,9 +7,7 @@ import { ProtectedRoute } from '../../../../lib/auth';
 import styles from '../../../../styles/Dashboard.module.css';
 import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 import { useNotification } from '../../../../components/Toaster/Toaster';
-import {
-  STUDENT_DASHBOARD_CONSTANTS,
-} from '../../../../lib/constants';
+import { STUDENT_DASHBOARD_CONSTANTS } from '../../../../lib/constants';
 import {
   formatDateForStudent,
   getAssignmentStatusClass,
@@ -23,7 +21,9 @@ const StudentDashboard = () => {
   const router = useRouter();
   const { id } = router.query;
   const [stats, setStats] = useState<StudentDashboardStats | null>(null);
-  const [recentAssignments, setRecentAssignments] = useState<StudentAssignment[]>([]);
+  const [recentAssignments, setRecentAssignments] = useState<
+    StudentAssignment[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('Student');
   const { addNotification } = useNotification();
@@ -33,7 +33,10 @@ const StudentDashboard = () => {
       if (id) {
         try {
           // Load dashboard stats
-          const statsResponse = await apiServices.dashboard?.getStats?.() || { success: false, data: null };
+          const statsResponse = (await apiServices.dashboard?.getStats?.()) || {
+            success: false,
+            data: null,
+          };
           if (statsResponse.success && statsResponse.data) {
             setStats(statsResponse.data as StudentDashboardStats);
           }
@@ -42,7 +45,10 @@ const StudentDashboard = () => {
           const assignmentsResponse = await apiServices.assignments.getAll();
           if (assignmentsResponse.success && assignmentsResponse.data) {
             const assignments = Array.isArray(assignmentsResponse.data)
-              ? assignmentsResponse.data.slice(0, STUDENT_DASHBOARD_CONSTANTS.MAX_RECENT_ASSIGNMENTS)
+              ? assignmentsResponse.data.slice(
+                  0,
+                  STUDENT_DASHBOARD_CONSTANTS.MAX_RECENT_ASSIGNMENTS
+                )
               : [];
             setRecentAssignments(assignments);
           }
@@ -50,7 +56,11 @@ const StudentDashboard = () => {
           setUserName('Student');
         } catch (error) {
           console.error('Error fetching dashboard data:', error);
-          addNotification({ type: 'error', title: 'Error loading dashboard. Please try again.' });
+          addNotification({
+            type: 'error',
+            title: 'Error loading dashboard',
+            message: 'Please try again later.',
+          });
         } finally {
           setLoading(false);
         }
@@ -116,9 +126,12 @@ const StudentDashboard = () => {
                     <td>{formatDateForStudent(assignment.dueDate)}</td>
                     <td>
                       <span
-                        className={`${styles.status_badge} ${styles[getAssignmentStatusClass(assignment.status)]}`}
+                        className={`${styles.status_badge} ${
+                          styles[getAssignmentStatusClass(assignment.status)]
+                        }`}
                       >
-                        {assignment.status.charAt(0).toUpperCase() + assignment.status.slice(1)}
+                        {assignment.status.charAt(0).toUpperCase() +
+                          assignment.status.slice(1)}
                       </span>
                     </td>
                   </tr>
@@ -205,8 +218,9 @@ const StudentDashboard = () => {
             {Array.from({ length: 7 }, (_, i) => (
               <div
                 key={i}
-                className={`${styles.calendar_day} ${i === 3 ? styles.active : ''
-                  }`}
+                className={`${styles.calendar_day} ${
+                  i === 3 ? styles.active : ''
+                }`}
               >
                 {24 + i}
               </div>

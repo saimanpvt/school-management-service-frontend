@@ -216,8 +216,8 @@ const UserForm: React.FC<UserFormProps> = ({
             </div>
             {/* User ID field: editable and required for teacher, student, and parent, readOnly for admin */}
             {formData.role === 'teacher' ||
-              formData.role === 'student' ||
-              formData.role === 'parent' ? (
+            formData.role === 'student' ||
+            formData.role === 'parent' ? (
               <div className={styles.formGroup}>
                 <label>User ID *</label>
                 <input
@@ -474,7 +474,6 @@ const UserForm: React.FC<UserFormProps> = ({
               automatically
             </p>
           </div>
-
         </form>
 
         <div className={styles.formButtons}>

@@ -12,16 +12,12 @@ import styles from './student.module.css';
 import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 import { useNotification } from '../../../../components/Toaster/Toaster';
 import { apiServices } from '../../../../services/api';
-import {
-  STUDENT_FEE_STATUS,
-} from '../../../../lib/constants';
+import { STUDENT_FEE_STATUS } from '../../../../lib/constants';
 import {
   formatDateForStudent,
   getFeeStatusClass,
 } from '../../../../lib/helpers';
-import {
-  StudentFee,
-} from '../../../../lib/types';
+import { StudentFee } from '../../../../lib/types';
 
 const StudentFees = () => {
   const router = useRouter();
@@ -40,11 +36,19 @@ const StudentFees = () => {
             setFees(feesData);
           } else {
             setFees([]);
-            addNotification({ type: 'error', title: 'Failed to load fee records' });
+            addNotification({
+              type: 'error',
+              title: 'Failed to load fee records',
+              message: 'Please try again later.',
+            });
           }
         } catch (error) {
           console.error('Error fetching fees:', error);
-          addNotification({ type: 'error', title: 'Error loading fees. Please try again.' });
+          addNotification({
+            type: 'error',
+            title: 'Error loading fees',
+            message: 'Please try again later.',
+          });
           setFees([]);
         } finally {
           setLoading(false);
@@ -54,10 +58,12 @@ const StudentFees = () => {
     loadFees();
   }, [id, addNotification]);
 
-
-
   const totalPending = fees
-    .filter((f) => f.status === STUDENT_FEE_STATUS.PENDING || f.status === STUDENT_FEE_STATUS.OVERDUE)
+    .filter(
+      (f) =>
+        f.status === STUDENT_FEE_STATUS.PENDING ||
+        f.status === STUDENT_FEE_STATUS.OVERDUE
+    )
     .reduce((sum, f) => sum + f.amount, 0);
 
   const totalPaid = fees
@@ -83,17 +89,13 @@ const StudentFees = () => {
 
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
-          <div className={styles.statLabel}>
-            Total Paid
-          </div>
+          <div className={styles.statLabel}>Total Paid</div>
           <div className={styles.statValuePaid}>
             ${totalPaid.toLocaleString()}
           </div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statLabel}>
-            Pending Payment
-          </div>
+          <div className={styles.statLabel}>Pending Payment</div>
           <div className={styles.statValuePending}>
             ${totalPending.toLocaleString()}
           </div>
@@ -119,7 +121,11 @@ const StudentFees = () => {
                     Payment Completed
                   </div>
                 )}
-                <span className={`${styles.feeStatus} ${styles[getFeeStatusClass(fee.status)]}`}>
+                <span
+                  className={`${styles.feeStatus} ${
+                    styles[getFeeStatusClass(fee.status)]
+                  }`}
+                >
                   {fee.status === STUDENT_FEE_STATUS.PAID && (
                     <CheckCircle size={12} style={{ marginRight: '0.25rem' }} />
                   )}

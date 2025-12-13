@@ -20,22 +20,28 @@ const TeacherStudents = () => {
     const loadStudents = async () => {
       if (id) {
         try {
-          // Use unified APIs - backend filters based on teacher role
           const studentsResponse = await apiServices.users.getAll();
           if (studentsResponse.success && studentsResponse.data) {
-            // Filter students (role 3) from the response
             const allStudents = Array.isArray(studentsResponse.data)
               ? studentsResponse.data.filter((user: any) => user.role === 3)
               : [];
             setStudents(allStudents);
           } else {
             setStudents([]);
-            addNotification('No students found', 'info');
+            addNotification({
+              type: 'info',
+              title: 'No students found',
+              message: 'There are no students enrolled in your classes.',
+            });
           }
         } catch (error) {
           console.error('Error fetching students:', error);
           setStudents([]);
-          addNotification('Failed to load students', 'error');
+          addNotification({
+            type: 'error',
+            title: 'Failed to load students',
+            message: 'Please try again later.',
+          });
         } finally {
           setLoading(false);
         }

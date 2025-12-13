@@ -15,7 +15,9 @@ const AdminFees = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
-  const [courses, setCourses] = useState<{ id: string; courseCode: string; courseName: string }[]>([]);
+  const [courses, setCourses] = useState<
+    { id: string; courseCode: string; courseName: string }[]
+  >([]);
   const [feeFormData, setFeeFormData] = useState<FeeStructureFormData>({
     name: '',
     description: '',
@@ -46,7 +48,9 @@ const AdminFees = () => {
 
           // Ensure courses is always an array
           if (coursesResponse.success && coursesResponse.data) {
-            setCourses(Array.isArray(coursesResponse.data) ? coursesResponse.data : []);
+            setCourses(
+              Array.isArray(coursesResponse.data) ? coursesResponse.data : []
+            );
           } else {
             setCourses([]);
           }
@@ -95,7 +99,7 @@ const AdminFees = () => {
       } else {
         alert(
           'Failed to create fee structure: ' +
-          (response.error || 'Unknown error')
+            (response.error || 'Unknown error')
         );
       }
     } catch (error) {
@@ -105,27 +109,32 @@ const AdminFees = () => {
   };
 
   // Prepare course options for dropdown
-  const courseOptions = Array.isArray(courses) ? courses.map((course) => ({
-    value: course.id,
-    label: `${course.courseCode} - ${course.courseName}`,
-  })) : [];
+  const courseOptions = Array.isArray(courses)
+    ? courses.map((course) => ({
+        value: course.id,
+        label: `${course.courseCode} - ${course.courseName}`,
+      }))
+    : [];
 
-  const filteredFees = Array.isArray(fees) ? fees.filter(
-    (fee) =>
-      fee.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      fee.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) : [];
+  const filteredFees = Array.isArray(fees)
+    ? fees.filter(
+        (fee) =>
+          fee.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          fee.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : [];
 
-  const totalRevenue = Array.isArray(filteredFees) ? filteredFees.reduce(
-    (sum, fee) => sum + (fee.totalAmount || 0),
-    0
-  ) : 0;
+  const totalRevenue = Array.isArray(filteredFees)
+    ? filteredFees.reduce((sum, fee) => sum + (fee.totalAmount || 0), 0)
+    : 0;
 
   const handleDelete = async (feeName: string) => {
     if (confirm('Are you sure you want to delete this fee structure?')) {
       try {
         // For now, filter by name since we don't have proper IDs
-        setFees(Array.isArray(fees) ? fees.filter((f) => f.name !== feeName) : []);
+        setFees(
+          Array.isArray(fees) ? fees.filter((f) => f.name !== feeName) : []
+        );
         alert('Fee structure deleted successfully');
       } catch (error) {
         console.error('Error deleting fee:', error);

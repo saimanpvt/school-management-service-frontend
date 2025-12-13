@@ -12,7 +12,7 @@ export interface User {
   _id: string;
   email: string;
   firstName: string;
-  lastName: string;
+  lastName?: string;
   fullName?: string;
   userID?: string;
   userId?: string;
@@ -434,4 +434,154 @@ export interface StudentDashboardStats {
   attendance: number;
   upcomingExams: number;
   completedAssignments: number;
+}
+
+/**
+ * Parent Attendance Interface
+ * Used in: /parent/[id]/attendance.tsx
+ * Purpose: Child attendance tracking for parents
+ */
+export interface ParentAttendance {
+  id: string;
+  date: string;
+  childId: string;
+  childName: string;
+  status: 'present' | 'absent' | 'late' | 'excused';
+  subject: string;
+  teacher: string;
+  notes?: string;
+  className?: string;
+}
+
+/**
+ * Parent Child Info Interface
+ * Used in: Multiple parent components
+ * Purpose: Information about parent's children
+ */
+export interface ParentChild {
+  id: string;
+  name: string;
+  grade: string;
+  class: string;
+  profileImage?: string;
+  enrollmentDate: string;
+  status: 'active' | 'inactive';
+}
+
+/**
+ * Parent Dashboard Stats Interface
+ * Used in: /parent/[id]/dashboard.tsx
+ * Purpose: Dashboard overview statistics for parents
+ */
+export interface ParentDashboardStats {
+  parentName: string;
+  totalChildren: number;
+  childrenStats: ParentChildStats[];
+  financialSummary: {
+    amountDue: number;
+    nextPaymentDue: string;
+    paymentStatus: 'pending' | 'overdue' | 'paid';
+  };
+  recentActivities: ParentActivity[];
+  academicCalendar: {
+    id: string;
+    date: string;
+    event: string;
+    type: 'exam' | 'holiday' | 'event';
+  }[];
+}
+
+/**
+ * Parent Child Stats Interface
+ * Used in: Parent dashboard and overview components
+ * Purpose: Individual child statistics for parent view
+ */
+export interface ParentChildStats {
+  id: string;
+  name: string;
+  grade: string;
+  class: string;
+  attendance: number;
+  currentAverage: number;
+  pendingAssignments: number;
+  upcomingTests: number;
+}
+
+/**
+ * Parent Activity Interface
+ * Used in: Parent dashboard and activity feeds
+ * Purpose: Recent activities related to parent's children
+ */
+export interface ParentActivity {
+  id: string;
+  childId: string;
+  childName: string;
+  type: 'grade' | 'attendance' | 'behavior' | 'message';
+  description: string;
+  date: string;
+  status?: string;
+}
+
+/**
+ * Parent Exam Interface
+ * Used in: /parent/[id]/exams.tsx
+ * Purpose: Exam information for parent's children
+ */
+export interface ParentExam {
+  id: string;
+  title: string;
+  subject: string;
+  childId: string;
+  childName: string;
+  date: string;
+  time: string;
+  duration: string;
+  location: string;
+  status: 'upcoming' | 'completed' | 'in-progress';
+  grade?: string;
+  maxMarks?: number;
+  obtainedMarks?: number;
+}
+
+/**
+ * Parent Progress Interface
+ * Used in: /parent/[id]/progress.tsx
+ * Purpose: Academic progress tracking for children
+ */
+export interface ParentProgress {
+  id: string;
+  childId: string;
+  childName: string;
+  subject: string;
+  currentGrade: string;
+  previousGrade?: string;
+  trend: 'improving' | 'declining' | 'stable';
+  lastUpdated: string;
+  assignments: {
+    completed: number;
+    total: number;
+  };
+  exams: {
+    passed: number;
+    total: number;
+  };
+}
+
+/**
+ * Parent Fee Interface
+ * Used in: /parent/[id]/fees.tsx
+ * Purpose: Fee tracking and payment management for children
+ */
+export interface ParentFee {
+  id: string;
+  title: string;
+  amount: number;
+  dueDate: string;
+  childId: string;
+  childName: string;
+  status: 'paid' | 'pending' | 'overdue';
+  paymentDate?: string;
+  transactionId?: string;
+  description?: string;
+  type?: 'tuition' | 'library' | 'lab' | 'transport' | 'exam' | 'other';
 }

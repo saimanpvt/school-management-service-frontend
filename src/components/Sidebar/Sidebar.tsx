@@ -7,12 +7,10 @@ import {
   BookOpen,
   FileText,
   BarChart2,
-  MessageSquare,
   Users,
   ClipboardList,
   DollarSign,
   CalendarDays,
-  Settings,
   X,
 } from 'lucide-react';
 

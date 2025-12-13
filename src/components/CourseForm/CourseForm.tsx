@@ -66,7 +66,11 @@ const CourseForm: React.FC<CourseFormProps> = ({
         {formError && (
           <div style={{ color: 'red', marginBottom: 8 }}>{formError}</div>
         )}
-        <form id="courseForm" onSubmit={handleFormSubmit} className={styles.form}>
+        <form
+          id="courseForm"
+          onSubmit={handleFormSubmit}
+          className={styles.form}
+        >
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
               <label>Course Code *</label>
