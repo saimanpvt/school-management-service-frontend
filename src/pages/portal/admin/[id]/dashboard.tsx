@@ -80,7 +80,7 @@ const AdminDashboard = () => {
 
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
-          <div className={styles.statIcon} style={{ background: '#eef2ff' }}>
+          <div className={`${styles.statIcon} ${styles.statIconStudents}`}>
             <Users size={24} color="#6366f1" />
           </div>
           <div className={styles.statInfo}>
@@ -90,7 +90,7 @@ const AdminDashboard = () => {
         </div>
 
         <div className={styles.statCard}>
-          <div className={styles.statIcon} style={{ background: '#f0fdf4' }}>
+          <div className={`${styles.statIcon} ${styles.statIconTeachers}`}>
             <GraduationCap size={24} color="#059669" />
           </div>
           <div className={styles.statInfo}>
@@ -100,7 +100,7 @@ const AdminDashboard = () => {
         </div>
 
         <div className={styles.statCard}>
-          <div className={styles.statIcon} style={{ background: '#fef3c7' }}>
+          <div className={`${styles.statIcon} ${styles.statIconCourses}`}>
             <BookOpen size={24} color="#d97706" />
           </div>
           <div className={styles.statInfo}>
@@ -110,7 +110,7 @@ const AdminDashboard = () => {
         </div>
 
         <div className={styles.statCard}>
-          <div className={styles.statIcon} style={{ background: '#fef2f2' }}>
+          <div className={`${styles.statIcon} ${styles.statIconParents}`}>
             <Users size={24} color="#dc2626" />
           </div>
           <div className={styles.statInfo}>

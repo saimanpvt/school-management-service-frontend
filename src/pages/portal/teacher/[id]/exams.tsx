@@ -9,6 +9,7 @@ import { useNotification } from '../../../../components/Toaster/Toaster';
 import { TEACHER_EXAM_CONSTANTS } from '../../../../lib/constants';
 import { formatDateForTeacher } from '../../../../lib/helpers';
 import { ExamFormData, TeacherExam } from '../../../../lib/types';
+import { apiServices } from '../../../../services/api';
 
 const TeacherExams = () => {
   const router = useRouter();
@@ -242,7 +243,6 @@ const TeacherExams = () => {
             setEditingExamId(null);
           }}
           courseOptions={[]}
-          classOptions={classes.map((c) => ({ value: c.id, label: c.name }))}
           isEdit={isEditMode}
         />
       )}

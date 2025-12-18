@@ -105,6 +105,11 @@ const AdminClasses = () => {
     }
   };
 
+  // Navigate to class details
+  const handleClassDetails = (classId: string) => {
+    router.push(`/portal/admin/${id}/class-details/${classId}`);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -255,7 +260,6 @@ const AdminClasses = () => {
               <th>Class Code</th>
               <th>Year</th>
               <th>Students</th>
-              <th>Courses</th>
 
               <th>Actions</th>
             </tr>
@@ -264,7 +268,15 @@ const AdminClasses = () => {
             {filteredClasses.length > 0 ? (
               filteredClasses.map((cls) => (
                 <tr key={cls._id}>
-                  <td>{cls.classID}</td>
+                  <td>
+                    <span
+                      className={styles.clickableId}
+                      onClick={() => handleClassDetails(cls._id)}
+                      title="View class details"
+                    >
+                      {cls.classID}
+                    </span>
+                  </td>
                   <td>{cls.className}</td>
                   <td>
                     {cls.classCode ? (
@@ -279,12 +291,6 @@ const AdminClasses = () => {
                       {cls.students?.length || 0}
                     </span>
                   </td>
-                  <td>
-                    <span className={styles.countBadge}>
-                      {cls.courses?.length || 0}
-                    </span>
-                  </td>
-
                   <td>
                     <div className={styles.actionButtons}>
                       <button

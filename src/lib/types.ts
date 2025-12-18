@@ -130,7 +130,7 @@ export interface CourseFormData {
   isActive?: boolean;
 }
 
-// Exam Types
+// Exam Types (matching backend API exactly)
 export interface ExamFormData {
   examName: string;
   examType:
@@ -142,20 +142,52 @@ export interface ExamFormData {
     | 'Presentation'
     | 'Lab'
     | 'Practical';
-  course: string;
-  classId: string;
-  academicYear: string;
+  courseCode: string;
   totalMarks: number;
   passingMarks: number;
-  examDate: string;
-  startTime: string;
-  endTime: string;
+  examDate: string; // Backend uses examDate in Exam.create()
   duration: number;
   venue: string;
   instructions?: string;
-  isActive?: boolean;
-  isCompleted?: boolean;
-  resultsPublished?: boolean;
+}
+
+// Class Details Types
+export interface ClassDetails {
+  _id: string;
+  classID: string;
+  className: string;
+  classCode: string;
+  description: string;
+  year: number;
+  students?: any[];
+  courses?: any[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Course Details Types
+export interface CourseDetails {
+  _id: string;
+  courseCode: string;
+  courseName: string;
+  description: string;
+  duration: number;
+  teacherId: string;
+  classId: string;
+  academicYear: string;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  teacher?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  class?: {
+    className: string;
+    classCode: string;
+  };
+  students?: any[];
 }
 
 // Fee Structure Types

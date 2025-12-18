@@ -19,9 +19,7 @@ import {
 } from '../../../../lib/constants';
 import {
   filterUsers,
-  getRoleColor,
   getDisplayValue,
-  getPercentageColor,
   getUserRoleOptions,
   getRoleBasedCount,
   capitalizeFirstLetter,
@@ -29,6 +27,49 @@ import {
 import { User, IUserType } from '../../../../lib/types';
 import styles from './admin.module.css';
 import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
+
+// Helper functions to get CSS classes
+const getUserRoleClass = (role: string): string => {
+  switch (role) {
+    case '1':
+      return styles.userIdAdmins;
+    case '2':
+      return styles.userIdTeachers;
+    case '3':
+      return styles.userIdStudents;
+    case '4':
+      return styles.userIdParents;
+    default:
+      return '';
+  }
+};
+
+const getAttendanceClass = (percentage?: number): string => {
+  if (!percentage) return styles.secondaryText;
+  if (percentage >= 90) return styles.attendanceExcellent;
+  if (percentage >= 75) return styles.attendanceGood;
+  return styles.attendancePoor;
+};
+
+const getFeeStatusClass = (status?: string): string => {
+  switch (status) {
+    case 'paid':
+      return styles.feeStatusPaid;
+    case 'pending':
+      return styles.feeStatusPending;
+    case 'overdue':
+      return styles.feeStatusOverdue;
+    default:
+      return styles.feeStatusOverdue;
+  }
+};
+
+const getFilterTabClass = (filterKey: string, isActive: boolean): string => {
+  const baseClass = `${styles.filterTab}`;
+  const activeClass = isActive ? styles.active : '';
+  const roleClass = isActive ? styles[`filterTab${filterKey.charAt(0).toUpperCase() + filterKey.slice(1)}Active`] : '';
+  return `${baseClass} ${activeClass} ${roleClass}`.trim();
+};
 
 const UserManagement = () => {
   const router = useRouter();
@@ -361,10 +402,7 @@ const UserManagement = () => {
                 setActiveUserType(filter.key);
                 setSearchTerm('');
               }}
-              style={{
-                borderColor: isActive ? filter.color : '#e5e7eb',
-                color: isActive ? filter.color : '#6b7280',
-              }}
+              className={getFilterTabClass(filter.key, isActive)}
             >
               <Icon size={18} />
               <span>{filter.label}</span>
@@ -407,7 +445,7 @@ const UserManagement = () => {
           <thead>
             <tr>
               {UI_CONSTANTS.TABLE_COLUMNS.map((col) => (
-                <th key={col.key} style={{ textAlign: col.align }}>
+                <th key={col.key} className={col.align === 'center' ? styles.textCenter : col.align === 'left' ? styles.textLeft : styles.textRight}>
                   {col.label}
                 </th>
               ))}
@@ -419,56 +457,38 @@ const UserManagement = () => {
                 return (
                   <tr key={user._id}>
                     {/* ID Column */}
-                    <td style={{ textAlign: 'center' }}>
+                    <td className={styles.textCenter}>
                       <span
-                        className={styles.clickable}
+                        className={`${styles.clickable} ${styles.userIdClickable} ${getUserRoleClass(user.role)}`}
                         onClick={() => handleViewDetails(user.userID)}
-                        style={{
-                          color: getRoleColor(user.role),
-                          fontWeight: '600',
-                        }}
                       >
                         {user.userID || 'N/A'}
                       </span>
                     </td>
 
                     {/* Name Column */}
-                    <td style={{ paddingLeft: '16px' }}>
+                    <td className={styles.paddingLeft16}>
                       <div className={styles.userInfo}>
-                        <span style={{ fontWeight: '600' }}>
+                        <span className={styles.fontWeight600}>
                           {user.firstName} {user.lastName}
                         </span>
-                        <small
-                          style={{
-                            color: UI_CONSTANTS.TEXT_STYLES.SECONDARY,
-                            display: 'block',
-                          }}
-                        >
+                        <small className={styles.userEmail}>
                           {user.email}
                         </small>
                       </div>
                     </td>
 
                     {/* Attendance Column */}
-                    <td style={{ textAlign: 'center' }}>
+                    <td className={styles.textCenter}>
                       <div>
-                        <div
-                          style={{
-                            fontWeight: '600',
-                            color: user.attendance?.percentage
-                              ? getPercentageColor(user.attendance.percentage)
-                              : '#6b7280',
-                          }}
-                        >
+                        <div className={`${styles.fontWeight600} ${getAttendanceClass(user.attendance?.percentage)}`}>
                           {getDisplayValue(
                             user.attendance?.percentage
                               ? `${user.attendance.percentage}%`
                               : null
                           )}
                         </div>
-                        <small
-                          style={{ color: UI_CONSTANTS.TEXT_STYLES.SECONDARY }}
-                        >
+                        <small className={styles.secondaryText}>
                           {user.attendance?.present && user.attendance?.total
                             ? `${user.attendance.present}/${user.attendance.total}`
                             : '-/-'}
@@ -477,40 +497,20 @@ const UserManagement = () => {
                     </td>
 
                     {/* Fees Column */}
-                    <td style={{ textAlign: 'center' }}>
+                    <td className={styles.textCenter}>
                       <div>
-                        <span
-                          className={styles.statusBadge}
-                          style={{
-                            backgroundColor:
-                              user.feeStatus?.status === 'paid'
-                                ? '#dcfce7'
-                                : user.feeStatus?.status === 'pending'
-                                ? '#fef3c7'
-                                : '#fee2e2',
-                            color:
-                              user.feeStatus?.status === 'paid'
-                                ? '#166534'
-                                : user.feeStatus?.status === 'pending'
-                                ? '#92400e'
-                                : '#991b1b',
-                            padding: '2px 8px',
-                            borderRadius: '12px',
-                            fontSize: '0.75rem',
-                            fontWeight: '600',
-                          }}
-                        >
+                        <span className={getFeeStatusClass(user.feeStatus?.status)}>
                           {getDisplayValue(user.feeStatus?.status, 'N/A')}
                         </span>
                         {user.feeStatus?.amount && (
-                          <div style={UI_CONSTANTS.TEXT_STYLES.SMALL_TEXT}>
+                          <div className={styles.smallText}>
                             ${user.feeStatus.amount}
                           </div>
                         )}
                       </div>
                     </td>
                     {/* Actions Column - Only Delete Button */}
-                    <td style={{ textAlign: 'center' }}>
+                    <td className={styles.textCenter}>
                       <button
                         className={styles.deleteBtn}
                         onClick={() =>
@@ -520,7 +520,7 @@ const UserManagement = () => {
                           )
                         }
                         title="Delete User"
-                        style={UI_CONSTANTS.BUTTON_STYLES.DELETE}
+                        className={styles.deleteButton}
                       >
                         <Trash2 size={14} />
                       </button>
@@ -537,8 +537,8 @@ const UserManagement = () => {
                     {searchTerm
                       ? 'Try a different search term'
                       : `No ${capitalizeFirstLetter(
-                          activeUserType
-                        )}s in the system`}
+                        activeUserType
+                      )}s in the system`}
                   </p>
                 </td>
               </tr>

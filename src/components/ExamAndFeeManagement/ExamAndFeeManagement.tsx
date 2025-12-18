@@ -12,24 +12,17 @@ const ExamAndFeeManagement: React.FC = () => {
   const [showExamModal, setShowExamModal] = useState(false);
   const [showFeeModal, setShowFeeModal] = useState(false);
 
-  // State for form data
+  // State for form data (matching backend API exactly)
   const [examFormData, setExamFormData] = useState<ExamFormData>({
     examName: '',
     examType: 'Quiz',
-    course: '',
-    classId: '',
-    academicYear: '',
+    courseCode: '',
     totalMarks: 0,
     passingMarks: 0,
-    examDate: '',
-    startTime: '',
-    endTime: '',
+    examDate: '', // Backend uses examDate in Exam.create()
     duration: 0,
     venue: '',
     instructions: '',
-    isActive: true,
-    isCompleted: false,
-    resultsPublished: false,
   });
 
   const [feeFormData, setFeeFormData] = useState<FeeStructureFormData>({
@@ -68,24 +61,17 @@ const ExamAndFeeManagement: React.FC = () => {
       await examsApi.create(examFormData);
       alert('Exam created successfully!');
       setShowExamModal(false);
-      // Reset form
+      // Reset form (matching backend API exactly)
       setExamFormData({
         examName: '',
         examType: 'Quiz',
-        course: '',
-        classId: '',
-        academicYear: '',
+        courseCode: '',
         totalMarks: 0,
         passingMarks: 0,
-        examDate: '',
-        startTime: '',
-        endTime: '',
+        examDate: '', // Backend uses examDate in Exam.create()
         duration: 0,
         venue: '',
         instructions: '',
-        isActive: true,
-        isCompleted: false,
-        resultsPublished: false,
       });
     } catch (error) {
       console.error('Error creating exam:', error);
@@ -165,7 +151,6 @@ const ExamAndFeeManagement: React.FC = () => {
           onSubmit={handleExamSubmit}
           onClose={() => setShowExamModal(false)}
           courseOptions={courseOptions}
-          classOptions={classOptions}
           isEdit={false}
         />
       )}

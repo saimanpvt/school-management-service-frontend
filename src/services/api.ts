@@ -16,8 +16,6 @@ export const updateUser = async (id: string, data: any) =>
 export const removeUser = async (id: string) =>
   makeHttpRequest('delete', `/auth/delete/${id}`);
 
-
-
 // Courses APIs
 export const listCourses = async () => makeHttpRequest('get', '/courses');
 
@@ -32,8 +30,6 @@ export const updateCourse = async (id: string, data: any) =>
 
 export const deleteCourse = async (id: string) =>
   makeHttpRequest('delete', `/courses/${id}`);
-
-
 
 // Classes APIs
 export const getAllClasses = async () => makeHttpRequest('get', '/classes');
@@ -50,8 +46,6 @@ export const editClass = async (id: string, data: any) =>
 export const removeClass = async (id: string) =>
   makeHttpRequest('delete', `/classes/${id}`);
 
-
-
 // Exams APIs
 export const getAllExams = async () => makeHttpRequest('get', '/exams');
 
@@ -62,12 +56,10 @@ export const createExam = async (examData: ExamFormData) =>
   makeHttpRequest('post', '/exams', examData);
 
 export const updateExam = async (id: string, data: Partial<ExamFormData>) =>
-  makeHttpRequest('put', `/exams/${id}`, data);
+  makeHttpRequest('put', `/exams/update/${id}`, data);
 
 export const deleteExam = async (id: string) =>
   makeHttpRequest('delete', `/exams/${id}`);
-
-
 
 // Fees APIs
 export const getAllFees = async () => makeHttpRequest('get', '/fees');
@@ -86,8 +78,6 @@ export const updateFee = async (
 export const deleteFee = async (id: string) =>
   makeHttpRequest('delete', `/fees/${id}`);
 
-
-
 // Marks APIs
 export const getAllMarks = async () => makeHttpRequest('get', '/marks');
 
@@ -105,8 +95,6 @@ export const updateMark = async (id: string, data: any) =>
 export const deleteMark = async (id: string) =>
   makeHttpRequest('delete', `/marks/${id}`);
 
-
-
 // References APIs
 export const getAllReferences = async () =>
   makeHttpRequest('get', '/references');
@@ -123,8 +111,6 @@ export const updateReference = async (id: string, data: any) =>
 export const deleteReference = async (id: string) =>
   makeHttpRequest('delete', `/references/${id}`);
 
-
-
 // Attendance APIs
 export const markAttendance = async (attendanceData: {
   classId: string;
@@ -134,8 +120,6 @@ export const markAttendance = async (attendanceData: {
     status: 'present' | 'absent' | 'late';
   }>;
 }) => makeHttpRequest('post', '/attendance', attendanceData);
-
-
 
 // Assignment APIs
 export const getAllAssignments = async () =>
@@ -201,7 +185,7 @@ export const apiServices = {
     update: updateReference,
     delete: deleteReference,
   },
-  
+
   attendance: {
     mark: markAttendance,
   },

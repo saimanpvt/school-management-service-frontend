@@ -9,7 +9,6 @@ interface ExamFormProps {
   onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;
   courseOptions: { value: string; label: string }[];
-  classOptions: { value: string; label: string }[];
   isEdit?: boolean;
 }
 
@@ -34,14 +33,7 @@ const ExamForm: React.FC<ExamFormProps> = ({
     'Practical',
   ];
 
-  // Generate academic year options (current year and next few years)
-  const currentYear = new Date().getFullYear();
-  const academicYearOptions = [];
-  for (let i = -1; i <= 3; i++) {
-    const startYear = currentYear + i;
-    const endYear = startYear + 1;
-    academicYearOptions.push(`${startYear}-${endYear}`);
-  }
+
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -75,17 +67,13 @@ const ExamForm: React.FC<ExamFormProps> = ({
 
     const missing = [];
 
-    // Required fields validation
+    // Required fields validation (matching backend API exactly)
     if (!formData.examName) missing.push('Exam Name');
     if (!formData.examType) missing.push('Exam Type');
-    if (!formData.course) missing.push('Course');
-    if (!formData.classId) missing.push('Class');
-    if (!formData.academicYear) missing.push('Academic Year');
+    if (!formData.courseCode) missing.push('Course Code');
     if (!formData.totalMarks) missing.push('Total Marks');
     if (!formData.passingMarks) missing.push('Passing Marks');
     if (!formData.examDate) missing.push('Exam Date');
-    if (!formData.startTime) missing.push('Start Time');
-    if (!formData.endTime) missing.push('End Time');
     if (!formData.duration) missing.push('Duration');
     if (!formData.venue) missing.push('Venue');
 
@@ -97,17 +85,6 @@ const ExamForm: React.FC<ExamFormProps> = ({
     // Validate passing marks doesn't exceed total marks
     if (formData.passingMarks > formData.totalMarks) {
       setFormError('Passing marks cannot exceed total marks');
-      return;
-    }
-
-    // Validate start time is before end time
-    const startMinutes = formData.startTime.split(':').map(Number);
-    const endMinutes = formData.endTime.split(':').map(Number);
-    const startTotalMinutes = startMinutes[0] * 60 + startMinutes[1];
-    const endTotalMinutes = endMinutes[0] * 60 + endMinutes[1];
-
-    if (endTotalMinutes <= startTotalMinutes) {
-      setFormError('End time must be after start time');
       return;
     }
 
@@ -161,60 +138,16 @@ const ExamForm: React.FC<ExamFormProps> = ({
 
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
-              <label>Course *</label>
-              <select
-                name="course"
-                value={formData.course}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="">Select Course</option>
-                {courseOptions.map((course) => (
-                  <option key={course.value} value={course.value}>
-                    {course.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className={styles.formGroup}>
-              <label>Class *</label>
-              {/* <select
-                                name="classId"
-                                value={formData.classId}
-                                onChange={handleInputChange}
-                                required
-                            >
-                                <option value="">Select Class</option>
-                                {classOptions.map(cls => (
-                                    <option key={cls.value} value={cls.value}>{cls.label}</option>
-                                ))}
-                            </select> */}
+              <label>Course Code *</label>
               <input
                 type="text"
-                name="classId"
-                value={formData.classId}
+                name="courseCode"
+                value={formData.courseCode}
                 onChange={handleInputChange}
+                placeholder="Enter course code (e.g., CS101, MATH201)"
+                maxLength={20}
                 required
               />
-            </div>
-          </div>
-
-          <div className={styles.formRow}>
-            <div className={styles.formGroup}>
-              <label>Academic Year *</label>
-              <select
-                name="academicYear"
-                value={formData.academicYear}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="">Select Academic Year</option>
-                {academicYearOptions.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
             </div>
             <div className={styles.formGroup}>
               <label>Venue *</label>
@@ -255,16 +188,6 @@ const ExamForm: React.FC<ExamFormProps> = ({
 
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
-              <label>Exam Date *</label>
-              <input
-                type="date"
-                name="examDate"
-                value={formData.examDate}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <div className={styles.formGroup}>
               <label>Duration (minutes) *</label>
               <input
                 type="number"
@@ -275,25 +198,12 @@ const ExamForm: React.FC<ExamFormProps> = ({
                 required
               />
             </div>
-          </div>
-
-          <div className={styles.formRow}>
             <div className={styles.formGroup}>
-              <label>Start Time *</label>
+              <label>Exam Date *</label>
               <input
-                type="time"
-                name="startTime"
-                value={formData.startTime}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>End Time *</label>
-              <input
-                type="time"
-                name="endTime"
-                value={formData.endTime}
+                type="datetime-local"
+                name="examDate"
+                value={formData.examDate}
                 onChange={handleInputChange}
                 required
               />
@@ -310,42 +220,6 @@ const ExamForm: React.FC<ExamFormProps> = ({
               rows={3}
               placeholder="Enter exam instructions (optional)"
             />
-          </div>
-
-          <div className={styles.formRow}>
-            <div className={styles.checkboxGroup}>
-              <label>
-                <input
-                  type="checkbox"
-                  name="isActive"
-                  checked={formData.isActive ?? true}
-                  onChange={handleInputChange}
-                />
-                Active
-              </label>
-            </div>
-            <div className={styles.checkboxGroup}>
-              <label>
-                <input
-                  type="checkbox"
-                  name="isCompleted"
-                  checked={formData.isCompleted ?? false}
-                  onChange={handleInputChange}
-                />
-                Completed
-              </label>
-            </div>
-            <div className={styles.checkboxGroup}>
-              <label>
-                <input
-                  type="checkbox"
-                  name="resultsPublished"
-                  checked={formData.resultsPublished ?? false}
-                  onChange={handleInputChange}
-                />
-                Results Published
-              </label>
-            </div>
           </div>
         </form>
 

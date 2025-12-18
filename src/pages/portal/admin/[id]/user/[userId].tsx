@@ -201,13 +201,7 @@ const UserProfile = () => {
               <h1>
                 {user.firstName} {user.lastName}
               </h1>
-              <span
-                className={styles.roleTag}
-                style={{
-                  backgroundColor: roleInfo.color + '20',
-                  color: roleInfo.color,
-                }}
-              >
+              <span className={`${styles.roleTag} ${getUserRoleTagClass(user.role)}`}>
                 {roleInfo.name}
               </span>
             </div>
@@ -351,11 +345,9 @@ const UserProfile = () => {
               </label>
               {isEditing ? (
                 <textarea
-                  value={`${editData.address?.street || ''}, ${
-                    editData.address?.city || ''
-                  }, ${editData.address?.state || ''} ${
-                    editData.address?.zipCode || ''
-                  }`}
+                  value={`${editData.address?.street || ''}, ${editData.address?.city || ''
+                    }, ${editData.address?.state || ''} ${editData.address?.zipCode || ''
+                    }`}
                   onChange={(e) => {
                     const addressString = e.target.value;
                     // Simple parsing - you might want to make this more sophisticated
@@ -373,10 +365,8 @@ const UserProfile = () => {
               ) : (
                 <span>
                   {user.address
-                    ? `${user.address.street || ''}, ${
-                        user.address.city || ''
-                      }, ${user.address.state || ''} ${
-                        user.address.zipCode || ''
+                    ? `${user.address.street || ''}, ${user.address.city || ''
+                      }, ${user.address.state || ''} ${user.address.zipCode || ''
                       }`.replace(/^,\s*|,\s*$/g, '') || 'Not provided'
                     : 'Not provided'}
                 </span>
@@ -429,8 +419,8 @@ const UserProfile = () => {
                 <span>
                   {(user as StudentData).admissionDate
                     ? new Date(
-                        (user as StudentData).admissionDate
-                      ).toLocaleDateString()
+                      (user as StudentData).admissionDate
+                    ).toLocaleDateString()
                     : 'Not provided'}
                 </span>
               </div>
@@ -483,17 +473,7 @@ const UserProfile = () => {
             {user.feeStatus && (
               <div className={styles.statCard}>
                 <h4>Fee Status</h4>
-                <div
-                  className={styles.statValue}
-                  style={{
-                    color:
-                      user.feeStatus.status === 'paid'
-                        ? '#059669'
-                        : user.feeStatus.status === 'pending'
-                        ? '#d97706'
-                        : '#dc2626',
-                  }}
-                >
+                <div className={`${styles.statValue} ${getFeeStatusTextClass(user.feeStatus.status)}`}>
                   {capitalizeFirstLetter(user.feeStatus.status)}
                 </div>
                 <div className={styles.statDetail}>

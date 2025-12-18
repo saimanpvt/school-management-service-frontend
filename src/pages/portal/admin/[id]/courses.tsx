@@ -125,10 +125,10 @@ const AdminCourses = () => {
             const data =
               classesRes.data && typeof classesRes.data === 'object'
                 ? (classesRes.data as {
-                    ongoing?: any[];
-                    completed?: any[];
-                    inactive?: any[];
-                  })
+                  ongoing?: any[];
+                  completed?: any[];
+                  inactive?: any[];
+                })
                 : {};
             const { ongoing = [], completed = [], inactive = [] } = data;
             allClasses = [...ongoing, ...completed, ...inactive];
@@ -146,10 +146,21 @@ const AdminCourses = () => {
 
   const filteredCourses = filterCourses(courses, searchTerm);
 
+  // Navigate to course details
+  const handleCourseDetails = (courseId: string) => {
+    router.push(`/portal/admin/${id}/course-details/${courseId}`);
+  };
+
+  // Navigate to class details
+  const handleClassDetails = (classId: string) => {
+    router.push(`/portal/admin/${id}/class-details/${classId}`);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       let response;
+      console.log("isEditMode && editingCourseId", isEditMode, editingCourseId);
       if (isEditMode && editingCourseId) {
         // Update existing course
         response = await apiServices.courses.update(editingCourseId, formData);
@@ -232,7 +243,9 @@ const AdminCourses = () => {
       isActive: course.isActive !== undefined ? course.isActive : true,
     });
     setIsEditMode(true);
-    setEditingCourseId(course._id || course.id);
+    console.log("course", course);
+    console.log("course.courseCode--->>", course.courseCode)
+    setEditingCourseId(course.courseCode);
     setShowAddForm(true);
   };
 
@@ -358,32 +371,50 @@ const AdminCourses = () => {
                   ? `${teacher.firstName} ${teacher.lastName}`
                   : 'Not Assigned';
 
-                // Find class name (using classID from your API response)
+                // Find class info (using classID from your API response)
                 const classInfo = classes.find(
                   (c: any) =>
                     c._id === course.classId || c.classID === course.classID
                 );
-                const className = classInfo
-                  ? classInfo.className
-                  : 'Not Assigned';
+                const classId = course.classID || classInfo?.classID || course.classId;
+                const classDbId = classInfo?._id || course.classId;
 
                 return (
                   <tr key={course._id || course.id}>
-                    <td>{course.courseCode || 'N/A'}</td>
+                    <td>
+                      <span
+                        className={styles.clickableId}
+                        onClick={() => handleCourseDetails(course.courseCode)}
+                        title="View course details"
+                      >
+                        {course.courseCode || 'N/A'}
+                      </span>
+                    </td>
                     <td>{course.courseName || 'N/A'}</td>
                     <td>{course.academicYear || 'N/A'}</td>
                     <td>
                       {course.duration ? `${course.duration} weeks` : 'N/A'}
                     </td>
                     <td>{teacherName}</td>
-                    <td>{className}</td>
+                    <td>
+                      {classId && classDbId ? (
+                        <button
+                          className={styles.nameLink}
+                          onClick={() => handleClassDetails(classDbId)}
+                          title="View class details"
+                        >
+                          {classId}
+                        </button>
+                      ) : (
+                        'Not Assigned'
+                      )}
+                    </td>
                     <td>
                       <span
-                        className={`${styles.statusBadge} ${
-                          course.status === 'Active' || course.isActive
-                            ? styles.active
-                            : styles.inactive
-                        }`}
+                        className={`${styles.statusBadge} ${course.status === 'Active' || course.isActive
+                          ? styles.active
+                          : styles.inactive
+                          }`}
                       >
                         {course.status ||
                           (course.isActive ? 'Active' : 'Inactive')}

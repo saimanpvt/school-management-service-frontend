@@ -354,26 +354,19 @@ export const DASHBOARD_CONSTANTS = {
   ],
 } as const;
 
-// Exam constants
+// Exam constants (matching backend API exactly)
 export const EXAM_CONSTANTS = {
   TYPES: ['Quiz', 'Test', 'Midterm', 'Final', 'Assignment'] as const,
   DEFAULT_FORM: {
     examName: '',
     examType: 'Quiz' as const,
-    course: '',
-    classId: '',
-    academicYear: '',
+    courseCode: '',
     totalMarks: 0,
     passingMarks: 0,
-    examDate: '',
-    startTime: '',
-    endTime: '',
+    examDate: '', // Backend uses examDate in Exam.create()
     duration: 0,
     venue: '',
     instructions: '',
-    isActive: true,
-    isCompleted: false,
-    resultsPublished: false,
   },
 } as const;
 
@@ -415,17 +408,17 @@ export const TEACHER_ATTENDANCE_STATUS = {
   EXCUSED: 'excused',
 } as const;
 
-// Teacher function - Exam constants
+// Teacher function - Exam constants (matching backend API exactly)
 export const TEACHER_EXAM_CONSTANTS = {
   DEFAULT_FORM: {
     examName: '',
     examType: 'Quiz' as const,
-    subject: '',
-    date: '',
-    startTime: '',
-    endTime: '',
+    courseCode: '',
     totalMarks: 100,
     passingMarks: 40,
+    examDate: '', // Backend uses examDate in Exam.create()
+    duration: 0,
+    venue: '',
     instructions: '',
   },
   EXAM_TYPES: ['Quiz', 'Assignment', 'Mid-term', 'Final', 'Project'] as const,

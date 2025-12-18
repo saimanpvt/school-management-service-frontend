@@ -708,7 +708,7 @@ export const getExamStatusClass = (status: string): string => {
 /**
  * Get status badge class for fees
  */
-export const getFeeStatusClass = (status: string): string => {
+export const getFeeStatusClasses = (status: string): string => {
   const statusClasses = {
     paid: 'success',
     pending: 'warning',
