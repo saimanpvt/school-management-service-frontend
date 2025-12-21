@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { authApi } from '../../services/authApi';
 import Link from 'next/link';
 import styles from './signup.module.css';
-import LoadingDots from '../../components/LoadingDots';
+import LoadingDots from '../../components/LoadingDots/LoadingDots';
 import { getDashboardUrl } from '../../lib/utils/routing';
 
 // No role mapping needed - send role names directly

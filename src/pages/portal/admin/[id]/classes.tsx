@@ -1,63 +1,59 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
-import { BookOpen, Plus, Search, Edit, Trash2, X, Users } from 'lucide-react';
+import { BookOpen, Plus, Search, Edit, Trash2, Users } from 'lucide-react';
+import { DEFAULT_CLASS_FORM } from '../../../../lib/constants';
+import { filterClasses } from '../../../../lib/helpers';
+import { ClassFormData, ClassData } from '../../../../lib/types';
+import AlertModal from '../../../../components/AlertModal';
+import ClassForm from '../../../../components/ClassForm/ClassForm';
+import { useNotification } from '../../../../components/Toaster';
 import styles from './admin.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
-
-interface ClassFormData {
-  className: string;
-  classCode: string;
-  description: string;
-  year: number;
-}
-
-interface ClassData {
-  _id: string;
-  classID: string;
-  className: string;
-  classCode?: string;
-  description?: string;
-  year: number;
-  createdAt?: string;
-  updatedAt?: string;
-  courses?: string[];
-  students?: string[];
-  id?: string;
-  __v?: number;
-}
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
 const AdminClasses = () => {
   const router = useRouter();
   const { id } = router.query;
+  const { addNotification } = useNotification();
   const [classes, setClasses] = useState<ClassData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
-  const [formData, setFormData] = useState<ClassFormData>({
-    className: '',
-    classCode: '',
-    description: '',
-    year: 0,
-  });
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingClassId, setEditingClassId] = useState<string | null>(null);
+  const [formData, setFormData] = useState<ClassFormData>(DEFAULT_CLASS_FORM);
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    classId: string;
+    className: string;
+  }>({ isOpen: false, classId: '', className: '' });
 
   useEffect(() => {
     if (id) {
       fetchClasses();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  interface ClassesApiResponse {
+    success: boolean;
+    ongoing?: ClassData[];
+    completed?: ClassData[];
+    inactive?: ClassData[];
+  }
 
   const fetchClasses = async () => {
     try {
-      const response = await apiServices.admin.getAllClasses();
+      const response: ClassesApiResponse = await apiServices.classes.getAll();
+      console.log('Classes API Response:', response);
       if (response.success) {
-        // Handle the actual API response structure
-        const apiResponse = response as {
-          success: boolean;
-          classes: ClassData[];
-        };
-        setClasses(apiResponse.classes || []);
+        // Handle the API response structure: { success: true, ongoing: [...], completed: [...], inactive: [...] }
+        let allClasses: ClassData[] = [];
+        const { ongoing = [], completed = [], inactive = [] } = response;
+        // Combine all classes from different status arrays
+        allClasses = [...ongoing, ...completed, ...inactive];
+        setClasses(allClasses);
       }
     } catch (error) {
       console.error('Error fetching classes:', error);
@@ -66,23 +62,52 @@ const AdminClasses = () => {
     }
   };
 
-  const filteredClasses = classes.filter(
-    (cls) =>
-      cls.className?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cls.classCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cls.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredClasses = filterClasses(classes, searchTerm);
 
-  const handleDelete = async (classId: string) => {
-    if (confirm('Are you sure you want to delete this class?')) {
-      try {
-        await apiServices.admin.deleteClass(classId);
-        setClasses(classes.filter((c) => c._id !== classId));
-      } catch (error) {
-        console.error('Error deleting class:', error);
-        alert('Failed to delete class');
-      }
+  const handleEdit = (classItem: ClassData) => {
+    setFormData({
+      className: classItem.className || '',
+      classCode: classItem.classCode || '',
+      description: classItem.description || '',
+      year: classItem.year || 0,
+    });
+    setIsEditMode(true);
+    setEditingClassId(classItem._id);
+    setShowAddForm(true);
+  };
+
+  const openDeleteModal = (classId: string, className: string) => {
+    setDeleteModal({ isOpen: true, classId, className });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, classId: '', className: '' });
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await apiServices.classes.delete(deleteModal.classId);
+      setClasses(classes.filter((c) => c._id !== deleteModal.classId));
+      addNotification({
+        type: 'success',
+        title: 'Class deleted successfully!',
+        message: `${deleteModal.className} has been removed.`,
+      });
+    } catch (error) {
+      console.error('Error deleting class:', error);
+      addNotification({
+        type: 'error',
+        title: 'Failed to delete class',
+        message: 'Please try again later.',
+      });
+    } finally {
+      closeDeleteModal();
     }
+  };
+
+  // Navigate to class details
+  const handleClassDetails = (classId: string) => {
+    router.push(`/portal/admin/${id}/class-details/${classId}`);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,25 +115,68 @@ const AdminClasses = () => {
     setLoading(true);
 
     try {
-      const response = await apiServices.admin.addClass(formData);
+      let response;
+      if (isEditMode && editingClassId) {
+        // Update existing class
+        response = await apiServices.classes.update(editingClassId, formData);
+        if (response.success) {
+          addNotification({
+            type: 'success',
+            title: 'Class updated successfully!',
+            message: `${formData.className} has been updated.`,
+          });
+          // Update the classes list with the updated data
+          setClasses(
+            classes.map((cls) =>
+              cls._id === editingClassId ? { ...cls, ...formData } : cls
+            )
+          );
+        } else {
+          addNotification({
+            type: 'error',
+            title: 'Failed to update class',
+            message: 'Please try again later.',
+          });
+        }
+      } else {
+        // Create new class
+        response = await apiServices.classes.create(formData);
+        if (response.success) {
+          addNotification({
+            type: 'success',
+            title: 'Class created successfully!',
+            message: `${formData.className} has been created.`,
+          });
+          // Refresh classes list
+          fetchClasses();
+        } else {
+          addNotification({
+            type: 'error',
+            title: 'Failed to create class',
+            message: 'Please try again later.',
+          });
+        }
+      }
+
       if (response.success) {
-        alert('Class created successfully!');
         setShowAddForm(false);
-        // Reset form
+        // Reset form and edit state
         setFormData({
           className: '',
           classCode: '',
           description: '',
           year: 0,
         });
-        // Refresh classes list
-        fetchClasses();
-      } else {
-        alert('Failed to create class');
+        setIsEditMode(false);
+        setEditingClassId(null);
       }
     } catch (error) {
-      console.error('Error creating class:', error);
-      alert('Error creating class');
+      console.error('Error saving class:', error);
+      addNotification({
+        type: 'error',
+        title: 'Error saving class',
+        message: 'An unexpected error occurred. Please try again.',
+      });
     } finally {
       setLoading(false);
     }
@@ -144,7 +212,17 @@ const AdminClasses = () => {
           </div>
           <button
             className={styles.createBtn}
-            onClick={() => setShowAddForm(true)}
+            onClick={() => {
+              setIsEditMode(false);
+              setEditingClassId(null);
+              setFormData({
+                className: '',
+                classCode: '',
+                description: '',
+                year: 0,
+              });
+              setShowAddForm(true);
+            }}
           >
             <Plus size={18} />
             Add Class
@@ -182,8 +260,7 @@ const AdminClasses = () => {
               <th>Class Code</th>
               <th>Year</th>
               <th>Students</th>
-              <th>Courses</th>
-              <th>Description</th>
+
               <th>Actions</th>
             </tr>
           </thead>
@@ -191,7 +268,15 @@ const AdminClasses = () => {
             {filteredClasses.length > 0 ? (
               filteredClasses.map((cls) => (
                 <tr key={cls._id}>
-                  <td>{cls.classID}</td>
+                  <td>
+                    <span
+                      className={styles.clickableId}
+                      onClick={() => handleClassDetails(cls._id)}
+                      title="View class details"
+                    >
+                      {cls.classID}
+                    </span>
+                  </td>
                   <td>{cls.className}</td>
                   <td>
                     {cls.classCode ? (
@@ -207,19 +292,16 @@ const AdminClasses = () => {
                     </span>
                   </td>
                   <td>
-                    <span className={styles.countBadge}>
-                      {cls.courses?.length || 0}
-                    </span>
-                  </td>
-                  <td>{cls.description || 'N/A'}</td>
-                  <td>
                     <div className={styles.actionButtons}>
-                      <button className={styles.editBtn}>
+                      <button
+                        className={styles.editBtn}
+                        onClick={() => handleEdit(cls)}
+                      >
                         <Edit size={16} />
                       </button>
                       <button
                         className={styles.deleteBtn}
-                        onClick={() => handleDelete(cls._id)}
+                        onClick={() => openDeleteModal(cls._id, cls.className)}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -244,103 +326,40 @@ const AdminClasses = () => {
         </table>
       </div>
 
-      {/* Add Class Modal */}
+      {/* Class Form Modal */}
       {showAddForm && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
-            <div className={styles.modalHeader}>
-              <h2>Add New Class</h2>
-              <button
-                className={styles.closeBtn}
-                onClick={() => setShowAddForm(false)}
-              >
-                <X size={20} />
-              </button>
-            </div>
+        <ClassForm
+          formData={formData}
+          setFormData={setFormData}
+          onSubmit={handleSubmit}
+          onClose={() => {
+            setShowAddForm(false);
+            setIsEditMode(false);
+            setEditingClassId(null);
+            setFormData({
+              className: '',
+              classCode: '',
+              description: '',
+              year: 0,
+            });
+          }}
+          isEdit={isEditMode}
+          loading={loading}
+        />
+      )}
 
-            <div className={styles.modalContent}>
-              <form onSubmit={handleSubmit}>
-                <div className={styles.formGrid}>
-                  <div className={styles.formGroup}>
-                    <label>Class Name *</label>
-                    <input
-                      type="text"
-                      value={formData.className}
-                      onChange={(e) =>
-                        setFormData({ ...formData, className: e.target.value })
-                      }
-                      placeholder="Enter class name (e.g., Grade 10A)"
-                      required
-                    />
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label>Class Code *</label>
-                    <input
-                      type="text"
-                      value={formData.classCode}
-                      onChange={(e) =>
-                        setFormData({ ...formData, classCode: e.target.value })
-                      }
-                      placeholder="Enter class code (e.g., G10A)"
-                      required
-                    />
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label>Academic Year *</label>
-                    <select
-                      value={formData.year}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          year: Number(e.target.value),
-                        })
-                      }
-                      required
-                    >
-                      <option value={0}>Select Academic Year</option>
-                      <option value={2023}>2023</option>
-                      <option value={2024}>2024</option>
-                      <option value={2025}>2025</option>
-                      <option value={2026}>2026</option>
-                      <option value={2027}>2027</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label>Description</label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
-                    placeholder="Enter class description (optional)"
-                    rows={3}
-                  />
-                </div>
-
-                <div className={styles.modalActions}>
-                  <button
-                    type="button"
-                    className={styles.cancelBtn}
-                    onClick={() => setShowAddForm(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className={styles.createBtn}
-                    disabled={loading}
-                  >
-                    {loading ? 'Creating...' : 'Create Class'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
+      {/* Delete Confirmation Modal */}
+      {deleteModal.isOpen && (
+        <AlertModal
+          usage="delete"
+          mainText="Delete Class"
+          subText={`Are you sure you want to delete "${deleteModal.className}"? This action cannot be undone.`}
+          confirmText="Delete"
+          cancelText="Cancel"
+          onConfirm={confirmDelete}
+          onCancel={closeDeleteModal}
+          onClose={closeDeleteModal}
+        />
       )}
     </PortalLayout>
   );

@@ -1,14 +1,9 @@
-import { api } from './api';
+import { makeHttpRequest, httpClient } from '../lib/httpClient';
+import { ApiResponse } from '../lib/types';
 
 interface LoginCredentials {
   email: string;
   password: string;
-}
-
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
 }
 
 // Authentication API calls
@@ -27,8 +22,7 @@ export const authApi = {
       token: string;
     }>
   > => {
-    const response = await api.post('/auth/login', credentials);
-    return response.data;
+    return await makeHttpRequest('post', '/auth/login', credentials);
   },
 
   register: async (data: {
@@ -37,31 +31,28 @@ export const authApi = {
     password: string;
     role: string;
   }): Promise<ApiResponse<{ token: string; user: object }>> => {
-    const response = await api.post('/auth/register', data);
-    return response.data;
+    return await makeHttpRequest('post', '/auth/register', data);
   },
 
   logout: async (): Promise<ApiResponse<object>> => {
-    const response = await api.post('/logout');
-    return response.data;
+    return await makeHttpRequest('post', '/logout');
   },
 
   changePassword: async (data: {
     currentPassword: string;
     newPassword: string;
-  }): Promise<ApiResponse<{ message: string }>> => {
-    const response = await api.post('/auth/change-password', data);
-    return response.data;
+  }): Promise<ApiResponse<object>> => {
+    return await makeHttpRequest('post', '/auth/change-password', data);
   },
 };
 
 // Token management utilities
 export const setToken = (token: string) => {
   localStorage.setItem('token', token);
-  api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  httpClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 };
 
 export const clearToken = () => {
   localStorage.removeItem('token');
-  delete api.defaults.headers.common['Authorization'];
+  delete httpClient.defaults.headers.common['Authorization'];
 };

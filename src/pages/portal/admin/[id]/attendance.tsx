@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
 import {
   Users,
@@ -16,8 +16,14 @@ import {
   User,
 } from 'lucide-react';
 import { ProtectedRoute } from '../../../../lib/auth';
+import {
+  generateMockAttendanceData,
+  filterAttendanceData,
+  calculateAttendanceStats,
+} from '../../../../lib/helpers';
+import { useNotification } from '../../../../components/Toaster';
 import styles from './admin.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
 interface AttendanceRecord {
   _id: string;
@@ -43,6 +49,7 @@ interface AttendanceRecord {
 const AdminAttendance = () => {
   const router = useRouter();
   const { id } = router.query;
+  const { addNotification } = useNotification();
   const [activeTab, setActiveTab] = useState<'students' | 'teachers'>(
     'students'
   );
@@ -63,30 +70,36 @@ const AdminAttendance = () => {
     try {
       setLoading(true);
 
-      // Fetch students and teachers with attendance data
-      const [studentsResponse, teachersResponse] = await Promise.all([
-        apiServices.users.getByRole(3), // Students
-        apiServices.users.getByRole(2), // Teachers
-      ]);
+      // Fetch all users and filter by role
+      const usersResponse = await apiServices.users.getAll();
+
+      let studentsResponse: { success: boolean; data: AttendanceRecord[] } = {
+        success: false,
+        data: [],
+      };
+      let teachersResponse: { success: boolean; data: AttendanceRecord[] } = {
+        success: false,
+        data: [],
+      };
+      if (usersResponse.success && Array.isArray(usersResponse.data)) {
+        studentsResponse = {
+          success: true,
+          data: usersResponse.data.filter(
+            (user: { role: number }) => user.role === 3
+          ),
+        };
+        teachersResponse = {
+          success: true,
+          data: usersResponse.data.filter(
+            (user: { role: number }) => user.role === 2
+          ),
+        };
+      }
 
       if (studentsResponse.success) {
         // Transform student data to include mock attendance
         const studentsWithAttendance = studentsResponse.data.map(
-          (student: AttendanceRecord) => ({
-            ...student,
-            attendance: {
-              present: Math.floor(Math.random() * 80) + 120,
-              total: Math.floor(Math.random() * 20) + 150,
-              percentage: Math.floor(Math.random() * 30) + 70,
-              lastPresent: new Date(
-                Date.now() - Math.floor(Math.random() * 7) * 24 * 60 * 60 * 1000
-              )
-                .toISOString()
-                .split('T')[0],
-              streak: Math.floor(Math.random() * 10) + 1,
-            },
-            recentAttendance: generateRecentAttendance(),
-          })
+          generateMockAttendanceData
         );
         setStudents(studentsWithAttendance);
       }
@@ -94,91 +107,37 @@ const AdminAttendance = () => {
       if (teachersResponse.success) {
         // Transform teacher data to include mock attendance
         const teachersWithAttendance = teachersResponse.data.map(
-          (teacher: AttendanceRecord) => ({
-            ...teacher,
-            attendance: {
-              present: Math.floor(Math.random() * 80) + 120,
-              total: Math.floor(Math.random() * 20) + 150,
-              percentage: Math.floor(Math.random() * 20) + 80,
-              lastPresent: new Date(
-                Date.now() - Math.floor(Math.random() * 7) * 24 * 60 * 60 * 1000
-              )
-                .toISOString()
-                .split('T')[0],
-              streak: Math.floor(Math.random() * 15) + 5,
-            },
-            recentAttendance: generateRecentAttendance(),
-          })
+          generateMockAttendanceData
         );
         setTeachers(teachersWithAttendance);
       }
     } catch (error) {
       console.error('Error fetching attendance data:', error);
+      addNotification({
+        type: 'error',
+        title: 'Failed to fetch attendance data',
+        message: 'Please try refreshing the page.',
+      });
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, addNotification]);
 
   useEffect(() => {
     fetchAttendanceData();
   }, [fetchAttendanceData, selectedDate]);
 
-  const generateRecentAttendance = () => {
-    const statuses = ['present', 'absent', 'late'] as const;
-    return Array.from({ length: 7 }, (_, i) => ({
-      date: new Date(Date.now() - i * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split('T')[0],
-      status: statuses[Math.floor(Math.random() * (i === 0 ? 2 : 3))], // Today can't be late (not finished yet)
-    }));
-  };
-
   const getCurrentData = () => {
     return activeTab === 'students' ? students : teachers;
   };
 
-  const filteredData = getCurrentData().filter((record) => {
-    const matchesSearch =
-      record.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.userID.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.email.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredData = filterAttendanceData(
+    getCurrentData(),
+    searchTerm,
+    filterStatus
+  );
 
-    const matchesFilter =
-      filterStatus === 'all' ||
-      (filterStatus === 'present' && record.attendance.percentage >= 90) ||
-      (filterStatus === 'absent' &&
-        record.recentAttendance[0]?.status === 'absent') ||
-      (filterStatus === 'low' && record.attendance.percentage < 75);
-
-    return matchesSearch && matchesFilter;
-  });
-
-  const getAttendanceStats = () => {
-    const data = getCurrentData();
-    const totalUsers = data.length;
-    const presentToday = data.filter(
-      (r) => r.recentAttendance[0]?.status === 'present'
-    ).length;
-    const absentToday = data.filter(
-      (r) => r.recentAttendance[0]?.status === 'absent'
-    ).length;
-    const lowAttendance = data.filter(
-      (r) => r.attendance.percentage < 75
-    ).length;
-    const avgAttendance =
-      data.reduce((sum, r) => sum + r.attendance.percentage, 0) / totalUsers;
-
-    return {
-      totalUsers,
-      presentToday,
-      absentToday,
-      lowAttendance,
-      avgAttendance,
-    };
-  };
-
-  const stats = getAttendanceStats();
+  const stats = calculateAttendanceStats(getCurrentData());
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -215,7 +174,7 @@ const AdminAttendance = () => {
               ...record,
               recentAttendance: [
                 { date: selectedDate, status },
-                ...record.recentAttendance.slice(1),
+                ...(record.recentAttendance || []).slice(1),
               ],
             }
           : record
@@ -402,56 +361,66 @@ const AdminAttendance = () => {
                           </div>
                           <div>
                             <div className={styles.userName}>
-                              {record.firstName} {record.lastName}
+                              {record.firstName || ''} {record.lastName || ''}
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td>{record.userID}</td>
-                      <td>{record.email}</td>
+                      <td>{record.userID || 'N/A'}</td>
+                      <td>{record.email || 'N/A'}</td>
                       <td>
                         <span
                           className={styles.attendancePercentage}
                           style={{
                             color: getAttendanceColor(
-                              record.attendance.percentage
+                              record.attendance?.percentage || 0
                             ),
                           }}
                         >
-                          {record.attendance.percentage}%
+                          {record.attendance?.percentage || 0}%
                         </span>
                       </td>
                       <td>
-                        {record.attendance.present}/{record.attendance.total}
+                        {record.attendance?.present || 0}/
+                        {record.attendance?.total || 0}
                       </td>
                       <td>
                         <span className={styles.streak}>
-                          🔥 {record.attendance.streak} days
+                          🔥 {record.attendance?.streak || 0} days
                         </span>
                       </td>
                       <td>
                         <div className={styles.recentAttendance}>
-                          {record.recentAttendance.map((day, index) => (
-                            <div
-                              key={index}
-                              className={styles.attendanceDay}
-                              style={{
-                                backgroundColor: getStatusColor(day.status),
-                              }}
-                              title={`${day.date}: ${day.status}`}
-                            />
-                          ))}
+                          {(record.recentAttendance || []).map(
+                            (
+                              day: { date: string; status: string },
+                              index: number
+                            ) => (
+                              <div
+                                key={index}
+                                className={styles.attendanceDay}
+                                style={{
+                                  backgroundColor: getStatusColor(
+                                    day?.status || 'unknown'
+                                  ),
+                                }}
+                                title={`${day?.date || 'N/A'}: ${
+                                  day?.status || 'unknown'
+                                }`}
+                              />
+                            )
+                          )}
                         </div>
                       </td>
                       <td>
                         <span
                           className={`${styles.statusBadge} ${
                             styles[
-                              record.recentAttendance[0]?.status || 'unknown'
+                              record.recentAttendance?.[0]?.status || 'unknown'
                             ]
                           }`}
                         >
-                          {record.recentAttendance[0]?.status || 'Not marked'}
+                          {record.recentAttendance?.[0]?.status || 'Not marked'}
                         </span>
                       </td>
                       <td>

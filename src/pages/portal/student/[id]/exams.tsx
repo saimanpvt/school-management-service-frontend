@@ -1,98 +1,69 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import {
   FileText,
   Calendar,
   Clock,
-  MapPin,
-  TrendingUp,
   CheckCircle,
   AlertCircle,
 } from 'lucide-react';
 import styles from './student.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
-
-interface Exam {
-  id: string;
-  title: string;
-  subject: string;
-  date: string;
-  time: string;
-  duration: string;
-  location: string;
-  type: 'midterm' | 'final' | 'quiz';
-  status: 'upcoming' | 'completed' | 'ongoing';
-  grade?: string;
-}
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
+import { useNotification } from '../../../../components/Toaster/Toaster';
+import { apiServices } from '../../../../services/api';
+// import {
+//   STUDENT_EXAM_STATUS,
+// } from '../../../../lib/constants';
+import {
+  formatDateForStudent,
+  getExamStatusClass,
+} from '../../../../lib/helpers';
+import { StudentExam } from '../../../../lib/types';
 
 const StudentExams = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [exams, setExams] = useState<Exam[]>([]);
+  const [exams, setExams] = useState<StudentExam[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState<string>('all');
+  const { addNotification } = useNotification();
 
   useEffect(() => {
-    if (id) {
-      // Mock data - replace with actual API call
-      setTimeout(() => {
-        const mockData: Exam[] = [
-          {
-            id: '1',
-            title: 'Mathematics Midterm',
-            subject: 'Mathematics',
-            date: '2024-02-15',
-            time: '09:00 AM',
-            duration: '2 hours',
-            location: 'Hall A',
-            type: 'midterm',
-            status: 'upcoming',
-          },
-          {
-            id: '2',
-            title: 'Science Final',
-            subject: 'Science',
-            date: '2024-02-20',
-            time: '10:00 AM',
-            duration: '3 hours',
-            location: 'Hall B',
-            type: 'final',
-            status: 'upcoming',
-          },
-          {
-            id: '3',
-            title: 'English Quiz',
-            subject: 'English',
-            date: '2024-01-10',
-            time: '11:00 AM',
-            duration: '1 hour',
-            location: 'Room 101',
-            type: 'quiz',
-            status: 'completed',
-            grade: 'A',
-          },
-        ];
-        setExams(mockData);
-        setLoading(false);
-      }, 1000);
-    }
+    const loadExams = async () => {
+      if (id) {
+        try {
+          const response = await apiServices.exams.getAll();
+          if (response.success && response.data) {
+            const examsData = Array.isArray(response.data) ? response.data : [];
+            setExams(examsData);
+          } else {
+            setExams([]);
+            addNotification({
+              type: 'error',
+              title: 'Failed to load exams',
+              message: 'Please try again later.',
+            });
+          }
+        } catch (error) {
+          addNotification({
+            type: 'error',
+            title: 'Error loading exams',
+            message: 'Please try again later.',
+          });
+          setExams([]);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    loadExams();
   }, [id]);
 
   const filteredExams =
-    filterType === 'all' ? exams : exams.filter((e) => e.type === filterType);
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
-  const isUpcoming = (dateString: string) => {
-    return new Date(dateString) > new Date();
-  };
+    filterType === 'all'
+      ? exams
+      : exams.filter((exam) => exam.status === filterType);
 
   if (loading) {
     return (
@@ -111,126 +82,84 @@ const StudentExams = () => {
         <p>View and manage your exam schedule</p>
       </header>
 
-      <div style={{ marginBottom: '1.5rem' }}>
+      <div className={styles.filterContainer}>
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
-          style={{
-            padding: '0.5rem 1rem',
-            borderRadius: '0.5rem',
-            border: '1px solid #e5e7eb',
-            background: 'white',
-            fontSize: '1rem',
-            minWidth: '200px',
-          }}
+          className={styles.filterSelect}
         >
-          <option value="all">All Types</option>
-          <option value="quiz">Quiz</option>
-          <option value="midterm">Midterm</option>
-          <option value="final">Final</option>
+          <option value="all">All Exams</option>
+          <option value="upcoming">Upcoming</option>
+          <option value="completed">Completed</option>
+          <option value="missed">Missed</option>
         </select>
       </div>
 
       <div className={styles.examsGrid}>
         {filteredExams.length > 0 ? (
-          filteredExams.map((exam) => {
-            const upcoming = isUpcoming(exam.date);
-            return (
-              <div key={exam.id} className={styles.examCard}>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    marginBottom: '1rem',
-                  }}
-                >
+          filteredExams.map((exam) => (
+            <div key={exam.id} className={styles.examCard}>
+              <div className={styles.examHeader}>
+                <div>
                   <h3 className={styles.examTitle}>{exam.title}</h3>
-                  <span
-                    style={{
-                      padding: '0.25rem 0.75rem',
-                      borderRadius: '0.375rem',
-                      fontSize: '0.75rem',
-                      fontWeight: 500,
-                      background:
-                        exam.status === 'completed'
-                          ? '#d1fae5'
-                          : exam.status === 'ongoing'
-                          ? '#fef3c7'
-                          : '#dbeafe',
-                      color:
-                        exam.status === 'completed'
-                          ? '#059669'
-                          : exam.status === 'ongoing'
-                          ? '#d97706'
-                          : '#2563eb',
-                    }}
-                  >
-                    {exam.status === 'completed' && (
-                      <CheckCircle
-                        size={12}
-                        style={{ marginRight: '0.25rem' }}
-                      />
-                    )}
-                    {exam.status === 'upcoming' && upcoming && (
-                      <AlertCircle
-                        size={12}
-                        style={{ marginRight: '0.25rem' }}
-                      />
-                    )}
-                    {exam.status.charAt(0).toUpperCase() + exam.status.slice(1)}
-                  </span>
+                  <span className={styles.subjectBadge}>{exam.subject}</span>
                 </div>
+                <span
+                  className={`${styles.statusBadge} ${
+                    styles[getExamStatusClass(exam.status)]
+                  }`}
+                >
+                  {exam.status === 'upcoming' && <Clock size={14} />}
+                  {exam.status === 'completed' && <CheckCircle size={14} />}
+                  {exam.status === 'missed' && <AlertCircle size={14} />}
+                  {exam.status.charAt(0).toUpperCase() + exam.status.slice(1)}
+                </span>
+              </div>
 
-                <div className={styles.examMeta}>
-                  <div className={styles.examDate}>
-                    <Calendar size={14} />
-                    {formatDate(exam.date)}
-                  </div>
-                  <div className={styles.examTime}>
+              <div className={styles.examMeta}>
+                <div className={styles.examDate}>
+                  <Calendar size={14} />
+                  Date: {formatDateForStudent(exam.date)}
+                </div>
+                {exam.duration && (
+                  <div className={styles.examDuration}>
                     <Clock size={14} />
-                    {exam.time} ({exam.duration})
+                    Duration: {exam.duration} minutes
                   </div>
-                  <div className={styles.examLocation}>
-                    <MapPin size={14} />
-                    {exam.location}
+                )}
+                {exam.maxMarks && (
+                  <div className={styles.examMarks}>
+                    <FileText size={14} />
+                    Max Marks: {exam.maxMarks}
                   </div>
-                  <div
-                    style={{
-                      marginTop: '0.5rem',
-                      padding: '0.5rem',
-                      background: '#f3f4f6',
-                      borderRadius: '0.375rem',
-                      fontSize: '0.875rem',
-                    }}
-                  >
-                    <span style={{ fontWeight: 600 }}>Subject:</span>{' '}
-                    {exam.subject}
-                  </div>
-                  {exam.grade && (
-                    <div
-                      style={{
-                        marginTop: '0.5rem',
-                        padding: '0.5rem',
-                        background: '#eef2ff',
-                        borderRadius: '0.375rem',
-                        fontSize: '0.875rem',
-                        color: '#6366f1',
-                        fontWeight: 600,
-                      }}
+                )}
+              </div>
+
+              {exam.grade && (
+                <div className={styles.examGrade}>
+                  <strong>Grade: {exam.grade}</strong>
+                  {exam.result && (
+                    <span
+                      className={`${styles.resultBadge} ${
+                        exam.result === 'pass' ? styles.pass : styles.fail
+                      }`}
                     >
-                      Grade: {exam.grade}
-                    </div>
+                      {exam.result.toUpperCase()}
+                    </span>
                   )}
                 </div>
-              </div>
-            );
-          })
+              )}
+
+              {exam.feedback && (
+                <div className={styles.examFeedback}>
+                  <p>{exam.feedback}</p>
+                </div>
+              )}
+            </div>
+          ))
         ) : (
-          <div className={styles.emptyState}>
-            <FileText size={48} />
-            <h3>No exams scheduled</h3>
-            <p>Your upcoming exams will appear here.</p>
+          <div className={styles.noExams}>
+            <p>No exams found for the selected filter.</p>
           </div>
         )}
       </div>

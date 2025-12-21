@@ -1,18 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
-import {
-  Users,
-  BookOpen,
-  GraduationCap,
-  DollarSign,
-  TrendingUp,
-  Activity,
-} from 'lucide-react';
+import { Users, BookOpen, GraduationCap } from 'lucide-react';
 import { ProtectedRoute } from '../../../../lib/auth';
+import {
+  processUsersData,
+  calculateTotalRevenue,
+} from '../../../../lib/helpers';
 import styles from './admin.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
 const AdminDashboard = () => {
   const router = useRouter();
@@ -20,9 +17,10 @@ const AdminDashboard = () => {
   const [stats, setStats] = useState({
     totalStudents: 0,
     totalTeachers: 0,
+    totalParents: 0,
     totalCourses: 0,
     totalRevenue: 0,
-    recentActivity: [] as any[],
+    recentActivity: [] as unknown[],
   });
   const [loading, setLoading] = useState(true);
 
@@ -30,27 +28,27 @@ const AdminDashboard = () => {
     if (id) {
       // Fetch dashboard stats using unified users API
       Promise.all([
-        apiServices.users.getByRole(3), // Students
-        apiServices.users.getByRole(2), // Teachers
+        apiServices.users.getAll(),
         apiServices.courses.getAll(),
         apiServices.fees.getAll(),
       ])
-        .then(([studentsRes, teachersRes, coursesRes, feesRes]) => {
-          const totalRevenue = feesRes.success
-            ? feesRes.data?.reduce(
-                (sum: number, fee: any) => sum + (fee.amount || 0),
-                0
-              ) || 0
-            : 0;
+        .then(([usersRes, coursesRes, feesRes]) => {
+          // Process users data using helper function
+          const { totalStudents, totalTeachers, totalParents } =
+            processUsersData(usersRes.success ? usersRes.data : null);
 
+          // Calculate total revenue using helper function
+          const totalRevenue = calculateTotalRevenue(
+            feesRes.success ? feesRes.data : null
+          );
           setStats({
-            totalStudents: studentsRes.success
-              ? studentsRes.data?.length || 0
-              : 0,
-            totalTeachers: teachersRes.success
-              ? teachersRes.data?.length || 0
-              : 0,
-            totalCourses: coursesRes.success ? coursesRes.data?.length || 0 : 0,
+            totalStudents,
+            totalTeachers,
+            totalParents,
+            totalCourses:
+              coursesRes.success && Array.isArray(coursesRes.data)
+                ? coursesRes.data.length
+                : 0,
             totalRevenue,
             recentActivity: [],
           });
@@ -82,7 +80,7 @@ const AdminDashboard = () => {
 
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
-          <div className={styles.statIcon} style={{ background: '#eef2ff' }}>
+          <div className={`${styles.statIcon} ${styles.statIconStudents}`}>
             <Users size={24} color="#6366f1" />
           </div>
           <div className={styles.statInfo}>
@@ -92,7 +90,7 @@ const AdminDashboard = () => {
         </div>
 
         <div className={styles.statCard}>
-          <div className={styles.statIcon} style={{ background: '#f0fdf4' }}>
+          <div className={`${styles.statIcon} ${styles.statIconTeachers}`}>
             <GraduationCap size={24} color="#059669" />
           </div>
           <div className={styles.statInfo}>
@@ -102,12 +100,22 @@ const AdminDashboard = () => {
         </div>
 
         <div className={styles.statCard}>
-          <div className={styles.statIcon} style={{ background: '#fef3c7' }}>
+          <div className={`${styles.statIcon} ${styles.statIconCourses}`}>
             <BookOpen size={24} color="#d97706" />
           </div>
           <div className={styles.statInfo}>
             <h3>Total Courses</h3>
             <p className={styles.statNumber}>{stats.totalCourses}</p>
+          </div>
+        </div>
+
+        <div className={styles.statCard}>
+          <div className={`${styles.statIcon} ${styles.statIconParents}`}>
+            <Users size={24} color="#dc2626" />
+          </div>
+          <div className={styles.statInfo}>
+            <h3>Total Parents</h3>
+            <p className={styles.statNumber}>{stats.totalParents}</p>
           </div>
         </div>
       </div>
@@ -117,7 +125,7 @@ const AdminDashboard = () => {
 
 export default function ProtectedAdminDashboard() {
   return (
-    <ProtectedRoute allowedRoles={['Admin']}>
+    <ProtectedRoute roles={['Admin']}>
       <AdminDashboard />
     </ProtectedRoute>
   );

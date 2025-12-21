@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { authApi } from '../services/authApi';
-import LoadingDots from '../components/LoadingDots';
+import LoadingDots from '../components/LoadingDots/LoadingDots';
 
 // Auth context
 const AuthContext = createContext<{
@@ -41,8 +41,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Set Authorization header for future requests
       if (typeof window !== 'undefined') {
-        const api = (await import('../services/api')).api;
-        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        const { httpClient } = await import('../lib/httpClient');
+        httpClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       }
 
       setUser(userData);

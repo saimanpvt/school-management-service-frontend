@@ -1,308 +1,207 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
-import {
-  Users,
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  UserCheck,
-  GraduationCap,
-  BookOpen,
-  Heart,
-  MoreVertical,
-  Eye,
-  Award,
-  DollarSign,
-  User2,
-  CalendarDays,
-  TrendingUp,
-} from 'lucide-react';
-import UserForm, { UserFormData } from '../../../../components/UserForm';
-import Alert from '../../../../components/Alert';
+import { Users, Plus, Search, Trash2 } from 'lucide-react';
+import UserForm, {
+  UserFormData,
+} from '../../../../components/UserForm/UserForm';
+import AlertModal from '../../../../components/AlertModal';
+import { useNotification } from '../../../../components/Toaster';
 import { ProtectedRoute } from '../../../../lib/auth';
+import {
+  DEFAULT_USER_FORM,
+  USER_TYPE_FILTERS,
+  GENDER_OPTIONS,
+  BLOOD_GROUP_OPTIONS,
+  ALERT_MESSAGES,
+  UI_CONSTANTS,
+} from '../../../../lib/constants';
+import {
+  filterUsers,
+  getDisplayValue,
+  getUserRoleOptions,
+  getRoleBasedCount,
+  capitalizeFirstLetter,
+} from '../../../../lib/helpers';
+import { User, IUserType } from '../../../../lib/types';
 import styles from './admin.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
-type UserType = 'student' | 'teacher' | 'parent' | 'admin';
+// Helper functions to get CSS classes
+const getUserRoleClass = (role: string): string => {
+  switch (role) {
+    case '1':
+      return styles.userIdAdmins;
+    case '2':
+      return styles.userIdTeachers;
+    case '3':
+      return styles.userIdStudents;
+    case '4':
+      return styles.userIdParents;
+    default:
+      return '';
+  }
+};
 
-interface User {
-  _id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  userID: string;
-  role: number;
-  phone?: string;
-  address?: any;
-  dob?: string;
-  gender?: string;
-  bloodGroup?: string;
-  isActive: boolean;
+const getAttendanceClass = (percentage?: number): string => {
+  if (!percentage) return styles.secondaryText;
+  if (percentage >= 90) return styles.attendanceExcellent;
+  if (percentage >= 75) return styles.attendanceGood;
+  return styles.attendancePoor;
+};
 
-  // Extended fields for comprehensive user data
-  attendance?: {
-    present: number;
-    total: number;
-    percentage: number;
-  };
-  exams?: {
-    taken: number;
-    passed: number;
-    average: number;
-  };
-  progress?: {
-    overall: number;
-    currentLevel: string;
-  };
+const getFeeStatusClass = (status?: string): string => {
+  switch (status) {
+    case 'paid':
+      return styles.feeStatusPaid;
+    case 'pending':
+      return styles.feeStatusPending;
+    case 'overdue':
+      return styles.feeStatusOverdue;
+    default:
+      return styles.feeStatusOverdue;
+  }
+};
 
-  // Teacher specific
-  courses?: string[];
-  experience?: number;
-  joinedDate?: string;
-  expWithUs?: number;
-
-  // Student specific
-  classes?: string[];
-  currentClassId?: string;
-  timeWithUs?: number;
-  feeStatus?: {
-    status: 'paid' | 'pending' | 'overdue';
-    amount: number;
-    dueDate?: string;
-  };
-  parent?: {
-    name: string;
-    id: string;
-    phone: string;
-  };
-  results?: {
-    lastExam: string;
-    grade: string;
-    rank?: number;
-  };
-}
+const getFilterTabClass = (filterKey: string, isActive: boolean): string => {
+  const baseClass = `${styles.filterTab}`;
+  const activeClass = isActive ? styles.active : '';
+  const roleClass = isActive ? styles[`filterTab${filterKey.charAt(0).toUpperCase() + filterKey.slice(1)}Active`] : '';
+  return `${baseClass} ${activeClass} ${roleClass}`.trim();
+};
 
 const UserManagement = () => {
   const router = useRouter();
   const { id } = router.query;
+  const { addNotification } = useNotification();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeUserType, setActiveUserType] = useState<UserType>('student');
+  const [activeUserType, setActiveUserType] = useState<IUserType>('student');
   const [showAddForm, setShowAddForm] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [generatedPassword, setGeneratedPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
-  // Alert states
-  const [alertConfig, setAlertConfig] = useState({
+  // Delete modal state
+  const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
-    title: '',
-    message: '',
-    type: 'info' as 'info' | 'success' | 'warning' | 'error',
-    confirmText: 'OK',
-    cancelText: 'Cancel',
-    showCancel: false,
-    onConfirm: () => {},
+    userId: '',
+    userName: '',
   });
-  const [formData, setFormData] = useState<UserFormData>({
-    email: '',
-    firstName: '',
-    lastName: '',
-    role: 'student', // Default to Student
-    phone: '',
-    userID: '',
-    address: {
-      street: '',
-      city: '',
-      state: '',
-      zipCode: '',
-      country: '',
-    },
-    dob: '',
-    gender: '',
-    bloodGroup: '',
-    // Role-specific fields
-    employeeId: '',
-    experience: '',
-    DOJ: '',
-    admissionDate: '',
-    studentId: '',
-    childrenId: '',
-    classId: '',
-  });
+  const [formData, setFormData] = useState<UserFormData>(DEFAULT_USER_FORM);
 
-  // Role mappings
-  const roleMap = {
-    1: 'Admin',
-    2: 'Teacher',
-    3: 'Student',
-    4: 'Parent',
+  // Navigation handler for ID clicks
+  const handleViewDetails = (userId: string) => {
+    router.push(`/portal/admin/${id}/user/${userId}`);
   };
 
-  const userTypeFilters = [
-    {
-      key: 'student' as UserType,
-      label: 'Students',
-      icon: GraduationCap,
-      color: '#2563eb',
-    },
-    {
-      key: 'teacher' as UserType,
-      label: 'Teachers',
-      icon: BookOpen,
-      color: '#059669',
-    },
-    {
-      key: 'parent' as UserType,
-      label: 'Parents',
-      icon: Heart,
-      color: '#f59e0b',
-    },
-    {
-      key: 'admin' as UserType,
-      label: 'Admins',
-      icon: UserCheck,
-      color: '#7c3aed',
-    },
-  ];
-
-  // Dynamic role options based on active user type
-  const getRoleOptions = () => {
-    const roleMap = {
-      admin: [{ value: 'admin', label: 'Admin', color: '#7c3aed' }],
-      teacher: [{ value: 'teacher', label: 'Teacher', color: '#059669' }],
-      student: [{ value: 'student', label: 'Student', color: '#2563eb' }],
-      parent: [{ value: 'parent', label: 'Parent', color: '#f59e0b' }],
-    };
-    return roleMap[activeUserType] || [];
-  };
-
-  const genderOptions = ['Male', 'Female', 'Other'];
-  const bloodGroupOptions = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+  const fetchUsers = useCallback(async () => {
+    try {
+      setLoading(true);
+      // Simple API call - backend handles everything
+      const response = await apiServices.users.getAll();
+      if (response.success && response.data) {
+        // Handle API response structure: { students: [], teachers: [], parent: [] }
+        let userData: User[] = [];
+        if (Array.isArray(response.data)) {
+          userData = response.data as User[];
+        } else if (response.data && typeof response.data === 'object') {
+          const data = response.data as Record<string, User[]>;
+          // Parse students array
+          if (data.students && Array.isArray(data.students)) {
+            const students = data.students.map((student) => ({
+              _id: student._id || '',
+              email: student?.email || '',
+              firstName: student.fullName || '-',
+              userID:
+                student.userRefId || student.userId || student.userID || '',
+              role: 3,
+              isActive:
+                student.isActive !== undefined ? student.isActive : true,
+            }));
+            userData = [...students];
+          }
+          // Parse teachers array
+          if (data.teachers && Array.isArray(data.teachers)) {
+            const teachers = data.teachers.map((teacher) => ({
+              _id: teacher._id || '',
+              email: teacher?.email || '',
+              firstName: teacher.fullName?.split(' ')[0] || 'Unknown',
+              lastName: teacher.fullName?.split(' ').slice(1).join(' ') || '',
+              userID:
+                teacher.userId || teacher.userRefId || teacher.userID || '',
+              role: 2,
+              isActive:
+                teacher.isActive !== undefined ? teacher.isActive : true,
+            }));
+            userData = [...userData, ...teachers];
+          }
+          // Parse parent array (note: it's 'parent' not 'parents' in your API)
+          if (data.parent && Array.isArray(data.parent)) {
+            const parents = data.parent.map((parent) => ({
+              _id: parent._id || '',
+              email: parent.email || '',
+              firstName: parent.firstName || 'Unknown',
+              lastName: parent.lastName || '',
+              userID: parent.userID || parent.userId || parent.userRefId || '',
+              role: 4,
+              isActive: parent.isActive !== undefined ? parent.isActive : true,
+            }));
+            userData = [...userData, ...parents];
+          }
+        }
+        setUsers(userData || []);
+      } else {
+        setUsers([]);
+      }
+    } catch {
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (id) {
       fetchUsers();
     }
-  }, [id]);
+  }, [id, fetchUsers]);
 
-  const fetchUsers = async () => {
+  // Clear search term when switching user types
+  useEffect(() => {
+    setSearchTerm('');
+  }, [activeUserType]);
+
+  const filteredUsers = filterUsers(users, searchTerm, activeUserType);
+  const openDeleteModal = (userId: string, userName: string) => {
+    setDeleteModal({ isOpen: true, userId, userName });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, userId: '', userName: '' });
+  };
+
+  const confirmDelete = async () => {
     try {
-      const response = await apiServices.users.getAll();
-      console.log('API Response:', response); // Debug log
-
-      if (response.success && response.data) {
-        // Handle the backend response structure
-        let allUsers: User[] = [];
-        const responseData = response.data as any;
-
-        // Collect users from different arrays in the response
-        if (responseData.teachers) {
-          allUsers = [...allUsers, ...responseData.teachers];
-        }
-        if (responseData.students) {
-          allUsers = [...allUsers, ...responseData.students];
-        }
-        if (responseData.parents) {
-          allUsers = [...allUsers, ...responseData.parents];
-        }
-        if (responseData.admins) {
-          allUsers = [...allUsers, ...responseData.admins];
-        }
-
-        // Fallback to direct users array if available
-        if (allUsers.length === 0 && responseData.users) {
-          allUsers = responseData.users;
-        }
-
-        console.log('Processed user data:', allUsers); // Debug log
-        setUsers(allUsers);
-      }
-    } catch (error) {
-      console.error('Error fetching users:', error);
+      await apiServices.users.delete(deleteModal.userId);
+      setUsers(users.filter((u) => u._id !== deleteModal.userId));
+      addNotification({
+        type: 'success',
+        title: 'User deleted successfully!',
+        message: `${deleteModal.userName} has been removed.`,
+      });
+    } catch {
+      addNotification({
+        type: 'error',
+        title: 'Failed to delete user',
+        message: 'Please try again later.',
+      });
     } finally {
-      setLoading(false);
+      closeDeleteModal();
     }
-  };
-
-  const filteredUsers = (users || []).filter((user) => {
-    // Filter by user type
-    const roleMapping = {
-      admin: 1,
-      teacher: 2,
-      student: 3,
-      parent: 4,
-    };
-    const typeMatch = user.role === roleMapping[activeUserType];
-
-    // Filter by search term
-    const searchMatch =
-      user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.userID?.toLowerCase().includes(searchTerm.toLowerCase());
-
-    return typeMatch && searchMatch;
-  });
-
-  const handleDelete = async (userId: string, userName: string) => {
-    setAlertConfig({
-      isOpen: true,
-      title: 'Confirm Delete',
-      message: `Are you sure you want to delete "${userName}"? This action cannot be undone.`,
-      type: 'warning',
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
-      showCancel: true,
-      onConfirm: async () => {
-        try {
-          await apiServices.users.delete(userId);
-          setUsers(users.filter((u) => u._id !== userId));
-          showSuccessAlert('User deleted successfully!');
-        } catch (error) {
-          console.error('Error deleting user:', error);
-          showErrorAlert('Failed to delete user. Please try again.');
-        }
-        closeAlert();
-      },
-    });
-  };
-
-  // Helper functions for alerts
-  const showSuccessAlert = (message: string) => {
-    setAlertConfig({
-      isOpen: true,
-      title: 'Success',
-      message,
-      type: 'success',
-      confirmText: 'OK',
-      cancelText: 'Cancel',
-      showCancel: false,
-      onConfirm: () => {},
-    });
-  };
-
-  const showErrorAlert = (message: string) => {
-    setAlertConfig({
-      isOpen: true,
-      title: 'Error',
-      message,
-      type: 'error',
-      confirmText: 'OK',
-      cancelText: 'Cancel',
-      showCancel: false,
-      onConfirm: () => {},
-    });
-  };
-
-  const closeAlert = () => {
-    setAlertConfig((prev) => ({ ...prev, isOpen: false }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -310,58 +209,112 @@ const UserManagement = () => {
 
     // For edit mode, password is not required
     if (!isEditMode && !generatedPassword) {
-      showErrorAlert('Please generate a password first');
+      addNotification({
+        type: 'error',
+        title: 'Password Required',
+        message: ALERT_MESSAGES.GENERATE_PASSWORD_REQUIRED,
+      });
       return;
     }
 
     try {
-      const userData = {
-        ...formData,
-        ...(generatedPassword && { password: generatedPassword }), // Only include password if present
-        role: formData.role, // Send role as string directly (student, teacher, parent, admin)
+      // Send only REQUIRED fields based on role (matching your backend validation)
+      const requiredBaseFields = [
+        'email',
+        'firstName',
+        'lastName',
+        'role',
+        'userID',
+      ];
+
+      // Role-specific REQUIRED fields (from your backend controller)
+      const roleRequiredFields: Record<string, string[]> = {
+        admin: [], // Admin only needs base required fields
+        teacher: ['employeeId', 'experience', 'DOJ'], // MUST send these for teacher
+        student: ['studentId', 'admissionDate', 'classId'], // MUST send these for student
+        parent: ['childrenId'], // MUST send this for parent
       };
+      // Optional fields that can be included if present
+      const optionalFields = [
+        'phone',
+        'dob',
+        'gender',
+        'bloodGroup',
+        'address',
+      ];
+      // Build final payload with required + optional fields
+      const requiredFields = [
+        ...requiredBaseFields,
+        ...(roleRequiredFields[formData.role] || []),
+      ];
 
-      console.log('Sending user data with role as string:', userData);
-      console.log('Role being sent:', userData.role, typeof userData.role);
+      const userData: Record<string, unknown> = {};
 
-      let response: any;
+      // Add required fields (must be present)
+      requiredFields.forEach((field) => {
+        userData[field] = formData[field as keyof UserFormData] || '';
+      });
+      // Add optional fields (only if they have values)
+      optionalFields.forEach((field) => {
+        const value = formData[field as keyof UserFormData];
+        if (value !== undefined && value !== '' && value !== null) {
+          userData[field] = value;
+        }
+      });
+
+      // Add password only if present
+      if (generatedPassword) {
+        userData.password = generatedPassword;
+      }
+
+      console.log('Sending filtered user data:', userData);
+
+      let response: { success?: boolean; message?: string; data?: User };
       if (isEditMode && editingUserId) {
         // Update existing user
-        response = await apiServices.users.update(editingUserId, userData);
+        response = (await apiServices.users.update(
+          editingUserId,
+          userData
+        )) as { success?: boolean; message?: string; data?: User };
         if (response.success) {
-          showSuccessAlert('User updated successfully!');
-          // Update the user in the local state
-          setUsers(
-            users.map((user) =>
-              user._id === editingUserId ? { ...user, ...response.data } : user
-            )
-          );
+          addNotification({
+            type: 'success',
+            title: 'User updated successfully!',
+            message: `${formData.firstName} ${formData.lastName} has been updated.`,
+          });
+          // Refresh the user list after update
+          fetchUsers();
           setShowAddForm(false);
           resetForm();
         }
       } else {
         // Create new user
-        response = await apiServices.users.create(userData);
+        response = (await apiServices.users.create(userData)) as {
+          success?: boolean;
+          message?: string;
+          data?: User;
+        };
         if (response.success) {
-          await apiServices.admin.sendCredentialsEmail({
-            email: formData.email,
-            password: generatedPassword,
-            userID: formData.userID,
-            firstName: formData.firstName,
+          addNotification({
+            type: 'success',
+            title: 'User created successfully!',
+            message: `${formData.firstName} ${formData.lastName} has been created. Password: ${generatedPassword}`,
           });
-          showSuccessAlert(
-            'User created successfully and credentials sent via email!'
-          );
-          setUsers([...users, response.data]);
+          // Refresh the user list after creation
+          fetchUsers();
           setShowAddForm(false);
           resetForm();
         }
       }
     } catch (error) {
       console.error('Error saving user:', error);
-      showErrorAlert(
-        `Failed to ${isEditMode ? 'update' : 'create'} user. Please try again.`
-      );
+      addNotification({
+        type: 'error',
+        title: isEditMode ? 'Failed to update user' : 'Failed to create user',
+        message: isEditMode
+          ? ALERT_MESSAGES.UPDATE_FAILED
+          : ALERT_MESSAGES.CREATE_FAILED,
+      });
     }
   };
 
@@ -370,7 +323,7 @@ const UserManagement = () => {
       email: '',
       firstName: '',
       lastName: '',
-      role: 'student',
+      role: activeUserType, // Set role based on current active tab
       phone: '',
       userID: '',
       address: { street: '', city: '', state: '', zipCode: '', country: '' },
@@ -390,108 +343,6 @@ const UserManagement = () => {
     setShowPassword(false);
     setIsEditMode(false);
     setEditingUserId(null);
-  };
-
-  // Handle edit user
-  const handleEditUser = (user: User) => {
-    // Convert user data to form format
-    setFormData({
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      role: getRoleString(user.role),
-      phone: user.phone || '',
-      userID: user.userID,
-      address: {
-        street: user.address?.street || '',
-        city: user.address?.city || '',
-        state: user.address?.state || '',
-        zipCode: user.address?.zipCode || '',
-        country: user.address?.country || '',
-      },
-      dob: user.dob || '',
-      gender: user.gender || '',
-      bloodGroup: user.bloodGroup || '',
-      // Role-specific fields - you may need to adjust based on your user data structure
-      employeeId: (user as any).employeeId || '',
-      experience: (user as any).experience || '',
-      DOJ: (user as any).DOJ || '',
-      admissionDate: (user as any).admissionDate || '',
-      studentId: (user as any).studentId || '',
-      childrenId: (user as any).childrenId || '',
-      classId: (user as any).classId || '',
-    });
-    setIsEditMode(true);
-    setEditingUserId(user._id);
-    setShowAddForm(true);
-    setOpenDropdown(null);
-  };
-
-  // Helper function to convert role number to string
-  const getRoleString = (roleNumber: number): string => {
-    const roleMapping = {
-      1: 'admin',
-      2: 'teacher',
-      3: 'student',
-      4: 'parent',
-    };
-    return roleMapping[roleNumber as keyof typeof roleMapping] || 'student';
-  };
-
-  const getRoleColor = (role: number) => {
-    const colors: Record<number, string> = {
-      1: '#7c3aed', // Admin - Red
-      2: '#059669', // Teacher - Green
-      3: '#2563eb', // Student - Blue
-      4: '#f59e0b', // Parent - Yellow
-    };
-    return colors[role] || '#6b7280';
-  };
-
-  // Helper function to get display value or dash
-  const getDisplayValue = (value: any, defaultValue: string = '-') => {
-    return value ? value : defaultValue;
-  };
-
-  const getPercentageColor = (percentage: number) => {
-    if (percentage >= 90) return '#059669'; // Green
-    if (percentage >= 75) return '#f59e0b'; // Yellow
-    return '#dc2626'; // Red
-  };
-
-  // Navigation handlers
-  const handleViewDetails = (userId: string, userRole: number) => {
-    const roleRoutes = {
-      1: `/portal/admin/${id}/users/${userId}`, // Admin details
-      2: `/portal/admin/${id}/teacher-details/${userId}`, // Teacher details
-      3: `/portal/admin/${id}/student-details/${userId}`, // Student details
-      4: `/portal/admin/${id}/parent-details/${userId}`, // Parent details
-    };
-    router.push(roleRoutes[userRole as keyof typeof roleRoutes] || '#');
-  };
-
-  const handleViewAttendance = (userId: string) => {
-    router.push(`/portal/admin/${id}/attendance/${userId}`);
-  };
-
-  const handleViewExams = (userId: string) => {
-    router.push(`/portal/admin/${id}/exams/${userId}`);
-  };
-
-  const handleViewProgress = (userId: string) => {
-    router.push(`/portal/admin/${id}/progress/${userId}`);
-  };
-
-  const handleViewFees = (userId: string) => {
-    router.push(`/portal/admin/${id}/fees/${userId}`);
-  };
-
-  const handleViewParent = (parentId: string) => {
-    router.push(`/portal/admin/${id}/parent-details/${parentId}`);
-  };
-
-  const handleViewResults = (userId: string) => {
-    router.push(`/portal/admin/${id}/results/${userId}`);
   };
 
   if (loading) {
@@ -519,9 +370,9 @@ const UserManagement = () => {
           setGeneratedPassword={setGeneratedPassword}
           showPassword={showPassword}
           setShowPassword={setShowPassword}
-          roleOptions={getRoleOptions()}
-          genderOptions={genderOptions}
-          bloodGroupOptions={bloodGroupOptions}
+          roleOptions={getUserRoleOptions(activeUserType)}
+          genderOptions={GENDER_OPTIONS as string[]}
+          bloodGroupOptions={BLOOD_GROUP_OPTIONS as string[]}
           activeUserType={activeUserType}
           isEdit={isEditMode}
         />
@@ -537,32 +388,21 @@ const UserManagement = () => {
         </div>
       </header>
 
-      {/* User Type Filter Tabs - At the top */}
       <div className={styles.filterTabs}>
-        {userTypeFilters.map((filter) => {
+        {USER_TYPE_FILTERS.map((filter) => {
           const Icon = filter.icon;
           const isActive = activeUserType === filter.key;
-          const count = users.filter(
-            (u) =>
-              u.role ===
-              (filter.key === 'admin'
-                ? 1
-                : filter.key === 'teacher'
-                ? 2
-                : filter.key === 'student'
-                ? 3
-                : 4)
-          ).length;
+          const count = getRoleBasedCount(users, filter.key);
 
           return (
             <button
               key={filter.key}
               className={`${styles.filterTab} ${isActive ? styles.active : ''}`}
-              onClick={() => setActiveUserType(filter.key)}
-              style={{
-                borderColor: isActive ? filter.color : '#e5e7eb',
-                color: isActive ? filter.color : '#6b7280',
+              onClick={() => {
+                setActiveUserType(filter.key);
+                setSearchTerm('');
               }}
+              className={getFilterTabClass(filter.key, isActive)}
             >
               <Icon size={18} />
               <span>{filter.label}</span>
@@ -595,29 +435,20 @@ const UserManagement = () => {
             }}
           >
             <Plus size={18} />
-            Add{' '}
-            {activeUserType.charAt(0).toUpperCase() + activeUserType.slice(1)}
+            Add {capitalizeFirstLetter(activeUserType)}
           </button>
         </div>
       </div>
 
-      <div className={styles.tableContainer}>
-        <table className={styles.dataTable}>
+      <div className={styles.userTableContainer}>
+        <table className={styles.userDataTable}>
           <thead>
             <tr>
-              <th style={{ textAlign: 'center' }}>ID</th>
-              <th>Name</th>
-              <th style={{ textAlign: 'center' }}>Exams</th>
-              <th style={{ textAlign: 'center' }}>Progress</th>
-              <th style={{ textAlign: 'center' }}>Attendance</th>
-              {activeUserType === 'teacher' && <th>Courses</th>}
-              {activeUserType === 'student' && (
-                <>
-                  <th>Class</th>
-                  <th>Fee Status</th>
-                </>
-              )}
-              <th>Actions</th>
+              {UI_CONSTANTS.TABLE_COLUMNS.map((col) => (
+                <th key={col.key} className={col.align === 'center' ? styles.textCenter : col.align === 'left' ? styles.textLeft : styles.textRight}>
+                  {col.label}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -625,102 +456,39 @@ const UserManagement = () => {
               filteredUsers.map((user) => {
                 return (
                   <tr key={user._id}>
-                    {/* Essential columns for all users */}
-                    <td style={{ textAlign: 'center' }}>
+                    {/* ID Column */}
+                    <td className={styles.textCenter}>
                       <span
-                        className={styles.clickable}
-                        onClick={() => handleViewDetails(user._id, user.role)}
-                        style={{
-                          color: getRoleColor(user.role),
-                          fontWeight: '600',
-                        }}
+                        className={`${styles.clickable} ${styles.userIdClickable} ${getUserRoleClass(user.role)}`}
+                        onClick={() => handleViewDetails(user.userID)}
                       >
                         {user.userID || 'N/A'}
                       </span>
                     </td>
 
-                    <td>
+                    {/* Name Column */}
+                    <td className={styles.paddingLeft16}>
                       <div className={styles.userInfo}>
-                        <span
-                          className={styles.clickable}
-                          onClick={() => handleViewDetails(user._id, user.role)}
-                          style={{ fontWeight: '600' }}
-                        >
+                        <span className={styles.fontWeight600}>
                           {user.firstName} {user.lastName}
                         </span>
-                        <small style={{ color: '#6b7280', display: 'block' }}>
+                        <small className={styles.userEmail}>
                           {user.email}
                         </small>
                       </div>
                     </td>
 
-                    <td>
-                      <div
-                        className={styles.clickable}
-                        onClick={() => handleViewExams(user._id)}
-                        style={{ textAlign: 'center' }}
-                      >
-                        <div style={{ fontWeight: '600', color: '#059669' }}>
-                          {getDisplayValue(user.exams?.taken)}
-                        </div>
-                        <small style={{ color: '#6b7280' }}>
-                          Avg:{' '}
-                          {getDisplayValue(
-                            user.exams?.average
-                              ? `${user.exams.average}%`
-                              : null
-                          )}
-                        </small>
-                      </div>
-                    </td>
-
-                    <td>
-                      <div
-                        className={styles.clickable}
-                        onClick={() => handleViewProgress(user._id)}
-                        style={{ textAlign: 'center' }}
-                      >
-                        <div
-                          style={{
-                            fontWeight: '600',
-                            color: user.progress?.overall
-                              ? getPercentageColor(user.progress.overall)
-                              : '#6b7280',
-                          }}
-                        >
-                          {getDisplayValue(
-                            user.progress?.overall
-                              ? `${user.progress.overall}%`
-                              : null
-                          )}
-                        </div>
-                        <small style={{ color: '#6b7280' }}>
-                          {getDisplayValue(user.progress?.currentLevel)}
-                        </small>
-                      </div>
-                    </td>
-
-                    <td>
-                      <div
-                        className={styles.clickable}
-                        onClick={() => handleViewAttendance(user._id)}
-                        style={{ textAlign: 'center' }}
-                      >
-                        <div
-                          style={{
-                            fontWeight: '600',
-                            color: user.attendance?.percentage
-                              ? getPercentageColor(user.attendance.percentage)
-                              : '#6b7280',
-                          }}
-                        >
+                    {/* Attendance Column */}
+                    <td className={styles.textCenter}>
+                      <div>
+                        <div className={`${styles.fontWeight600} ${getAttendanceClass(user.attendance?.percentage)}`}>
                           {getDisplayValue(
                             user.attendance?.percentage
                               ? `${user.attendance.percentage}%`
                               : null
                           )}
                         </div>
-                        <small style={{ color: '#6b7280' }}>
+                        <small className={styles.secondaryText}>
                           {user.attendance?.present && user.attendance?.total
                             ? `${user.attendance.present}/${user.attendance.total}`
                             : '-/-'}
@@ -728,243 +496,49 @@ const UserManagement = () => {
                       </div>
                     </td>
 
-                    {/* Teacher-specific columns */}
-                    {activeUserType === 'teacher' && (
-                      <td>
-                        <div
-                          className={styles.clickable}
-                          onClick={() => handleViewDetails(user._id, user.role)}
-                          style={{ fontSize: '0.875rem' }}
-                        >
-                          <strong style={{ color: getRoleColor(user.role) }}>
-                            ({getDisplayValue(user.courses?.length, '0')})
-                          </strong>
-                          <div
-                            style={{ color: '#6b7280', fontSize: '0.75rem' }}
-                          >
-                            {user.courses?.length
-                              ? user.courses.slice(0, 2).join(', ')
-                              : 'No courses'}
-                            {(user.courses?.length || 0) > 2 && '...'}
-                          </div>
-                        </div>
-                      </td>
-                    )}
-
-                    {/* Student-specific columns */}
-                    {activeUserType === 'student' && (
-                      <>
-                        <td>
-                          <div
-                            className={styles.clickable}
-                            onClick={() =>
-                              handleViewDetails(user._id, user.role)
-                            }
-                            style={{ fontSize: '0.875rem' }}
-                          >
-                            <div
-                              style={{
-                                fontWeight: '600',
-                                color: getRoleColor(user.role),
-                              }}
-                            >
-                              {getDisplayValue(user.currentClassId)}
-                            </div>
-                            <div
-                              style={{ color: '#6b7280', fontSize: '0.75rem' }}
-                            >
-                              {getDisplayValue(user.classes?.[0], 'No class')}
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <div
-                            className={styles.clickable}
-                            onClick={() => handleViewFees(user._id)}
-                            style={{ textAlign: 'center' }}
-                          >
-                            <span
-                              className={styles.statusBadge}
-                              style={{
-                                backgroundColor:
-                                  user.feeStatus?.status === 'paid'
-                                    ? '#dcfce7'
-                                    : user.feeStatus?.status === 'pending'
-                                    ? '#fef3c7'
-                                    : '#fee2e2',
-                                color:
-                                  user.feeStatus?.status === 'paid'
-                                    ? '#166534'
-                                    : user.feeStatus?.status === 'pending'
-                                    ? '#92400e'
-                                    : '#991b1b',
-                                padding: '2px 8px',
-                                borderRadius: '12px',
-                                fontSize: '0.75rem',
-                                fontWeight: '600',
-                              }}
-                            >
-                              {getDisplayValue(
-                                user.feeStatus?.status,
-                                'Unknown'
-                              )}
-                            </span>
-                          </div>
-                        </td>
-                      </>
-                    )}
-
-                    {/* Actions dropdown */}
-                    <td>
-                      <div className={styles.actionDropdown}>
-                        <button
-                          className={styles.moreBtn}
-                          onClick={() =>
-                            setOpenDropdown(
-                              openDropdown === user._id ? null : user._id
-                            )
-                          }
-                        >
-                          <MoreVertical size={16} />
-                        </button>
-
-                        {openDropdown === user._id && (
-                          <div className={styles.dropdownMenu}>
-                            <button
-                              onClick={() => {
-                                handleViewDetails(user._id, user.role);
-                                setOpenDropdown(null);
-                              }}
-                            >
-                              <Eye size={14} />
-                              View Details
-                            </button>
-
-                            <button
-                              onClick={() => {
-                                handleEditUser(user);
-                                setOpenDropdown(null);
-                              }}
-                            >
-                              <Edit size={14} />
-                              Edit User
-                            </button>
-
-                            <button
-                              onClick={() => {
-                                handleViewAttendance(user._id);
-                                setOpenDropdown(null);
-                              }}
-                            >
-                              <CalendarDays size={14} />
-                              View Attendance
-                            </button>
-
-                            <button
-                              onClick={() => {
-                                handleViewExams(user._id);
-                                setOpenDropdown(null);
-                              }}
-                            >
-                              <Award size={14} />
-                              View Exams
-                            </button>
-
-                            <button
-                              onClick={() => {
-                                handleViewProgress(user._id);
-                                setOpenDropdown(null);
-                              }}
-                            >
-                              <TrendingUp size={14} />
-                              View Progress
-                            </button>
-
-                            {activeUserType === 'student' && (
-                              <>
-                                <button
-                                  onClick={() => {
-                                    handleViewFees(user._id);
-                                    setOpenDropdown(null);
-                                  }}
-                                >
-                                  <DollarSign size={14} />
-                                  View Fees
-                                </button>
-
-                                <button
-                                  onClick={() => {
-                                    handleViewParent(user.parent?.id || '');
-                                    setOpenDropdown(null);
-                                  }}
-                                >
-                                  <User2 size={14} />
-                                  View Parent
-                                </button>
-
-                                <button
-                                  onClick={() => {
-                                    handleViewResults(user._id);
-                                    setOpenDropdown(null);
-                                  }}
-                                >
-                                  <Award size={14} />
-                                  View Results
-                                </button>
-                              </>
-                            )}
-
-                            <hr
-                              style={{
-                                margin: '4px 0',
-                                border: 'none',
-                                borderTop: '1px solid #e5e7eb',
-                              }}
-                            />
-
-                            <button className={styles.editAction}>
-                              <Edit size={14} />
-                              Edit User
-                            </button>
-
-                            <button
-                              className={styles.deleteAction}
-                              onClick={() => {
-                                handleDelete(
-                                  user._id,
-                                  `${user.firstName} ${user.lastName}`
-                                );
-                                setOpenDropdown(null);
-                              }}
-                            >
-                              <Trash2 size={14} />
-                              Delete User
-                            </button>
+                    {/* Fees Column */}
+                    <td className={styles.textCenter}>
+                      <div>
+                        <span className={getFeeStatusClass(user.feeStatus?.status)}>
+                          {getDisplayValue(user.feeStatus?.status, 'N/A')}
+                        </span>
+                        {user.feeStatus?.amount && (
+                          <div className={styles.smallText}>
+                            ${user.feeStatus.amount}
                           </div>
                         )}
                       </div>
+                    </td>
+                    {/* Actions Column - Only Delete Button */}
+                    <td className={styles.textCenter}>
+                      <button
+                        className={styles.deleteBtn}
+                        onClick={() =>
+                          openDeleteModal(
+                            user.userID,
+                            `${user.firstName} ${user.lastName}`
+                          )
+                        }
+                        title="Delete User"
+                        className={styles.deleteButton}
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </td>
                   </tr>
                 );
               })
             ) : (
               <tr>
-                <td
-                  colSpan={
-                    activeUserType === 'teacher'
-                      ? 7
-                      : activeUserType === 'student'
-                      ? 8
-                      : 6
-                  }
-                  className={styles.emptyState}
-                >
+                <td colSpan={5} className={styles.emptyState}>
                   <Users size={48} />
                   <h3>No users found</h3>
                   <p>
                     {searchTerm
                       ? 'Try a different search term'
-                      : `No ${activeUserType}s in the system`}
+                      : `No ${capitalizeFirstLetter(
+                        activeUserType
+                      )}s in the system`}
                   </p>
                 </td>
               </tr>
@@ -972,12 +546,6 @@ const UserManagement = () => {
           </tbody>
         </table>
       </div>
-      {openDropdown && (
-        <div
-          className={styles.dropdownOverlay}
-          onClick={() => setOpenDropdown(null)}
-        />
-      )}
 
       {/* User Form Modal */}
       {showAddForm && (
@@ -995,32 +563,27 @@ const UserManagement = () => {
           setGeneratedPassword={setGeneratedPassword}
           showPassword={showPassword}
           setShowPassword={setShowPassword}
-          roleOptions={[
-            { value: 'admin', label: 'Admin', color: '#7c3aed' },
-            { value: 'teacher', label: 'Teacher', color: '#059669' },
-            { value: 'student', label: 'Student', color: '#2563eb' },
-            { value: 'parent', label: 'Parent', color: '#dc2626' },
-          ]}
-          genderOptions={['Male', 'Female', 'Other']}
-          bloodGroupOptions={['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']}
+          roleOptions={getUserRoleOptions(activeUserType)}
+          genderOptions={GENDER_OPTIONS as string[]}
+          bloodGroupOptions={BLOOD_GROUP_OPTIONS as string[]}
           activeUserType={activeUserType}
           isEdit={isEditMode}
         />
       )}
 
-      {/* Alert Component */}
-      <Alert
-        isOpen={alertConfig.isOpen}
-        onClose={closeAlert}
-        onConfirm={alertConfig.onConfirm}
-        title={alertConfig.title}
-        message={alertConfig.message}
-        type={alertConfig.type}
-        confirmText={alertConfig.confirmText}
-        cancelText={alertConfig.cancelText}
-        showCancel={alertConfig.showCancel}
-        showConfirm={true}
-      />
+      {/* Delete Confirmation Modal */}
+      {deleteModal.isOpen && (
+        <AlertModal
+          usage="delete"
+          mainText="Delete User"
+          subText={`Are you sure you want to delete "${deleteModal.userName}"? This action cannot be undone.`}
+          confirmText="Delete"
+          cancelText="Cancel"
+          onConfirm={confirmDelete}
+          onCancel={closeDeleteModal}
+          onClose={closeDeleteModal}
+        />
+      )}
     </PortalLayout>
   );
 };

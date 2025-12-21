@@ -1,54 +1,47 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
-import LoadingDots from '../../../../components/LoadingDots';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 import { apiServices } from '../../../../services/api';
 import { Users, Mail, Phone, Search } from 'lucide-react';
 import styles from './teacher.module.css';
-
-interface Student {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  grade: string;
-  rollNumber: string;
-  attendance: number;
-  averageGrade: number;
-}
+import { useNotification } from '../../../../components/Toaster/Toaster';
+import { TeacherStudent } from '../../../../lib/types';
 
 const TeacherStudents = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [students, setStudents] = useState<Student[]>([]);
+  const [students, setStudents] = useState<TeacherStudent[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const { addNotification } = useNotification();
 
   useEffect(() => {
     const loadStudents = async () => {
       if (id) {
         try {
-          const classesResponse = await apiServices.teacher.getTeacherClasses(
-            id as string
-          );
-          if (classesResponse.success && classesResponse.data) {
-            let allStudents: Student[] = [];
-            for (const cls of classesResponse.data) {
-              const studentsResponse =
-                await apiServices.teacher.getStudentsByClass(cls.id);
-              if (studentsResponse.success && studentsResponse.data) {
-                allStudents = [...allStudents, ...studentsResponse.data];
-              }
-            }
-            // Remove duplicates based on student ID
-            const uniqueStudents = allStudents.filter(
-              (student, index, self) =>
-                index === self.findIndex((s) => s.id === student.id)
-            );
-            setStudents(uniqueStudents);
+          const studentsResponse = await apiServices.users.getAll();
+          if (studentsResponse.success && studentsResponse.data) {
+            const allStudents = Array.isArray(studentsResponse.data)
+              ? studentsResponse.data.filter((user: any) => user.role === 3)
+              : [];
+            setStudents(allStudents);
+          } else {
+            setStudents([]);
+            addNotification({
+              type: 'info',
+              title: 'No students found',
+              message: 'There are no students enrolled in your classes.',
+            });
           }
         } catch (error) {
           console.error('Error fetching students:', error);
+          setStudents([]);
+          addNotification({
+            type: 'error',
+            title: 'Failed to load students',
+            message: 'Please try again later.',
+          });
         } finally {
           setLoading(false);
         }

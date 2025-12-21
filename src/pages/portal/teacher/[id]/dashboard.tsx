@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import styles from './teacher.module.css';
-import PortalLayout from '../../../../components/PortalLayout';
-import { apiServices, TeacherDashboardStats } from '../../../../services/api';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
+import { apiServices } from '../../../../services/api';
 import {
   LineChart,
   Line,
@@ -12,12 +12,14 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import LoadingDots from '../../../../components/LoadingDots';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
+import { useNotification } from '../../../../components/Toaster/Toaster';
 
 const TeacherDashboard = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [stats, setStats] = useState<TeacherDashboardStats | null>(null);
+  const { addNotification } = useNotification();
+  const [stats, setStats] = useState<null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -26,17 +28,29 @@ const TeacherDashboard = () => {
 
     try {
       setLoading(true);
-      const response = await apiServices.teacher.getDashboardStats(
-        id as string
-      );
+      // Use unified dashboard API - backend handles role-based stats
+      const response = (await apiServices.dashboard?.getStats()) || {
+        success: false,
+        data: null,
+      };
       if (response.success && response.data) {
         setStats(response.data);
       } else {
         setError('Failed to load dashboard data');
+        addNotification({
+          type: 'error',
+          title: 'Failed to load dashboard data',
+          message: 'Please try again later.',
+        });
       }
     } catch (err) {
       console.error('Error loading dashboard stats:', err);
       setError('Failed to load dashboard data');
+      addNotification({
+        type: 'error',
+        title: 'Failed to load dashboard data',
+        message: 'Please try again later.',
+      });
     } finally {
       setLoading(false);
     }

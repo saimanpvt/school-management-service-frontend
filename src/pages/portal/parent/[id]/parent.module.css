@@ -789,3 +789,20 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
 }
+
+/* Empty States */
+.noChildren {
+  @apply text-center py-8 text-gray-500;
+}
+
+.noData {
+  @apply text-center py-8 text-gray-500 bg-white rounded-lg;
+}
+
+.noActivities {
+  @apply text-center py-8 text-gray-500;
+}
+
+.noEvents {
+  @apply text-center py-8 text-gray-500;
+}

@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
-import { apiServices, Course } from '../../../../services/api';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
+import { apiServices } from '../../../../services/api';
+import { StudentCourse } from '../../../../lib/types';
 import { BookOpen, Clock, User, TrendingUp, FileText } from 'lucide-react';
 import styles from './student.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
 
 const StudentCourses = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [courses, setCourses] = useState<StudentCourse[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadCourses = async () => {
       if (id) {
         try {
-          const response = await apiServices.student.getStudentCourses(
+          const response = await apiServices.courses.getStudentCourses(
             id as string
           );
           if (response.success && response.data) {

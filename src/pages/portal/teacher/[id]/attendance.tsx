@@ -1,50 +1,34 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PortalLayout from '../../../../components/PortalLayout';
+import PortalLayout from '../../../../components/PortalLayout/PortalLayout';
 import { apiServices } from '../../../../services/api';
-import {
-  Users,
-  Calendar,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Save,
-} from 'lucide-react';
+import { Users, CheckCircle, XCircle, Clock, Save } from 'lucide-react';
 import styles from './teacher.module.css';
-import LoadingDots from '../../../../components/LoadingDots';
-
-interface Student {
-  id: string;
-  name: string;
-  rollNumber: string;
-  profileImage?: string;
-}
-
-interface AttendanceRecord {
-  studentId: string;
-  status: 'present' | 'absent' | 'late';
-}
+import LoadingDots from '../../../../components/LoadingDots/LoadingDots';
+import { TEACHER_ATTENDANCE_STATUS } from '../../../../lib/constants';
+import { TeacherAttendanceStudent } from '../../../../lib/types';
+import { useNotification } from '../../../../components/Toaster';
 
 const TeacherAttendance = () => {
   const router = useRouter();
   const { id } = router.query;
   const [classes, setClasses] = useState<any[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>('');
-  const [students, setStudents] = useState<Student[]>([]);
-  const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
+  const [students, setStudents] = useState<TeacherAttendanceStudent[]>([]);
+  const [attendance, setAttendance] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split('T')[0]
   );
+  const { addNotification } = useNotification();
 
   useEffect(() => {
     const loadClasses = async () => {
       if (id) {
         try {
-          const response = await apiServices.teacher.getTeacherClasses(
-            id as string
-          );
+          // Use unified classes API - backend filters for teacher
+          const response = await apiServices.classes.getAll();
           if (response.success && response.data) {
             setClasses(response.data);
             if (response.data.length > 0) {
@@ -52,7 +36,11 @@ const TeacherAttendance = () => {
             }
           }
         } catch (error) {
-          console.error('Error fetching classes:', error);
+          addNotification({
+            type: 'error',
+            title: 'Failed to delete assignment',
+            message: 'Please try again later.',
+          });
         } finally {
           setLoading(false);
         }
@@ -65,20 +53,23 @@ const TeacherAttendance = () => {
     const loadStudents = async () => {
       if (selectedClass) {
         try {
-          const response = await apiServices.teacher.getStudentsByClass(
-            selectedClass
-          );
+          // Use unified users API to get students
+          const response = await apiServices.users.getAll();
           if (response.success && response.data) {
             setStudents(response.data);
             // Initialize attendance records
             const initialAttendance = response.data.map((student: Student) => ({
               studentId: student.id,
-              status: 'present' as const,
+              status: 'PRESENT' as keyof typeof TEACHER_ATTENDANCE_STATUS,
             }));
             setAttendance(initialAttendance);
           }
         } catch (error) {
-          console.error('Error fetching students:', error);
+          addNotification({
+            type: 'error',
+            title: 'Failed to delete attendance',
+            message: 'Please try again later.',
+          });
         }
       }
     };
@@ -87,7 +78,7 @@ const TeacherAttendance = () => {
 
   const updateAttendance = (
     studentId: string,
-    status: 'present' | 'absent' | 'late'
+    status: keyof typeof TEACHER_ATTENDANCE_STATUS
   ) => {
     setAttendance((prev) =>
       prev.map((record) =>
@@ -101,15 +92,23 @@ const TeacherAttendance = () => {
 
     setSaving(true);
     try {
-      await apiServices.teacher.markAttendance({
+      await apiServices.attendance?.mark({
         classId: selectedClass,
         date: selectedDate,
         attendance,
       });
-      alert('Attendance saved successfully!');
+      addNotification({
+        type: 'success',
+        title: 'Attendance saved successfully!',
+        message: 'Student attendance has been recorded.',
+      });
     } catch (error) {
       console.error('Error saving attendance:', error);
-      alert('Failed to save attendance. Please try again.');
+      addNotification({
+        type: 'error',
+        title: 'Failed to save attendance',
+        message: 'Please try again later.',
+      });
     } finally {
       setSaving(false);
     }
@@ -127,23 +126,26 @@ const TeacherAttendance = () => {
 
   return (
     <PortalLayout userRole="teacher" userName="Teacher">
-      <div className={styles.container}>
-        <header className={styles.header}>
-          <div>
+      <div className={styles.pageContainer}>
+        <header className={styles.pageHeader}>
+          <div className={styles.headerContent}>
             <h1>Take Attendance</h1>
             <p>Mark student attendance for your classes</p>
           </div>
           <div className={styles.headerActions}>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className={styles.dateInput}
-            />
+            <div className={styles.dateContainer}>
+              <input
+                id="attendance-date"
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className={styles.dateInput}
+              />
+            </div>
             <button
               onClick={saveAttendance}
               disabled={saving || attendance.length === 0}
-              className={styles.saveBtn}
+              className={`${styles.saveBtn} ${saving ? styles.saving : ''}`}
             >
               <Save size={16} />
               {saving ? 'Saving...' : 'Save Attendance'}
@@ -151,21 +153,26 @@ const TeacherAttendance = () => {
           </div>
         </header>
 
-        <div className={styles.classSelector}>
-          <label htmlFor="class-select">Select Class:</label>
-          <select
-            id="class-select"
-            value={selectedClass}
-            onChange={(e) => setSelectedClass(e.target.value)}
-            className={styles.selectInput}
-          >
-            <option value="">Choose a class</option>
-            {classes.map((cls) => (
-              <option key={cls.id} value={cls.id}>
-                {cls.name} ({cls.code})
-              </option>
-            ))}
-          </select>
+        <div className={styles.controlsSection}>
+          <div className={styles.classSelector}>
+            <label htmlFor="class-select" className={styles.selectorLabel}>
+              <Users size={18} />
+              Select Class:
+            </label>
+            <select
+              id="class-select"
+              value={selectedClass}
+              onChange={(e) => setSelectedClass(e.target.value)}
+              className={styles.selectInput}
+            >
+              <option value="">Choose a class</option>
+              {classes.map((cls) => (
+                <option key={cls.id} value={cls.id}>
+                  {cls.name} ({cls.code})
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {students.length > 0 ? (
@@ -179,19 +186,29 @@ const TeacherAttendance = () => {
                   <div className={styles.studentInfo}>
                     <div className={styles.studentAvatar}>
                       {student.profileImage ? (
-                        <img src={student.profileImage} alt={student.name} />
+                        <img
+                          src={student.profileImage}
+                          alt={student.name}
+                          className={styles.avatarImage}
+                        />
                       ) : (
-                        <Users size={24} />
+                        <div className={styles.avatarPlaceholder}>
+                          <Users size={24} />
+                        </div>
                       )}
                     </div>
-                    <div>
-                      <h4>{student.name}</h4>
-                      <p>Roll: {student.rollNumber}</p>
+                    <div className={styles.studentDetails}>
+                      <h4 className={styles.studentName}>{student.name}</h4>
+                      <p className={styles.studentRoll}>
+                        Roll No: {student.rollNumber}
+                      </p>
                     </div>
                   </div>
                   <div className={styles.attendanceButtons}>
                     <button
                       className={`${styles.attendanceBtn} ${
+                        styles.presentBtn
+                      } ${
                         attendanceRecord?.status === 'present'
                           ? styles.active
                           : ''
@@ -199,19 +216,19 @@ const TeacherAttendance = () => {
                       onClick={() => updateAttendance(student.id, 'present')}
                     >
                       <CheckCircle size={16} />
-                      Present
+                      <span>Present</span>
                     </button>
                     <button
-                      className={`${styles.attendanceBtn} ${
+                      className={`${styles.attendanceBtn} ${styles.lateBtn} ${
                         attendanceRecord?.status === 'late' ? styles.active : ''
                       }`}
                       onClick={() => updateAttendance(student.id, 'late')}
                     >
                       <Clock size={16} />
-                      Late
+                      <span>Late</span>
                     </button>
                     <button
-                      className={`${styles.attendanceBtn} ${
+                      className={`${styles.attendanceBtn} ${styles.absentBtn} ${
                         attendanceRecord?.status === 'absent'
                           ? styles.active
                           : ''
@@ -219,7 +236,7 @@ const TeacherAttendance = () => {
                       onClick={() => updateAttendance(student.id, 'absent')}
                     >
                       <XCircle size={16} />
-                      Absent
+                      <span>Absent</span>
                     </button>
                   </div>
                 </div>
